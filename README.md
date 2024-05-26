@@ -21,14 +21,14 @@
 
 <br/>
 
-# Invotastic for Business (NextJS, App Router) -- A multi-tenant demo app
+# Perk Party (NextJS, App Router) -- A multi-tenant demo app
 
-"Invotastic for Business" is a multi-tenant demo app that serves other companies as its customers. This repo utilizes a "Backend Server" OAuth2 client type. The backend server technology here is NextJS, and the router type is the App Router. It demonstrates both how to protect API routes as well as getServerSideProps() function.
+"Perk Party" is a multi-tenant demo app that serves other companies as its customers. This repo utilizes a "Backend Server" OAuth2 client type. The backend server technology here is NextJS, and the router type is the App Router. It demonstrates both how to protect API routes as well as getServerSideProps() function.
 <br>
 <br>
 
 **Disclaimer:**
-Invotastic for Business is not a real-world application and cannot be used to send invoices to real people.
+Perk Party is not a real-world application and cannot be used to send invoices to real people.
 
 <br>
 <hr />
@@ -36,7 +36,7 @@ Invotastic for Business is not a real-world application and cannot be used to se
 
 ## Getting Started
 
-You can start up the Invotastic for Business demo application in a few simple steps.
+You can start up the Perk Party demo application in a few simple steps.
 
 ### 1) Sign up for an Wristband account.
 
@@ -84,7 +84,7 @@ You can also build and run the production mode:
 
 #### Run the application with "vanity domain" URLs
 
-Alternatively, if you choose to use custom domains for the demo app, then the server will start up on `business.invotastic.com` with port `6001`. You can run the following command:
+Alternatively, if you choose to use custom domains for the demo app, then the server will start up on `app.perkparty.club` with port `6001`. You can run the following command:
 
 ```npm run dev-vanity-domain```
 
@@ -98,39 +98,39 @@ You can also build and run the production mode:
 <hr />
 <br>
 
-### How to interact with Invotastic for Business
+### How to interact with Perk Party
 
-#### Signup Invotastic Users
+#### Signup Perk Party Users
 
-Now that Invotastic for Business is up and running, you can sign up your first customer on the Invotastic for Business Signup Page at the following location:
+Now that Perk Party is up and running, you can sign up your first customer on the Perk Party Signup Page at the following location:
 
-- `http://{application_vanity_domain}/signup`, where `{application_vanity_domain}` should be replaced with the value of the "Application Vanity Domain" value of the Invotastic for Business application (can be found in the Wristband Dashboard by clicking the Application Details side menu of this app).
+- `http://{application_vanity_domain}/signup`, where `{application_vanity_domain}` should be replaced with the value of the "Application Vanity Domain" value of the Perk Party application (can be found in the Wristband Dashboard by clicking the Application Details side menu of this app).
 
 This signup page is hosted by Wristband.  Completing the signup form will provision both a new tenant with the specified tenant domain name and a new user that is assigned to that tenant.
 
-#### Invotastic Home Page
+#### Perk Party Home Page
 
 For reference, the home page of this Inovtastic for Business app can be accessed at the following locations:
 
 - Localhost domain format: [http://localhost:6001/](http://localhost:6001/)
-- Vanity domain format: [http://{tenant_domain}.business.invotastic.com:6001/](http://{tenant_domain}.business.invotastic.com:6001/), where `{tenant_domain}` should be replaced with the value of the desired tenant's domain name.
+- Vanity domain format: [http://{tenant_domain}.app.perkparty.club:6001/](http://{tenant_domain}.app.perkparty.club:6001/), where `{tenant_domain}` should be replaced with the value of the desired tenant's domain name.
 
-#### Invotastic Application-level Login
+#### Perk Party Application-level Login
 
-Users of Invotastic for Business can access the Invotastic for Business Application-level Login Page at the following location:
+Users of Perk Party can access the Perk Party Application-level Login Page to perform tenant discovery at the following location:
 
-- `http://{application_vanity_domain}/login`, where `{application_vanity_domain}` should be replaced with the value of the "Application Vanity Domain" value of the Invotastic for Business application (can be found in the Wristband Dashboard by clicking the Application Details side menu of this app).
+- `http://{application_vanity_domain}/login`, where `{application_vanity_domain}` should be replaced with the value of the "Application Vanity Domain" value of the Perk Party application (can be found in the Wristband Dashboard by clicking the Application Details side menu of this app).
 
 This login page is hosted by Wristband.  Here, the user will be prompted to enter their tenant's domain name for which they want to log in to.  Successfully entering the tenant domain name will redirect the user to the tenant-level login page for their specific tenant.
 
 Users also have the option here to execute the Forgot Tenant workflow and entering their email address in order to receive a list of all tenants that they belong to.
 
-#### Invotastic Tenant-level Login
+#### Perk Party Tenant-level Login
 
-If users wish to directly access the Invotastic Tenant-level Login Page without having to go through the application-level login, they can do so at the following locations:
+If users wish to directly access the Perk Party Tenant-level Login Page without having to go through the application-level login, they can do so at the following locations:
 
 - Localhost domain format: [http://localhost:6001/api/auth/login?tenant_domain={tenant_domain}](http://localhost:6001/home), where `{tenant_domain}` should be replaced with the value of the desired tenant's domain name.
-- Vanity domain format: [http://{tenant_domain}.business.invotastic.com:6001/api/auth/login](http://{tenant_domain}.business.invotastic.com:6001/api/auth/login), where `{tenant_domain}` should be replaced with the value of the desired tenant's domain name.
+- Vanity domain format: [http://{tenant_domain}.app.perkparty.club:6001/api/auth/login](http://{tenant_domain}.app.perkparty.club:6001/api/auth/login), where `{tenant_domain}` should be replaced with the value of the desired tenant's domain name.
 
 This login page is hosted by Wristband.  Here, the user will be prompted to enter their credentials in order to login to the application.
 
@@ -142,7 +142,7 @@ The NextJS server is responsible for:
 - Handling the OAuth2 authorization code flow redirections to and from Wristband during user login.
 - Creating the application session cookie to be sent back to the browser upon successful login.  The application session cookie contains the access and refresh tokens as well as some basic user info.
 - Refreshing the access token if the access token is expired.
-- Orchestrating all API calls from the React frontend to both Wristband and the Invotastic backend data store.
+- Orchestrating all API calls from the React frontend to both Wristband and the Perk Party backend data store.
 - Destroying the application session cookie and revoking the refresh token when a user logs out.
 
 API calls made from React to the NextJS server pass along the application session cookie with every request.  The NextJS server peforms the following actions on all API route handlers and getServerSideProps() function calls:
@@ -161,7 +161,7 @@ It is also important to note that Wristband hosts all onboarding workflow pages 
 Within the demo app code base, you can search in your IDE of choice for the text `WRISTBAND_TOUCHPOINT`.  This will show the various places in both the React frontend code and NextJS server code where Wristband is involved.  You will find the search results return one of a few possible comments using that search text:
 
 - `/* WRISTBAND_TOUCHPOINT - AUTHENTICATION */` - Code that deals with an authenticated user's application session.  This includes managing their application session cookie and JWTs, OAuth2-related endpoints for login/callback/logout, API routes and SSR pages for validating/refreshing tokens, and React context used to check the user's authenticated session.
-- `/* WRISTBAND_TOUCHPOINT - AUTHORIZATION */` - Code that checks whether a user has the required permissions to interact with Invotastic-specific resource APIs or can access certain application functionality in the UI.
+- `/* WRISTBAND_TOUCHPOINT - AUTHORIZATION */` - Code that checks whether a user has the required permissions to interact with Perk Party-specific resource APIs or can access certain application functionality in the UI.
 - `/* WRISTBAND_TOUCHPOINT - RESOURCE API */` - Code that interacts with any Wristband-specific resource APIs or workflow APIs that are not related to authentication or authorization directly.  For example, it could be an API call to update the user's profile or change their password.
 
 <br>
@@ -169,10 +169,10 @@ Within the demo app code base, you can search in your IDE of choice for the text
 ## Setting up a local DNS when using `VANITY_DOMAIN` for the domain format
 <br/>
 
-If you choose to use vanity domains as the domain format for the demo application, you will need to install a local DNS server to provide custom configurations.  This configuration forces any requests made to domains ending with `.business.invotastic.com` to get routed to your localhost.  This configuration is necessary since all vanity domains that get generated when running the demo application locally will have a domain suffix of  `*.business.invotastic.com`. Therefore, the above setting will force those domains to resolve back to your local machine instead of attempting to route them out to the web.
+If you choose to use vanity domains as the domain format for the demo application, you will need to install a local DNS server to provide custom configurations.  This configuration forces any requests made to domains ending with `.app.perkparty.club` to get routed to your localhost.  This configuration is necessary since all vanity domains that get generated when running the demo application locally will have a domain suffix of  `*.business.perkparty.club`. Therefore, the above setting will force those domains to resolve back to your local machine instead of attempting to route them out to the web.
 
 The goal is the following mapping:
-`business.invotastic.com` => `127.0.0.1`.
+`app.perkparty.club` => `127.0.0.1`.
 
 
 Here are some options which you can use, depending on your operating system:
