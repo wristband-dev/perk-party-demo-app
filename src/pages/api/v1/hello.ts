@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { getSession } from '@/utils/iron-session';
-import { refreshTokenIfExpired } from '@/utils/server-auth';
+import { refreshTokenIfExpired } from '@/auth/server-auth';
 
 type Data = { message: string };
 

@@ -4,7 +4,7 @@ import * as wristbandService from '@/services/wristband-service';
 import { useAuth } from '@/context/auth-context';
 import { getSession } from '@/utils/iron-session';
 import { Tenant } from '@/types';
-import { serverRedirectToLogin, refreshTokenIfExpired } from '@/utils/server-auth';
+import { serverRedirectToLogin, refreshTokenIfExpired } from '@/auth/server-auth';
 
 type SettingsPageProps = {
   tenant: Tenant;

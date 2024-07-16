@@ -15,7 +15,7 @@ import * as authService from '@/services/auth-service';
 import {
   APPLICATION_LOGIN_URL,
   AUTH_CALLBACK_URL,
-  INVOTASTIC_HOST,
+  PERKPARTY_HOST,
   IS_LOCALHOST,
   LOGIN_REQUIRED_ERROR,
   LOGIN_STATE_COOKIE_SECRET,
@@ -53,7 +53,7 @@ export async function login(req: NextApiRequest, res: NextApiResponse, config: L
 
   // Make sure a valid tenantDomainName exists for multi-tenant apps.
   let tenantDomainName: string = '';
-  tenantDomainName = resolveTenantDomain(req, !IS_LOCALHOST, INVOTASTIC_HOST);
+  tenantDomainName = resolveTenantDomain(req, !IS_LOCALHOST, PERKPARTY_HOST);
   if (!tenantDomainName) {
     res.redirect(APPLICATION_LOGIN_URL);
     return;
@@ -104,9 +104,9 @@ export async function callback(req: NextApiRequest, res: NextApiResponse): Promi
   }
 
   const appLoginUrl: string = APPLICATION_LOGIN_URL;
-  const tenantSubdomain: string = !IS_LOCALHOST ? parseTenantSubdomain(req, INVOTASTIC_HOST) : '';
+  const tenantSubdomain: string = !IS_LOCALHOST ? parseTenantSubdomain(req, PERKPARTY_HOST) : '';
   let tenantLoginUrl: string =
-    !IS_LOCALHOST && !!tenantSubdomain ? `http://${tenantSubdomain}${INVOTASTIC_HOST}/api/auth/login` : '';
+    !IS_LOCALHOST && !!tenantSubdomain ? `http://${tenantSubdomain}${PERKPARTY_HOST}/api/auth/login` : '';
 
   // Make sure the login state cookie exists, extract it, and set it to be cleared by the server.
   const loginStateCookie: string = getAndClearLoginStateCookie(req, res);
@@ -124,14 +124,14 @@ export async function callback(req: NextApiRequest, res: NextApiResponse): Promi
   }
   if (!IS_LOCALHOST && tenantSubdomain !== tenantDomainName) {
     return {
-      redirectUrl: `http://${tenantDomainName}.${INVOTASTIC_HOST}/api/auth/login`,
+      redirectUrl: `http://${tenantDomainName}.${PERKPARTY_HOST}/api/auth/login`,
       result: CallbackResultType.REDIRECT_REQUIRED,
     };
   }
 
   tenantLoginUrl = !IS_LOCALHOST
     ? tenantLoginUrl
-    : `http://${INVOTASTIC_HOST}/api/auth/login?tenant_domain=${tenantDomainName}`;
+    : `http://${PERKPARTY_HOST}/api/auth/login?tenant_domain=${tenantDomainName}`;
 
   // Check for any potential error conditions
   if (paramState !== cookieState) {
@@ -201,7 +201,7 @@ export async function logout(req: NextApiRequest, res: NextApiResponse, config: 
 
   // Construct the appropriate Logout Endpoint URL that the user will get redirected to.
   const appLoginUrl: string = APPLICATION_LOGIN_URL;
-  if (!IS_LOCALHOST && host!.substring(host!.indexOf('.') + 1) !== INVOTASTIC_HOST) {
+  if (!IS_LOCALHOST && host!.substring(host!.indexOf('.') + 1) !== PERKPARTY_HOST) {
     console.warn(`No session found. Redirecting to application-level login.`);
     res.redirect(appLoginUrl);
     return;

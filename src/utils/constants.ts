@@ -1,6 +1,7 @@
 const authCallbackTenantDomain = process.env.DOMAIN_FORMAT === 'LOCALHOST' ? '' : '{tenant_domain}.';
 const VANITY_DOMAIN_TO_USE = process.env.PUBLIC_DEMO === 'ENABLED' ? 'app.perkparty.club' : 'app.perkparty.club:6001';
 
+
 export const IS_LOCALHOST = process.env.DOMAIN_FORMAT === 'LOCALHOST';
 export const PERKPARTY_HOST = IS_LOCALHOST ? 'localhost:6001' : VANITY_DOMAIN_TO_USE;
 
@@ -13,3 +14,5 @@ export const SESSION_COOKIE_NAME = 'sid';
 export const SESSION_COOKIE_SECRET = '96bf13d5-b5c1-463a-812c-0d8db87c0ec5';
 export const HTTP_401_STATUS = { status: 401 };
 export const UNAUTHORIZED = { statusText: 'Unauthorized' };
+export const LOGIN_REQUIRED_ERROR: string = 'login_required';
+export const FORM_URLENCOED_MEDIA_TYPE: string = 'application/x-www-form-urlencoded';

@@ -5,7 +5,7 @@ import { AiOutlineMenu, AiOutlineClose } from 'react-icons/ai';
 
 import { Raleway } from "next/font/google";
 
-import { clientRedirectToLogout } from '@/utils/client-auth';
+import { clientRedirectToLogout } from '@/auth/client-auth';
 
 const raleway = Raleway({ subsets: ["latin"] });
 
