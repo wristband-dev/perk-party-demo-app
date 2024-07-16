@@ -3,8 +3,11 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { AiOutlineMenu, AiOutlineClose } from 'react-icons/ai';
 
-import Logo from '../../public/Logo.png';
+import { Raleway } from "next/font/google";
+
 import { clientRedirectToLogout } from '@/utils/client-auth';
+
+const raleway = Raleway({ subsets: ["latin"] });
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
@@ -13,25 +16,39 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="fixed w-full h-16 shadow-xl bg-purple text-white">
-      <div className="flex justify-between items-center h-full w-full px-4 2xl:px-16">
-        <Link href="/">
-          <Image src={Logo} alt="Logo" height="40" className="cursor-pointer" priority />
+    <nav className="fixed w-full h-16 shadow-xl bg-black text-white z-[3200]">
+      <div className="flex justify-between items-center h-full w-full px-10 2xl:px-16">
+        <Link href="/" className={`font-bold tracking-widest ${raleway.className} hover:text-pink-600 cursor-pointer transition duration-300`} style={{ fontSize: 'clamp(1.625rem, 5vw, 2rem)', textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)' }}>
+          PERK PARTY
         </Link>
         <div className="hidden sm:flex">
           <ul className="hidden sm:flex">
-            <Link href="/">
+          <Link href="/">
+          <li className="ml-8 capitalize hover:border-b text-l font-bold hover:text-pink-600 cursor-pointer transition duration-300">ADMINS</li>
+
+            </Link>
+
+
+            {/* <Link href="/">
               <li className="ml-8 capitalize hover:border-b text-xl">Home</li>
-            </Link>
+            </Link> */}
+
+
+
             <Link href="/settings">
-              <li className="ml-8 capitalize hover:border-b text-xl">Settings</li>
+              <li className="ml-8 capitalize hover:border-b text-l font-bold hover:text-pink-600 cursor-pointer transition duration-300">SETTINGS</li>
             </Link>
-            <div onClick={clientRedirectToLogout} className="cursor-pointer">
+
+
+            {/* <div onClick={clientRedirectToLogout} className="cursor-pointer">
               <li className="mx-8 capitalize hover:border-b text-xl">Log Out</li>
-            </div>
+            </div> */}
+
+
+
           </ul>
         </div>
-        <div onClick={handleNav} className="sm:hidden cursor-pointer pl-24">
+        <div onClick={handleNav} className="sm:hidden cursor-pointer">
           <AiOutlineMenu size={25} />
         </div>
       </div>

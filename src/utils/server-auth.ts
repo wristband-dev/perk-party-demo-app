@@ -27,9 +27,9 @@ export function bearerToken(accessToken: string) {
   return { headers: { Authorization: `Bearer ${accessToken}` } };
 }
 
-/* ****************/
+/******************/
 /* SDK CANDIDATES */
-/* ****************/
+/******************/
 
 export function serverRedirectToLogin(req: IncomingMessage) {
   const { headers, url } = req;
@@ -91,7 +91,7 @@ export async function login(req: NextApiRequest, res: NextApiResponse): Promise<
   /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
   // Redirect out to the Wristband authorize endpoint to start the login process via OAuth2 Auth Code flow.
   const hostname = `${tenantDomainName}-${process.env.APPLICATION_DOMAIN}`;
-  res.redirect(`https://${hostname}/api/v1/oauth2/authorize?${authorizeQuery}`);
+  res.redirect(`http://${hostname}/api/v1/oauth2/authorize?${authorizeQuery}`);
 }
 
 export async function callback(req: NextApiRequest, res: NextApiResponse): Promise<CallbackData | void> {

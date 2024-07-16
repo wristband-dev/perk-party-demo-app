@@ -12,7 +12,7 @@ const apiClient = axios.create({
     timeout: 60000,
     freeSocketTimeout: 30000,
   }),
-  httpsAgent: new HttpsAgent({ rejectUnauthorized: !process.env.NEXT_PUBLIC_TRUST_SELF_SIGNED_CERT }),
+  httpsAgent: new HttpsAgent({ rejectUnauthorized: false }),
   headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
   maxRedirects: 0,
 });
