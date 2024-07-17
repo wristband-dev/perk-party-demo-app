@@ -43,12 +43,12 @@ export function PerkCard({ image, perkName, perkDesc, banner }) {
 
       {isModalOpen && (
         <div className="p-10 fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-75">
-          <div className="bg-white rounded-lg shadow-lg relative">
+          <div className="bg-white rounded-lg shadow-lg relative overflow-hidden">
             <section className="m-0 relative">
               <img 
                 src={image}
                 alt="Logo" 
-                className="max-h-[400px] w-full object-cover rounded-lg"
+                className="max-h-[400px] w-full object-cover"
               />
               <button 
                 type="button" 
