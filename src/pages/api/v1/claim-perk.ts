@@ -1,21 +1,20 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getSession } from '@/utils/iron-session';
+import { getSession } from '@/session/iron-session';
 import { bearerAuthFetchHeaders } from "@/utils/fetch";
 
-export default async function sessionRoute(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getSession(req, res);
-  const { isAuthenticated, tenantDomainName, user, accessToken } = session;
+type Data = { message: string };
 
+export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
+  const session = await getSession(req, res);
+  const { isAuthenticated, user, accessToken } = session;
+
+  /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
   if (!isAuthenticated) {
-    res.status(200).json({
-      isAuthenticated,
-      user: null,
-      tenantDomainName: null,
-    });
-  } 
+    return res.status(401).end();
+  }
 
   const userResponse = await fetch(`https://${process.env.APPLICATION_DOMAIN}/api/v1/users/${user.id}`, {
-    method: 'GET',
+    method: 'PATCH',
     headers: bearerAuthFetchHeaders(accessToken),
     keepalive: true,
   });
@@ -30,9 +29,6 @@ export default async function sessionRoute(req: NextApiRequest, res: NextApiResp
     return res.status(500).end();
   }
 
-  res.status(200).json({
-    isAuthenticated,
-    user: isAuthenticated ? user : null,
-    tenantDomainName: isAuthenticated ? tenantDomainName : null,
-  });
+  const data = await userResponse.json();
+  return res.status(200).json(data);
 }

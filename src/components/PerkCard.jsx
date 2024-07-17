@@ -66,6 +66,7 @@ export function PerkCard({ image, perkName, perkDesc, banner }) {
               <button 
                 type="button" 
                 className="bg-black text-white hover:bg-pink-600 border border-black focus:ring-4 focus:outline-none focus:ring-pink-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                // onClick={() => }
               >
                 Claim
               </button>

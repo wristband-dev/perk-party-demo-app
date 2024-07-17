@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useAuth } from '@/context/auth-context';
 import { Raleway } from "next/font/google";
 import { PerkCard } from '@/components/PerkCard';
+import { clientRedirectTologin } from '@/auth/client-auth';
 
 const raleway = Raleway({ subsets: ["latin"] });
 
@@ -72,7 +73,7 @@ const perks = [
   },
   {
     id: 9,
-    image: 'https://plus.unsplash.com/premium_photo-1676901918792-f6e04df8b7b4?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aGFtbWVyfGVufDB8fDB8fHww',
+    image: 'https://media.istockphoto.com/id/613668916/photo/woman-breaking-the-wall.jpg?s=612x612&w=0&k=20&c=dWYIdwoToWQP0qLzXM6hAcLOuleMLmTtn4A4DlsHViw=',
     perkName: '1-Hour Rage Room Tokens',
     category: 'Thrill',
     perkDesc: 'Smash away your stress in our Rage Room. Enjoy an hour of therapeutic destruction.',
@@ -162,6 +163,26 @@ const perks = [
 
 export default function HomePage() {
   const { isAuthenticated } = useAuth();
+
+  const claimPerk = async () => {
+    try {
+      const res = await fetch('/api/v1/claim-perk', {
+        method: 'PATCH',
+        keepalive: true,
+      });
+
+      /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
+      if (res.status === 401) {
+        clientRedirectTologin(window.location.href);
+        return;
+      }
+
+      const data = await res.json();
+      alert(data.message);
+    } catch (error: unknown) {
+      console.log(error);
+    }
+  };
 
   return (
     <>
