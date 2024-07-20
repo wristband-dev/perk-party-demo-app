@@ -1,38 +1,19 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getSession } from '@/utils/iron-session';
-import { bearerAuthFetchHeaders } from "@/utils/fetch";
+import { getSession } from '@/session/iron-session';
 
 export default async function sessionRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = await getSession(req, res);
-  const { isAuthenticated, tenantDomainName, user, accessToken } = session;
+  const { isAuthenticated, tenantDomainName, user, tenantMetadata } = session;
 
   if (!isAuthenticated) {
     res.status(200).json({
       isAuthenticated,
       user: null,
       tenantDomainName: null,
+      tenantMetadata: null,
     });
-  } 
-
-  const userResponse = await fetch(`https://${process.env.APPLICATION_DOMAIN}/api/v1/users/${user.id}`, {
-    method: 'GET',
-    headers: bearerAuthFetchHeaders(accessToken),
-    keepalive: true,
-  });
-
-  // not authenticated -> send to login
-  if (userResponse.status == 401) {
-    return res.status(401).end();
+    return;
   }
 
-  if (userResponse.status !== 200) {
-    console.log(`Get tenant failed. Status: [${userResponse.status}], Message: [${userResponse.statusText}]`)
-    return res.status(500).end();
-  }
-
-  res.status(200).json({
-    isAuthenticated,
-    user: isAuthenticated ? user : null,
-    tenantDomainName: isAuthenticated ? tenantDomainName : null,
-  });
+  res.status(200).json({ isAuthenticated, user, tenantDomainName, tenantMetadata });
 }

@@ -6,13 +6,14 @@ export function PerkCard({ image, perkName, perkDesc, banner }) {
 
   return (
     <>
-      <div 
+      <div
         className="w-[320px] h-[250px] mb-16 mx-8 bg-black shadow-2xl border-gray-200 rounded-lg overflow-hidden relative"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={() => setIsModalOpen(true)}
       >
         <div className="h-3/5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={image} alt="Logo" className="w-full h-full object-cover cursor-pointer" />
           {banner && (
             <div className="absolute top-0 right-0 p-2">
@@ -21,13 +22,13 @@ export function PerkCard({ image, perkName, perkDesc, banner }) {
           )}
         </div>
         <div className="p-4 h-2/5 flex flex-col justify-between">
-          <h1 
+          <h1
             className={`text-xl text-white font-bold ${perkName.length > 20 ? 'text-lg' : ''}`}
             style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
           >
             {perkName}
           </h1>
-          <p 
+          <p
             className="text-sm text-white overflow-hidden"
             style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
           >
@@ -45,14 +46,11 @@ export function PerkCard({ image, perkName, perkDesc, banner }) {
         <div className="p-10 fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-75">
           <div className="bg-white rounded-lg shadow-lg relative overflow-hidden">
             <section className="m-0 relative">
-              <img 
-                src={image}
-                alt="Logo" 
-                className="max-h-[400px] w-full object-cover"
-              />
-              <button 
-                type="button" 
-                className="absolute top-0 right-0 m-4 bg-black text-white hover:bg-pink-600 border border-black focus:ring-4 focus:outline-none focus:ring-pink-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2" 
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={image} alt="Logo" className="max-h-[400px] w-full object-cover" />
+              <button
+                type="button"
+                className="absolute top-0 right-0 m-4 bg-black text-white hover:bg-pink-600 border border-black focus:ring-4 focus:outline-none focus:ring-pink-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
                 onClick={() => setIsModalOpen(false)}
               >
                 &times;
@@ -63,8 +61,8 @@ export function PerkCard({ image, perkName, perkDesc, banner }) {
               <p className="text-lg">{perkDesc}</p>
             </div>
             <div className="flex justify-center mb-4">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="bg-black text-white hover:bg-pink-600 border border-black focus:ring-4 focus:outline-none focus:ring-pink-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
                 // onClick={() => }
               >

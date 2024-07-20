@@ -1,5 +1,4 @@
-import { bearerAuthFetchHeaders } from "@/utils/fetch";
-
+import { bearerAuthFetchHeaders } from '@/utils/helpers';
 
 export async function getTenant(accessToken: string, tenantId: string) {
   const res = await fetch(`https://${process.env.APPLICATION_DOMAIN}/api/v1/tenants/${tenantId}`, {

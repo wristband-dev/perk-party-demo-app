@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSession } from '@/session/iron-session';
-import { bearerAuthFetchHeaders } from "@/utils/fetch";
+import { bearerAuthFetchHeaders } from '@/utils/helpers';
 
 type Data = { message: string };
 
@@ -23,9 +23,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   if (userResponse.status == 401) {
     return res.status(401).end();
   }
-
   if (userResponse.status !== 200) {
-    console.log(`Get tenant failed. Status: [${userResponse.status}], Message: [${userResponse.statusText}]`)
+    console.log(`Update user failed. Status: [${userResponse.status}], Message: [${userResponse.statusText}]`);
     return res.status(500).end();
   }
 

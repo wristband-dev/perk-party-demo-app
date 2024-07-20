@@ -11,6 +11,7 @@ type SessionData = {
   refreshToken?: string;
   tenantDomainName: string;
   user: User;
+  tenantMetadata: object;
 };
 
 const sessionOptions: SessionOptions = {
@@ -21,17 +22,10 @@ const sessionOptions: SessionOptions = {
     maxAge: 1800,
     path: '/',
     sameSite: 'lax',
-    // NOTE: If deploying your own app to production, do not disable secure cookies.
-    secure: false,
+    // secure: true should be used in production (HTTPS) but can't be used in development (HTTP)
+    secure: process.env.NODE_ENV === 'production',
   },
 };
-
-export function middlewareGetSession(
-  req: http.IncomingMessage | Request,
-  res: http.ServerResponse | Response
-): Promise<IronSession<SessionData>> {
-  return getSession(req, res);
-}
 
 export function getSession(
   req: http.IncomingMessage | Request,
