@@ -1,8 +1,38 @@
+import { useWristband } from '@/context/auth-context';
+import { clientRedirectToLogin } from '@/utils/helpers';
 import { useState } from 'react';
 
-export function PerkCard({ image, perkName, perkDesc, banner }) {
+interface PerkCardProps {
+  image: string;
+  perkName: string;
+  perkDesc: string;
+  banner: string;
+}
+
+export function PerkCard({ image, perkName, perkDesc, banner }: PerkCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const claimPerk = async () => {
+    try {
+      const res = await fetch('/api/v1/claim-perk', {
+        method: 'PATCH',
+        keepalive: true,
+        body: JSON.stringify({ perkId: 1 }),
+      });
+
+      /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
+      if (res.status === 401) {
+        clientRedirectToLogin(window.location.href);
+        return;
+      }
+
+      const data = await res.json();
+      // setIsModalOpen(false)
+
+    } catch (error: unknown) {
+      console.log(error);
+    }
+  };
 
   return (
     <>

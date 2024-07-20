@@ -24,6 +24,10 @@ export type Role = {
   displayName: string;
 };
 
+export type UserMetadata = {
+  claimedPerks?: string[]
+}
+
 export type User = {
   id: string;
   tenantId?: string;
@@ -43,7 +47,7 @@ export type User = {
   timezone?: string | null;
   locale?: string | null;
   updatedAt?: string | null;
-  publicMetadata?: object;
+  publicMetadata?: UserMetadata;
   restrictedMetadata?: object;
   roles?: Role[];
 };

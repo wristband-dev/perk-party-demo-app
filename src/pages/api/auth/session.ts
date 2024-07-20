@@ -6,14 +6,13 @@ export default async function sessionRoute(req: NextApiRequest, res: NextApiResp
   const { isAuthenticated, tenantDomainName, user, tenantMetadata } = session;
 
   if (!isAuthenticated) {
-    res.status(200).json({
+    return res.status(200).json({
       isAuthenticated,
       user: null,
       tenantDomainName: null,
       tenantMetadata: null,
     });
-    return;
   }
 
-  res.status(200).json({ isAuthenticated, user, tenantDomainName, tenantMetadata });
+  return res.status(200).json({ isAuthenticated, user, tenantDomainName, tenantMetadata });
 }

@@ -10,7 +10,7 @@ const raleway = Raleway({ subsets: ['latin'] });
 
 const perks = [
   {
-    id: 1,
+    id: '1',
     image: 'https://cdn.pixabay.com/photo/2022/11/29/08/54/race-car-7624025_1280.jpg',
     perkName: 'Race Rental Car',
     category: 'Thrill',
@@ -19,7 +19,7 @@ const perks = [
     banner: 'NEW',
   },
   {
-    id: 2,
+    id: '2',
     image:
       'https://images.unsplash.com/photo-1501147830916-ce44a6359892?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8YmlrZXxlbnwwfHwwfHx8MA%3D%3D',
     perkName: 'Bike Pass',
@@ -29,7 +29,7 @@ const perks = [
     banner: 'TRENDING',
   },
   {
-    id: 3,
+    id: '3',
     image:
       'https://images.unsplash.com/uploads/1413387158190559d80f7/6108b580?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     perkName: 'Rail Pass',
@@ -39,7 +39,7 @@ const perks = [
     banner: 'TRENDING',
   },
   {
-    id: 4,
+    id: '4',
     image:
       'https://images.unsplash.com/photo-1556695736-d287caebc48e?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bWV0cm98ZW58MHx8MHx8fDA%3D',
     perkName: 'Metro Pass',
@@ -48,7 +48,7 @@ const perks = [
     banner: '',
   },
   {
-    id: 5,
+    id: '5',
     image:
       'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8eW9nYXxlbnwwfHwwfHx8MA%3D%3D',
     perkName: '30 Minute Hot Yoga Coupons',
@@ -57,7 +57,7 @@ const perks = [
     banner: '',
   },
   {
-    id: 6,
+    id: '6',
     image:
       'https://plus.unsplash.com/premium_photo-1669374537810-f88d8ad82818?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8Y29mZmVlfGVufDB8fDB8fHww',
     perkName: 'Blue Bottle Coffee Delivered Intravenously',
@@ -67,7 +67,7 @@ const perks = [
     banner: '',
   },
   {
-    id: 7,
+    id: '7',
     image:
       'https://images.unsplash.com/photo-1546527868-ccb7ee7dfa6a?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cHVwcHl8ZW58MHx8MHx8fDA%3D',
     perkName: 'Puppy Hour',
@@ -75,7 +75,7 @@ const perks = [
     banner: '',
   },
   {
-    id: 8,
+    id: '8',
     image:
       'https://images.unsplash.com/photo-1457732815361-daa98277e9c8?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8c2NyZWFtJTIwcm9vbXxlbnwwfHwwfHx8MA%3D%3D',
     perkName: '1-Hour Scream Room Coupons',
@@ -85,7 +85,7 @@ const perks = [
     banner: '',
   },
   {
-    id: 9,
+    id: '9',
     image:
       'https://media.istockphoto.com/id/613668916/photo/woman-breaking-the-wall.jpg?s=612x612&w=0&k=20&c=dWYIdwoToWQP0qLzXM6hAcLOuleMLmTtn4A4DlsHViw=',
     perkName: '1-Hour Rage Room Tokens',
@@ -94,7 +94,7 @@ const perks = [
     banner: '',
   },
   {
-    id: 10,
+    id: '10',
     image:
       'https://images.unsplash.com/photo-1540946485063-a40da27545f8?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c2FpbGJvYXR8ZW58MHx8MHx8fDA%3D',
     perkName: 'Free Sailing Lessons',
@@ -103,7 +103,7 @@ const perks = [
     banner: '',
   },
   {
-    id: 11,
+    id: '11',
     image:
       'https://images.unsplash.com/photo-1565109254792-8856bba5abfb?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8c2Nvb3RlcnxlbnwwfHwwfHx8MA%3D%3D',
     perkName: 'E-Scooters for Remote Workers',
@@ -112,7 +112,7 @@ const perks = [
     banner: '',
   },
   {
-    id: 12,
+    id: '12',
     image:
       'https://images.unsplash.com/photo-1504708706948-13d6cbba4062?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8R3Jhbm9sYXxlbnwwfHwwfHx8MA%3D%3D',
     perkName: 'Granola',
@@ -121,7 +121,7 @@ const perks = [
     banner: '',
   },
   {
-    id: 13,
+    id: '13',
     image:
       'https://images.unsplash.com/photo-1577344718665-3e7c0c1ecf6b?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWVkaXRhdGlvbnxlbnwwfHwwfHx8MA%3D%3D',
     perkName: 'Virtual Reality Meditation',
@@ -131,7 +131,7 @@ const perks = [
     banner: '',
   },
   {
-    id: 14,
+    id: '14',
     image:
       'https://images.unsplash.com/photo-1577106263724-2c8e03bfe9cf?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Y2hlZnxlbnwwfHwwfHx8MA%3D%3D',
     perkName: 'Personal Chef Service',
@@ -141,7 +141,7 @@ const perks = [
     banner: '',
   },
   {
-    id: 15,
+    id: '15',
     image:
       'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c3BhfGVufDB8fDB8fHww',
     perkName: 'Spa Day Pass',
@@ -159,7 +159,7 @@ const perks = [
     banner: '',
   },
   {
-    id: 17,
+    id: '17',
     image:
       'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fGNvb2tpbmd8ZW58MHx8MHx8fDA%3D',
     perkName: 'Gourmet Cooking Classes',
@@ -169,7 +169,7 @@ const perks = [
     banner: '',
   },
   {
-    id: 18,
+    id: '18',
     image:
       'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y29uY2VydHxlbnwwfHwwfHx8MA%3D%3D',
     perkName: 'Exclusive Concert Tickets',
@@ -178,7 +178,7 @@ const perks = [
     banner: '',
   },
   {
-    id: 19,
+    id: '19',
     image:
       'https://plus.unsplash.com/premium_photo-1674852890869-045efbe8c54b?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8d29vZHdvcmtpbmd8ZW58MHx8MHx8fDA%3D',
     perkName: 'Artisanal Craft Workshops',
@@ -190,34 +190,10 @@ const perks = [
 ];
 
 export default function HomePage() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { isAuthenticated } = useWristband();
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const claimPerk = async () => {
-    try {
-      const res = await fetch('/api/v1/claim-perk', {
-        method: 'PATCH',
-        keepalive: true,
-      });
-
-      /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
-      if (res.status === 401) {
-        clientRedirectToLogin(window.location.href);
-        return;
-      }
-
-      const data = await res.json();
-      alert(data.message);
-    } catch (error: unknown) {
-      console.log(error);
-    }
-  };
 
   return (
     <>
       <section className="m-0">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="https://cdn.pixabay.com/photo/2022/11/29/08/54/race-car-7624025_1280.jpg"
           alt="Logo"
