@@ -21,9 +21,8 @@ const sessionOptions: SessionOptions = {
     httpOnly: true,
     maxAge: 1800,
     path: '/',
-    sameSite: 'lax',
-    // secure: true should be used in production (HTTPS) but can't be used in development (HTTP)
-    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.PUBLIC_DEMO === 'ENABLED' ? true : 'lax',
+    secure: process.env.PUBLIC_DEMO === 'ENABLED',
   },
 };
 
