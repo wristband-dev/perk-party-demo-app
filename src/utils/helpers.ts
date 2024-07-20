@@ -1,100 +1,38 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import Iron from '@hapi/iron';
-import crypto from 'crypto';
-import moment from 'moment';
+import { IncomingMessage } from 'http';
 
-import { PERKPARTY_HOST, LOGIN_STATE_COOKIE_PREFIX, LOGIN_STATE_COOKIE_SECRET } from './constants';
 import { Userinfo } from '@/types';
+import { JSON_MEDIA_TYPE } from '@/utils/constants';
 
-function base64URLEncode(strBufferToEncode: Buffer) {
-  return strBufferToEncode.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+export function bearerAuthFetchHeaders(accessToken: string) {
+  return { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE, Authorization: `Bearer ${accessToken}` };
 }
 
-export function calculateExpTimeWithBuffer(expiresInSeconds: number) {
-  // 5 minute safety buffer included for expiration checks
-  const expiresInSecondsWithBuffer = expiresInSeconds - 300;
-  const expiresInMilliseconds = expiresInSecondsWithBuffer * 1000;
-  return Date.now() + expiresInMilliseconds;
-}
-
-export function createCodeChallenge(codeVerifier: string) {
-  return base64URLEncode(crypto.createHash('sha256').update(codeVerifier).digest());
-}
-
-export function createUniqueCryptoStr() {
-  return base64URLEncode(crypto.randomBytes(32));
-}
-
-export async function decryptLoginStateData(loginStateCookie: string) {
-  const unsealedLoginStateData = await Iron.unseal(loginStateCookie, LOGIN_STATE_COOKIE_SECRET!, Iron.defaults);
-  return unsealedLoginStateData;
-}
-
-export async function encryptLoginStateData(loginStateData: object) {
-  const sealedLoginStateData = await Iron.seal(loginStateData, LOGIN_STATE_COOKIE_SECRET!, Iron.defaults);
-  return sealedLoginStateData;
-}
-
-export function getDeleteValueForLoginStateCookieHeader(cookieName: string): string[] {
-  return [[`${cookieName}=;`, 'Path=/;', `Expires=${new Date(0).toString()};`, 'Max-Age=-1;'].join(' ')];
-}
-
-export function isValidDomain(host: string = '', tenantDomainName: string = '') {
-  console.log('IS VALID: ', host, `${tenantDomainName}.${PERKPARTY_HOST}`);
-  return host === `${tenantDomainName}.${PERKPARTY_HOST}`;
-}
-
-export function parseTenantDomainName(host: string = '') {
-  return host.substring(0, host.indexOf('.'));
-}
-
-export function toQueryString(queryParams = {}) {
-  const params = new URLSearchParams(queryParams);
-  return params.toString();
-}
-
-export function updateLoginStateCookie(req: NextApiRequest, res: NextApiResponse, state: string, cookieData: string) {
-  // The max amount of concurrent login state cookies we allow is 3.
-  const responseCookieArray = [];
-  const allLoginCookieNames = Object.keys(req.cookies).filter((cookieName) => {
-    return cookieName.startsWith(`${LOGIN_STATE_COOKIE_PREFIX}`);
-  });
-
-  // Retain only the 2 cookies with the most recent timestamps.
-  if (allLoginCookieNames.length >= 3) {
-    const mostRecentTimestamps = allLoginCookieNames
-      .map((cookieName: string) => {
-        return cookieName.split(':')[2];
-      })
-      .sort((a: string, b: string) => {
-        return +b - +a;
-      })
-      .slice(0, 2);
-
-    allLoginCookieNames.forEach((cookieName) => {
-      const timestamp = cookieName.split(':')[2];
-
-      // If 3 cookies exist, then we delete the oldest one to make room for the new one.
-      if (!mostRecentTimestamps.includes(timestamp)) {
-        const staleCookieHeaderValue = getDeleteValueForLoginStateCookieHeader(cookieName);
-        responseCookieArray.push(staleCookieHeaderValue);
-      }
-    });
+export function clientRedirectToLogin(returnUrl?: string) {
+  if (!!window) {
+    if (returnUrl) {
+      const queryParams = new URLSearchParams({ return_url: encodeURI(returnUrl) }).toString();
+      window.location.href = `${window.location.origin}/api/auth/login?${queryParams}`;
+    } else {
+      window.location.href = `${window.location.origin}/api/auth/login`;
+    }
   }
+}
 
-  // Now add the new login state cookie with a 1-hour expiration time.
-  const newCookieName = `${LOGIN_STATE_COOKIE_PREFIX}${state}:${Date.now()}`;
-  const newCookieHeaderValue = [
-    `${newCookieName}=${cookieData};`,
-    'HTTPOnly;',
-    `Expires=${moment(Date.now()).add(1, 'hours').toDate().toString()};`,
-    'Max-Age=3600;',
-    'Path=/;',
-    'SameSite=lax;',
-  ].join(' ');
+export function clientRedirectToLogout() {
+  if (!!window) {
+    window.location.href = `${window.location.origin}/api/auth/logout`;
+  }
+}
 
-  responseCookieArray.push(newCookieHeaderValue);
-  res.setHeader('Set-Cookie', responseCookieArray);
+export function serverRedirectToLogin(req: IncomingMessage) {
+  const { headers, url } = req;
+  const returnUrl = `http://${headers.host}${url}`;
+  return {
+    redirect: {
+      destination: `http://${headers.host}/api/auth/login?return_url=${returnUrl}`,
+      permanent: false,
+    },
+  };
 }
 
 export function parseUserinfo(userinfo: Userinfo) {

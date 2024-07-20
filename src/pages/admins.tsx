@@ -11,14 +11,14 @@ type SettingsPageProps = {
   tenant: Tenant;
 };
 
-export default function SettingsPage({ tenant }: SettingsPageProps) {
+export default function AdminsPage({ tenant }: SettingsPageProps) {
   const { isAuthenticated, user } = useWristband();
   const { id, applicationId, vanityDomain, domainName, displayName, description, signupEnabled, status } = tenant;
 
   return (
     <section className="p-8">
       <div style={{ margin: '0 auto' }}>
-        <h1 className="text-3xl font-bold underline">Settings</h1>
+        <h1 className="text-3xl font-bold underline">Admins</h1>
       </div>
 
       <div style={{ margin: '2rem auto' }}>

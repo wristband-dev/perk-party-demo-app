@@ -11,6 +11,7 @@ type SessionData = {
   refreshToken?: string;
   tenantDomainName: string;
   user: User;
+  tenantMetadata: object;
 };
 
 const sessionOptions: SessionOptions = {
