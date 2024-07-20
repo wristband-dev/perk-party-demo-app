@@ -3,10 +3,34 @@ import React, { createContext, useEffect, useState } from 'react';
 import { clientRedirectToLogin, clientRedirectToLogout } from '@/utils/helpers';
 import { User } from '@/types';
 
+const DEFAULT_USER_STATE: User = {
+  id: '',
+  tenantId: '',
+  applicationId: '',
+  identityProviderName: '',
+  email: '',
+  emailVerified: false,
+  username: null,
+  fullName: null,
+  firstName: null,
+  middleName: null,
+  lastName: null,
+  nickname: null,
+  pictureURL: null,
+  gender: null,
+  birthdate: null,
+  timezone: null,
+  locale: null,
+  updatedAt: null,
+  publicMetadata: {},
+  restrictedMetadata: {},
+  roles: [],
+};
+
 const AuthContext = createContext({
   isAuthenticated: false,
   isLoading: true,
-  user: { id: '' },
+  user: DEFAULT_USER_STATE,
   tenantDomainName: '',
   tenantMetadata: {},
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

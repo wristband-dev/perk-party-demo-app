@@ -23,7 +23,7 @@ export default function SettingsPage({ tenant }: SettingsPageProps) {
 
       <div style={{ margin: '2rem auto' }}>
         <h3>Who is authenticated?</h3>
-        <h4>{user ? `${user.email}` : 'Noboby'}</h4>
+        <h4>{isAuthenticated ? `${user.email}` : 'Noboby'}</h4>
       </div>
 
       {isAuthenticated && (
@@ -71,7 +71,7 @@ export const getServerSideProps: GetServerSideProps = async function (context: G
   await session.save();
 
   try {
-    const tenant = await wristbandService.getTenant(session.accessToken, user.tenantId);
+    const tenant = await wristbandService.getTenant(session.accessToken, user.tenantId!);
     return { props: { tenant } };
   } catch (err: unknown) {
     console.log(err);
