@@ -1,5 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { useState } from 'react';
+import { use, useState } from 'react';
 import { Raleway } from 'next/font/google';
 
 import { useWristband } from '@/context/auth-context';
@@ -7,6 +7,7 @@ import { PerkCard } from '@/components/PerkCard';
 import { clientRedirectToLogin } from '@/utils/helpers';
 
 const raleway = Raleway({ subsets: ['latin'] });
+
 
 const perks = [
   {
@@ -150,7 +151,7 @@ const perks = [
     banner: '',
   },
   {
-    id: 16,
+    id: '16',
     image:
       'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Y2luZW1hfGVufDB8fDB8fHww',
     perkName: 'Private Cinema Screening',
@@ -189,8 +190,8 @@ const perks = [
   },
 ];
 
-export default function HomePage() {
 
+export default function HomePage() {
   return (
     <>
       <section className="m-0">
@@ -219,13 +220,15 @@ export default function HomePage() {
         </div>
         <div className="mt-4 mx-4 flex flex-wrap justify-center z-10">
           {perks.map((perk) => (
+            // if perk id is in claimed perks in user meta data then true else false
             <PerkCard
-              key={perk.perkName}
+              key={perk.id}
               image={perk.image}
               perkName={perk.perkName}
               perkDesc={perk.perkDesc}
-              banner={perk.banner}
-            />
+              banner={perk.banner} 
+              id={perk.id}            
+              />
           ))}
         </div>
       </section>

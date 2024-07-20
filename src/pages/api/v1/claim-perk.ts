@@ -15,6 +15,8 @@ export default async function handleClaimPerk(req: NextApiRequest, res: NextApiR
     return res.status(401).end();
   }
 
+  console.log(req.body.perkId)
+
   if (!req.body.perkId) {
     return res.status(400).end(); // bad request error (internal developer bug)
   }
@@ -25,12 +27,11 @@ export default async function handleClaimPerk(req: NextApiRequest, res: NextApiR
     claimedPerks.push(req.body.perkId) 
   }
 
-
   const userResponse = await fetch(`https://${process.env.APPLICATION_DOMAIN}/api/v1/users/${user.id}`, {
     method: 'PATCH',
     headers: bearerAuthFetchHeaders(accessToken),
     keepalive: true,
-    body: JSON.stringify({ claimedPerks })
+    body: JSON.stringify({ publicMetadata: { claimedPerks } })
   });
 
   // not authenticated -> send to login
@@ -43,7 +44,7 @@ export default async function handleClaimPerk(req: NextApiRequest, res: NextApiR
   }
 
   const data = await userResponse.json();
-  session.user = data;
+  session.user = data; // set the user (server side)
   await session.save();
   return res.status(200).json(data);
 }

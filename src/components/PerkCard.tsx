@@ -1,23 +1,32 @@
 import { useWristband } from '@/context/auth-context';
+import { JSON_MEDIA_TYPE } from '@/utils/constants';
 import { clientRedirectToLogin } from '@/utils/helpers';
 import { useState } from 'react';
+import { FaCheck } from 'react-icons/fa';
 
 interface PerkCardProps {
+  id:string;
   image: string;
   perkName: string;
   perkDesc: string;
   banner: string;
 }
 
-export function PerkCard({ image, perkName, perkDesc, banner }: PerkCardProps) {
+export function PerkCard({ id, image, perkName, perkDesc, banner }: PerkCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const claimPerk = async () => {
+  const { user, setUser } = useWristband();
+  const publicMetadata  = user.publicMetadata || {};
+  const claimedPerks = publicMetadata.claimedPerks || [];
+  const isClaimed = claimedPerks.indexOf(id) !== -1;
+  const claimPerk = async (id: string) => {
+    
     try {
       const res = await fetch('/api/v1/claim-perk', {
         method: 'PATCH',
         keepalive: true,
-        body: JSON.stringify({ perkId: 1 }),
+        body: JSON.stringify({ perkId: id }),
+        headers: {'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE }
       });
 
       /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
@@ -27,7 +36,9 @@ export function PerkCard({ image, perkName, perkDesc, banner }: PerkCardProps) {
       }
 
       const data = await res.json();
-      // setIsModalOpen(false)
+      setIsModalOpen(false); // closes pop up
+      setUser(data); // updates the user (react side)
+      alert(`Perk ${perkName} has been claimed`);
 
     } catch (error: unknown) {
       console.log(error);
@@ -40,10 +51,15 @@ export function PerkCard({ image, perkName, perkDesc, banner }: PerkCardProps) {
         className="w-[320px] h-[250px] mb-16 mx-8 bg-black shadow-2xl border-gray-200 rounded-lg overflow-hidden relative"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        onClick={() => setIsModalOpen(true)}
+        onClick={() => isClaimed ? undefined : setIsModalOpen(true)}
       >
+        {isClaimed && (
+          <div className="absolute flex top-0 left-0 m-2 ">
+            <FaCheck className="w-6 h-6 text-pink-600" />
+            <p className="text-white">Claimed</p>
+          </div>
+        )}
         <div className="h-3/5">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={image} alt="Logo" className="w-full h-full object-cover cursor-pointer" />
           {banner && (
             <div className="absolute top-0 right-0 p-2">
@@ -94,7 +110,9 @@ export function PerkCard({ image, perkName, perkDesc, banner }: PerkCardProps) {
               <button
                 type="button"
                 className="bg-black text-white hover:bg-pink-600 border border-black focus:ring-4 focus:outline-none focus:ring-pink-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
-                // onClick={() => }
+                onClick={() => {
+                  claimPerk(id);
+                }}
               >
                 Claim
               </button>
