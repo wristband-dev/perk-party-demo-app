@@ -1,11 +1,13 @@
+import { useState } from 'react';
+import { FaCheck, FaSpinner } from 'react-icons/fa';
+
 import { useWristband } from '@/context/auth-context';
 import { JSON_MEDIA_TYPE } from '@/utils/constants';
 import { clientRedirectToLogin } from '@/utils/helpers';
-import { useState } from 'react';
-import { FaCheck } from 'react-icons/fa';
+import { toastSuccess, toastError } from '@/utils/toast';
 
 interface PerkCardProps {
-  id:string;
+  id: string;
   image: string;
   perkName: string;
   perkDesc: string;
@@ -13,20 +15,25 @@ interface PerkCardProps {
 }
 
 export function PerkCard({ id, image, perkName, perkDesc, banner }: PerkCardProps) {
-  const [isHovered, setIsHovered] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isClaimInProgress, setIsClaimInProgress] = useState<boolean>(false);
+  const [isHovered, setIsHovered] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const { user, setUser } = useWristband();
-  const publicMetadata  = user.publicMetadata || {};
+
+  const publicMetadata = user.publicMetadata || {};
   const claimedPerks = publicMetadata.claimedPerks || [];
   const isClaimed = claimedPerks.indexOf(id) !== -1;
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const claimPerk = async (id: string) => {
-    
     try {
+      setIsClaimInProgress(true);
+
       const res = await fetch('/api/v1/claim-perk', {
         method: 'PATCH',
         keepalive: true,
         body: JSON.stringify({ perkId: id }),
-        headers: {'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE }
+        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
       });
 
       /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
@@ -38,10 +45,11 @@ export function PerkCard({ id, image, perkName, perkDesc, banner }: PerkCardProp
       const data = await res.json();
       setIsModalOpen(false); // closes pop up
       setUser(data); // updates the user (react side)
-      alert(`Perk ${perkName} has been claimed`);
-
+      toastSuccess(`Woohoo! Enjoy your "${perkName}".`);
     } catch (error: unknown) {
       console.log(error);
+      toastError('An unexpected error occurred.');
+      setIsClaimInProgress(false);
     }
   };
 
@@ -51,16 +59,25 @@ export function PerkCard({ id, image, perkName, perkDesc, banner }: PerkCardProp
         className="w-[320px] h-[250px] mb-16 mx-8 bg-black shadow-2xl border-gray-200 rounded-lg overflow-hidden relative"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        onClick={() => isClaimed ? undefined : setIsModalOpen(true)}
+        onClick={() => (isClaimed ? undefined : setIsModalOpen(true))}
       >
         {isClaimed && (
-          <div className="absolute flex top-0 left-0 m-2 ">
-            <FaCheck className="w-6 h-6 text-pink-600" />
-            <p className="text-white">Claimed</p>
+          <div className="absolute flex top-0 left-0 m-2 z-10">
+            <FaCheck className="w-5 h-5 text-pink-600" />
+            <p className="text-white pl-1 text-sm font-medium">Claimed</p>
           </div>
         )}
         <div className="h-3/5">
-          <img src={image} alt="Logo" className="w-full h-full object-cover cursor-pointer" />
+          <div className="relative w-full h-full">
+            {/* Black overlay */}
+            {isClaimed && <div className="absolute inset-0 bg-black opacity-50" />}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={image}
+              alt="Logo"
+              className={`w-full h-full object-cover ${isClaimed ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+            />
+          </div>
           {banner && (
             <div className="absolute top-0 right-0 p-2">
               <h1 className="text-xl pt-2 text-white bg-pink-600 rounded-lg font-bold p-2">{banner}</h1>
@@ -82,24 +99,26 @@ export function PerkCard({ id, image, perkName, perkDesc, banner }: PerkCardProp
           </p>
         </div>
         {isHovered && (
-          <div className="absolute inset-0 text-white bg-black bg-opacity-90 p-4 flex items-center justify-center">
+          <div
+            className={`absolute ${isClaimed ? 'cursor-not-allowed' : 'cursor-pointer'} inset-0 text-white bg-black bg-opacity-90 p-4 flex items-center justify-center`}
+          >
             <p className="text-lg font-bold italic">{perkDesc}</p>
           </div>
         )}
       </div>
 
       {isModalOpen && (
-        <div className="p-10 fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-75">
+        <div className="p-10 fixed inset-0 flex items-center justify-center z-[5000] bg-black bg-opacity-75">
           <div className="bg-white rounded-lg shadow-lg relative overflow-hidden">
             <section className="m-0 relative">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={image} alt="Logo" className="max-h-[400px] w-full object-cover" />
               <button
                 type="button"
-                className="absolute top-0 right-0 m-4 bg-black text-white hover:bg-pink-600 border border-black focus:ring-4 focus:outline-none focus:ring-pink-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
+                className="absolute top-0 right-0 m-4 mr-4 bg-black text-white hover:bg-pink-600 border border-black focus:ring-4 focus:outline-none focus:ring-pink-300 font-medium rounded-lg text-md px-3 py-1.5 text-center me-2 mb-2"
                 onClick={() => setIsModalOpen(false)}
               >
-                &times;
+                X
               </button>
             </section>
             <div className="flex flex-col m-4">
@@ -109,12 +128,10 @@ export function PerkCard({ id, image, perkName, perkDesc, banner }: PerkCardProp
             <div className="flex justify-center mb-4">
               <button
                 type="button"
-                className="bg-black text-white hover:bg-pink-600 border border-black focus:ring-4 focus:outline-none focus:ring-pink-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
-                onClick={() => {
-                  claimPerk(id);
-                }}
+                className="bg-black text-white hover:bg-pink-600 border border-black focus:ring-4 focus:outline-none focus:ring-pink-300 font-medium rounded-lg text-md px-8 py-2.5 text-center"
+                onClick={() => claimPerk(id)}
               >
-                Claim
+                {isClaimInProgress ? <FaSpinner className="animate-spin" /> : 'Claim'}
               </button>
             </div>
           </div>

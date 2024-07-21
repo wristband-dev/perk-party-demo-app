@@ -7,15 +7,13 @@ type Data = { message: string };
 export default async function handleClaimPerk(req: NextApiRequest, res: NextApiResponse<Data>) {
   const session = await getSession(req, res);
   const { isAuthenticated, user, accessToken } = session;
-  const publicMetadata  = user.publicMetadata || {}; // get meta data, if null then pass empty object
-  const claimedPerks = publicMetadata.claimedPerks || [] // get claimed perks array, if null then empty array
+  const publicMetadata = user.publicMetadata || {}; // get meta data, if null then pass empty object
+  const claimedPerks = publicMetadata.claimedPerks || []; // get claimed perks array, if null then empty array
 
   /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
   if (!isAuthenticated) {
     return res.status(401).end();
   }
-
-  console.log(req.body.perkId)
 
   if (!req.body.perkId) {
     return res.status(400).end(); // bad request error (internal developer bug)
@@ -24,14 +22,14 @@ export default async function handleClaimPerk(req: NextApiRequest, res: NextApiR
   // if perk is not already claimed
   if (claimedPerks.indexOf(req.body.perkId) === -1) {
     // append id from front end api body
-    claimedPerks.push(req.body.perkId) 
+    claimedPerks.push(req.body.perkId);
   }
 
   const userResponse = await fetch(`https://${process.env.APPLICATION_DOMAIN}/api/v1/users/${user.id}`, {
     method: 'PATCH',
     headers: bearerAuthFetchHeaders(accessToken),
     keepalive: true,
-    body: JSON.stringify({ publicMetadata: { claimedPerks } })
+    body: JSON.stringify({ publicMetadata: { claimedPerks } }),
   });
 
   // not authenticated -> send to login

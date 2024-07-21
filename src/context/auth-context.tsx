@@ -1,5 +1,6 @@
 import React, { createContext, useEffect, useState } from 'react';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { clientRedirectToLogin, clientRedirectToLogout } from '@/utils/helpers';
 import { User } from '@/types';
 

@@ -25,8 +25,8 @@ export type Role = {
 };
 
 export type UserMetadata = {
-  claimedPerks?: string[]
-}
+  claimedPerks?: string[];
+};
 
 export type User = {
   id: string;

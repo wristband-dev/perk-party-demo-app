@@ -1,13 +1,8 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { use, useState } from 'react';
 import { Raleway } from 'next/font/google';
 
-import { useWristband } from '@/context/auth-context';
 import { PerkCard } from '@/components/PerkCard';
-import { clientRedirectToLogin } from '@/utils/helpers';
 
 const raleway = Raleway({ subsets: ['latin'] });
-
 
 const perks = [
   {
@@ -190,11 +185,11 @@ const perks = [
   },
 ];
 
-
 export default function HomePage() {
   return (
     <>
       <section className="m-0">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="https://cdn.pixabay.com/photo/2022/11/29/08/54/race-car-7624025_1280.jpg"
           alt="Logo"
@@ -218,7 +213,7 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-        <div className="mt-4 mx-4 flex flex-wrap justify-center z-10">
+        <div className="mt-10 mx-4 flex flex-wrap justify-center z-10">
           {perks.map((perk) => (
             // if perk id is in claimed perks in user meta data then true else false
             <PerkCard
@@ -226,9 +221,9 @@ export default function HomePage() {
               image={perk.image}
               perkName={perk.perkName}
               perkDesc={perk.perkDesc}
-              banner={perk.banner} 
-              id={perk.id}            
-              />
+              banner={perk.banner}
+              id={perk.id}
+            />
           ))}
         </div>
       </section>
