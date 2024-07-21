@@ -10,7 +10,7 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Path matching here is crude -- replace with whatever matching algorithm your app needs.
-  const isProtectedPage: boolean = pathname === '/settings';
+  const isProtectedPage: boolean = ['/settings', '/admin'].includes(pathname);
   const isProtectedApiRoute: boolean = pathname.startsWith('/api/v1');
 
   // Simply return if the path is not meant to be protected

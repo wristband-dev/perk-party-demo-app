@@ -30,9 +30,9 @@ const Navbar = () => {
                 <FaHome />
               </li>
             </Link>
-            <Link href="/admins">
+            <Link href="/admin">
               <li className="ml-8 capitalize border-b-2 border-transparent hover:border-b-2 hover:border-pink-600 hover:text-pink-600 text-l font-bold cursor-pointer transition duration-300">
-                ADMINS
+                ADMIN
               </li>
             </Link>
             <Link href="/settings">
@@ -73,12 +73,12 @@ const Navbar = () => {
                 Home
               </li>
             </Link>
-            <Link href="/admins">
+            <Link href="/admin">
               <li
                 onClick={() => setMenuOpen(false)}
                 className="py-4 cursor-pointer hover:text-pink-600 transition duration-300 list-none"
               >
-                Admins
+                Admin
               </li>
             </Link>
             <Link href="/settings">

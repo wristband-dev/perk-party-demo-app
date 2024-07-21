@@ -1,80 +1,158 @@
-import { GetServerSideProps, GetServerSidePropsContext } from 'next';
-
-import * as wristbandService from '@/services/wristband-service';
+import { SyntheticEvent, useEffect, useState } from 'react';
+import { Raleway } from 'next/font/google';
 import { useWristband } from '@/context/auth-context';
-import { getSession } from '@/session/iron-session';
-import { Tenant } from '@/types';
-import { serverRedirectToLogin } from '@/utils/helpers';
-import wristbandAuth from '@/wristband-auth';
 
-type SettingsPageProps = {
-  tenant: Tenant;
-};
+const raleway = Raleway({ subsets: ['latin'] });
 
-export default function SettingsPage({ tenant }: SettingsPageProps) {
-  const { isAuthenticated, user } = useWristband();
-  const { id, applicationId, vanityDomain, domainName, displayName, description, signupEnabled, status } = tenant;
+export default function ProfileSettings() {
+  const { user } = useWristband();
+
+  const [fullName, setFullName] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [changeEmailRequestId, setChangeEmailRequestId] = useState('');
+
+  useEffect(() => {
+    if (user) {
+      setFullName(user.fullName || '');
+      // We'll have to implement a fetchChangeEmailRequestId function that fetches the request ID
+      setChangeEmailRequestId('');
+    }
+  }, [user]);
+
+  const handleNameSubmit = (e: SyntheticEvent) => {
+    e.preventDefault();
+    // Handle name update logic here
+  };
+
+  const handlePasswordSubmit = (e: SyntheticEvent) => {
+    e.preventDefault();
+    // Handle password update logic here
+  };
+
+  const handleEmailSubmit = (e: SyntheticEvent) => {
+    e.preventDefault();
+    // Handle email update logic here
+  };
+
+  const handleCancelEmailChange = () => {
+    // Handle cancel email change logic here
+    setChangeEmailRequestId('');
+  };
+
+  const handleResendEmailChange = () => {
+    // Handle resend email change logic here
+  };
 
   return (
-    <section className="p-8">
-      <div style={{ margin: '0 auto' }}>
-        <h1 className="text-3xl font-bold underline">Settings</h1>
-      </div>
+    <div className={`min-h-screen bg-gray-100 p-8 ${raleway.className}`}>
+      <div className="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md">
+        <h1 className="text-3xl font-bold mb-6">Profile Settings</h1>
 
-      <div style={{ margin: '2rem auto' }}>
-        <h3>Who is authenticated?</h3>
-        <h4>{isAuthenticated ? `${user.email}` : 'Noboby'}</h4>
-      </div>
+        {/* Update Name Form */}
+        <form onSubmit={handleNameSubmit} className="mb-8">
+          <h2 className="text-2xl font-semibold mb-4">Update Name</h2>
+          <div className="mb-4">
+            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+              Full Name
+            </label>
+            <input
+              type="text"
+              id="firstName"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="mt-1 p-2 border border-gray-300 rounded-md w-full"
+              required
+            />
+          </div>
+          <button type="submit" className="bg-pink-600 text-white py-2 px-4 rounded-lg hover:bg-pink-700">
+            Save
+          </button>
+        </form>
 
-      {isAuthenticated && (
-        <div style={{ margin: '2rem auto' }}>
-          <h3>Tenant Info</h3>
-          <p>ID: {id}</p>
-          <p>Application ID: {applicationId}</p>
-          <p>Vanity Domain: {vanityDomain}</p>
-          <p>Domain Name: {domainName}</p>
-          <p>Display Name: {displayName}</p>
-          <p>Description: {description}</p>
-          <p>Tenant Signup Enabled: {signupEnabled ? 'Yes' : 'No'}</p>
-          <p>Status: {status}</p>
-        </div>
-      )}
-    </section>
+        {/* Update Password Form */}
+        <form onSubmit={handlePasswordSubmit} className="mb-8">
+          <h2 className="text-2xl font-semibold mb-4">Update Password</h2>
+          <div className="mb-4">
+            <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700">
+              Current Password
+            </label>
+            <input
+              type="password"
+              id="currentPassword"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              className="mt-1 p-2 border border-gray-300 rounded-md w-full"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
+              New Password
+            </label>
+            <input
+              type="password"
+              id="newPassword"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="mt-1 p-2 border border-gray-300 rounded-md w-full"
+              required
+            />
+          </div>
+          <button type="submit" className="bg-pink-600 text-white py-2 px-4 rounded-lg hover:bg-pink-700">
+            Save
+          </button>
+        </form>
+
+        {/* Update Email Form */}
+        <form onSubmit={handleEmailSubmit} className="mb-8">
+          <h2 className="text-2xl font-semibold mb-4">Update Email</h2>
+          <div className="text-lg text-pink-600 mb-4">Current Email: {user.email}</div>
+          {!changeEmailRequestId ? (
+            <>
+              <div className="mb-4 text-sm text-blue-600">
+                A confirmation email was sent to: {newEmail || 'test@email.com'}
+              </div>
+              <div className="flex space-x-4">
+                <button
+                  type="button"
+                  onClick={handleCancelEmailChange}
+                  className="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleResendEmailChange}
+                  className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+                >
+                  Resend
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="mb-4">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  New Email
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  className="mt-1 p-2 border border-gray-300 rounded-md w-full"
+                  required
+                />
+              </div>
+              <button type="submit" className="bg-pink-600 text-white py-2 px-4 rounded-lg hover:bg-pink-700">
+                Save
+              </button>
+            </>
+          )}
+        </form>
+      </div>
+    </div>
   );
 }
-
-export const getServerSideProps: GetServerSideProps = async function (context: GetServerSidePropsContext) {
-  const { req, res } = context;
-  const session = await getSession(req, res);
-  const { expiresAt, isAuthenticated, refreshToken, user } = session;
-
-  /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
-  if (!isAuthenticated) {
-    return serverRedirectToLogin(req);
-  }
-
-  /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
-  try {
-    const tokenData = await wristbandAuth.refreshTokenIfExpired(refreshToken!, expiresAt);
-    if (tokenData) {
-      session.accessToken = tokenData.accessToken;
-      // Convert the "expiresIn" seconds into an expiration date with the format of milliseconds from the epoch.
-      session.expiresAt = Date.now() + tokenData.expiresIn * 1000;
-      session.refreshToken = tokenData.refreshToken;
-    }
-  } catch (error) {
-    console.log(`Token refresh failed: `, error);
-    return serverRedirectToLogin(req);
-  }
-
-  // Save the session in order to "touch" it (even if there is no new token data).
-  await session.save();
-
-  try {
-    const tenant = await wristbandService.getTenant(session.accessToken, user.tenantId!);
-    return { props: { tenant } };
-  } catch (err: unknown) {
-    console.log(err);
-    throw err;
-  }
-};

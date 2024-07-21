@@ -37,9 +37,9 @@ export type User = {
   emailVerified?: boolean;
   username?: string | null;
   fullName?: string | null;
-  firstName?: string | null;
+  givenName?: string | null;
   middleName?: string | null;
-  lastName?: string | null;
+  familyName?: string | null;
   nickname?: string | null;
   pictureURL?: string | null;
   gender?: string | null;

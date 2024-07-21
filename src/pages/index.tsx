@@ -1,6 +1,7 @@
 import { Raleway } from 'next/font/google';
 
 import { PerkCard } from '@/components/PerkCard';
+import { useWristband } from '@/context/auth-context';
 
 const raleway = Raleway({ subsets: ['latin'] });
 
@@ -186,6 +187,8 @@ const perks = [
 ];
 
 export default function HomePage() {
+  const { isAuthenticated } = useWristband();
+
   return (
     <>
       <section className="m-0">
@@ -197,13 +200,13 @@ export default function HomePage() {
         />
       </section>
 
-      <section>
+      <section className="relative">
         <div className="top-0 bg-white z-10 mt-8 mx-16">
           <h1 className={`font-bold tracking-widest ${raleway.className} text-3xl`}>BENEFITS</h1>
           <div className="flex items-center pt-4">
             <h1 className="text-xl">FILTER BY</h1>
             <div className="ml-4 cursor-pointer">
-              <select className="border border-gray-300 rounded-md p-2 cursor-pointer">
+              <select disabled={!isAuthenticated} className="border border-gray-300 rounded-md p-2 cursor-pointer">
                 <option value="none">None</option>
                 <option value="thrill">Thrill</option>
                 <option value="relax">Relax</option>
@@ -213,19 +216,31 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-        <div className="mt-10 mx-4 flex flex-wrap justify-center z-10">
-          {perks.map((perk) => (
-            // if perk id is in claimed perks in user meta data then true else false
-            <PerkCard
-              key={perk.id}
-              image={perk.image}
-              perkName={perk.perkName}
-              perkDesc={perk.perkDesc}
-              banner={perk.banner}
-              id={perk.id}
-            />
-          ))}
-        </div>
+
+        {/* Show a spinner instead of cards until the user session is loaded. */}
+        {!isAuthenticated && (
+          // <div className="absolute inset-0 flex justify-center items-center">
+          <div className="mt-10 flex justify-center">
+            <div className="flex justify-center items-center h-20">
+              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-pink-600" />
+            </div>
+          </div>
+        )}
+        {isAuthenticated && (
+          <div className="mt-10 mx-4 flex flex-wrap justify-center z-10">
+            {perks.map((perk) => (
+              // if perk id is in claimed perks in user meta data then true else false
+              <PerkCard
+                key={perk.id}
+                image={perk.image}
+                perkName={perk.perkName}
+                perkDesc={perk.perkDesc}
+                banner={perk.banner}
+                id={perk.id}
+              />
+            ))}
+          </div>
+        )}
       </section>
     </>
   );

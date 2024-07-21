@@ -17,7 +17,12 @@ module.exports = {
       'purple': '#4156a3',
       "pink-600": "#f61681",
     },
-    extend: {},
+    extend: {
+      colors: {
+        'red-600': '#e3342f',  // Customize this value
+        'blue-600': '#3490dc', // Customize this value
+      }
+    },
   },
   plugins: [],
 }
