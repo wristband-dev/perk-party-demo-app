@@ -7,8 +7,8 @@ import { HTTP_401_STATUS, PERK_PARTY_PROTOCOL, UNAUTHORIZED } from '@/utils/cons
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
   const host = req.headers.get('host');
-  const { pathname } = req.nextUrl;
-  console.log(`\nHOST: [${host}], PATHNAME: [${pathname}]\n`);
+  const { pathname, host: nextUrlHost } = req.nextUrl;
+  console.log(`\nHOST: [${host}], NEXTURL_HOST: [${nextUrlHost}], PATHNAME: [${pathname}]\n`);
 
   // Path matching here is crude -- replace with whatever matching algorithm your app needs.
   const isProtectedPage: boolean = ['/settings', '/admin'].includes(pathname);
@@ -29,7 +29,7 @@ export async function middleware(req: NextRequest) {
 
   // Send users to the login page if they attempt to access protected paths when unauthenticated.
   if (!isAuthenticated) {
-    console.log(`\nHOST: [${host}], PATHNAME: [${pathname}]\n`);
+    console.log(`\nMIDDLEWARE NOT AUTHENTICATED!!!\n`);
     return isProtectedApiRoute ? NextResponse.json(UNAUTHORIZED, HTTP_401_STATUS) : NextResponse.redirect(loginUrl);
   }
 
