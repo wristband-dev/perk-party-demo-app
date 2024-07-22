@@ -128,10 +128,11 @@ export function PerkCard({ id, image, perkName, perkDesc, banner }: PerkCardProp
             <div className="flex justify-center mb-4">
               <button
                 type="button"
-                className="bg-black text-white hover:bg-pink-600 border border-black focus:ring-4 focus:outline-none focus:ring-pink-300 font-medium rounded-lg text-md px-8 py-2.5 text-center"
+                disabled={isClaimInProgress}
+                className="min-h-12 min-w-28 bg-black text-white hover:bg-pink-600 border border-black focus:ring-4 focus:outline-none focus:ring-pink-300 font-medium rounded-lg text-md px-8 py-2.5 text-center"
                 onClick={() => claimPerk(id)}
               >
-                {isClaimInProgress ? <FaSpinner className="animate-spin" /> : 'Claim'}
+                {isClaimInProgress ? <FaSpinner className="animate-spin mx-auto" /> : 'Claim'}
               </button>
             </div>
           </div>

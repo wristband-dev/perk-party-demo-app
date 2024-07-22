@@ -2,6 +2,7 @@ const VANITY_DOMAIN_TO_USE = process.env.PUBLIC_DEMO === 'ENABLED' ? 'app.perkpa
 
 export const IS_LOCALHOST = process.env.DOMAIN_FORMAT === 'LOCALHOST';
 export const PERKPARTY_HOST = IS_LOCALHOST ? 'localhost:6001' : VANITY_DOMAIN_TO_USE;
+export const PERK_PARTY_PROTOCOL = process.env.PUBLIC_DEMO === 'ENABLED' ? 'https' : 'http';
 
 export const APPLICATION_LOGIN_URL = `https://${process.env.APPLICATION_DOMAIN}/login`;
 export const JSON_MEDIA_TYPE = 'application/json;charset=UTF-8';

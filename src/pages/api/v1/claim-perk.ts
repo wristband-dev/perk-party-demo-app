@@ -2,9 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSession } from '@/session/iron-session';
 import { bearerAuthFetchHeaders } from '@/utils/helpers';
 
-type Data = { message: string };
-
-export default async function handleClaimPerk(req: NextApiRequest, res: NextApiResponse<Data>) {
+export default async function handleClaimPerk(req: NextApiRequest, res: NextApiResponse) {
   const session = await getSession(req, res);
   const { isAuthenticated, user, accessToken } = session;
   const publicMetadata = user.publicMetadata || {}; // get meta data, if null then pass empty object

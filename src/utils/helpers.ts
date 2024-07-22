@@ -1,10 +1,29 @@
 import { IncomingMessage } from 'http';
 
 import { Userinfo } from '@/types';
-import { JSON_MEDIA_TYPE } from '@/utils/constants';
+import { JSON_MEDIA_TYPE, PERK_PARTY_PROTOCOL } from '@/utils/constants';
+import { FetchError } from '@/error';
 
 export function bearerAuthFetchHeaders(accessToken: string) {
   return { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE, Authorization: `Bearer ${accessToken}` };
+}
+
+export function validateFetchResponseStatus(response: Response) {
+  switch (response.status) {
+    case 200:
+    case 201:
+    case 204:
+      break;
+    case 400:
+      throw new FetchError<Response>(400, 'Bad Request', response);
+    case 401:
+      throw new FetchError(401, 'Unauthorized');
+    default:
+      throw new FetchError(
+        500,
+        `URL: [${response.url}], Status: [${response.status}], Message: [${response.statusText}]`
+      );
+  }
 }
 
 export function clientRedirectToLogin(returnUrl?: string) {
@@ -26,10 +45,10 @@ export function clientRedirectToLogout() {
 
 export function serverRedirectToLogin(req: IncomingMessage) {
   const { headers, url } = req;
-  const returnUrl = `http://${headers.host}${url}`;
+  const returnUrl = `${PERK_PARTY_PROTOCOL}://${headers.host}${url}`;
   return {
     redirect: {
-      destination: `http://${headers.host}/api/auth/login?return_url=${returnUrl}`,
+      destination: `${PERK_PARTY_PROTOCOL}://${headers.host}/api/auth/login?return_url=${returnUrl}`,
       permanent: false,
     },
   };

@@ -3,7 +3,7 @@ import { CallbackResultType } from '@wristband/nextjs-auth';
 import wristbandAuth from '@/wristband-auth';
 import { getSession } from '@/session/iron-session';
 import { parseUserinfo } from '@/utils/helpers';
-import { PERKPARTY_HOST, IS_LOCALHOST } from '@/utils/constants';
+import { PERKPARTY_HOST, IS_LOCALHOST, PERK_PARTY_PROTOCOL } from '@/utils/constants';
 
 import { Userinfo } from '@/types';
 
@@ -34,7 +34,7 @@ export default async function handleCallback(req: NextApiRequest, res: NextApiRe
 
     // Send the user back to the Invotastic application.
     const tenantDomain = IS_LOCALHOST ? '' : `${callbackData!.tenantDomainName}.`;
-    res.redirect(callbackData!.returnUrl || `http://${tenantDomain}${PERKPARTY_HOST}`);
+    res.redirect(callbackData!.returnUrl || `${PERK_PARTY_PROTOCOL}://${tenantDomain}${PERKPARTY_HOST}`);
   } catch (error: unknown) {
     console.error(error);
   }

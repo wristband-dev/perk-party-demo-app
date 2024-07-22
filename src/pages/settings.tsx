@@ -1,48 +1,242 @@
 import { SyntheticEvent, useEffect, useState } from 'react';
+import { GetServerSideProps, GetServerSidePropsContext } from 'next/types';
 import { Raleway } from 'next/font/google';
+import { FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
+
 import { useWristband } from '@/context/auth-context';
+import { toastError, toastSuccess } from '@/utils/toast';
+import { clientRedirectToLogin, serverRedirectToLogin } from '@/utils/helpers';
+import { getSession } from '@/session/iron-session';
+import wristbandService from '@/services/wristband-service';
+import { ChangeEmailRequestResults } from '@/types';
+import { FetchError } from '@/error';
+import { JSON_MEDIA_TYPE } from '@/utils/constants';
 
 const raleway = Raleway({ subsets: ['latin'] });
 
-export default function ProfileSettings() {
-  const { user } = useWristband();
+type ProfileSettingsPageProps = {
+  changeEmailRequestResults: ChangeEmailRequestResults;
+};
 
-  const [fullName, setFullName] = useState('');
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [newEmail, setNewEmail] = useState('');
-  const [changeEmailRequestId, setChangeEmailRequestId] = useState('');
+export default function ProfileSettingsPage({ changeEmailRequestResults }: ProfileSettingsPageProps) {
+  const { items: changeEmailRequests, totalResults } = changeEmailRequestResults;
 
+  const { user, setUser } = useWristband();
+
+  // Full Name Form State
+  const [fullName, setFullName] = useState<string>('');
+  const [isUpdateNameInProgress, setIsUpdateNameInProgress] = useState<boolean>(false);
+
+  // Change Password Form State
+  const [currentPassword, setCurrentPassword] = useState<string>('');
+  const [newPassword, setNewPassword] = useState<string>('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState<boolean>(false);
+  const [showNewPassword, setShowNewPassword] = useState<boolean>(false);
+  const [isChangePasswordInProgress, setIsChangePasswordInProgress] = useState<boolean>(false);
+
+  // Change Email Form State
+  const [newEmail, setNewEmail] = useState<string>('');
+  const [changeEmailRequestId, setChangeEmailRequestId] = useState<string>(
+    totalResults > 0 && !!changeEmailRequests.length ? changeEmailRequests[0].id : ''
+  );
+  const [requestedNewEmail, setRequestedNewEmail] = useState<string>(
+    totalResults > 0 && !!changeEmailRequests.length ? changeEmailRequests[0].newEmail : ''
+  );
+  const [isChangeEmailInProgress, setIsChangeEmailInProgress] = useState<boolean>(false);
+  const [isCancelChangeEmailInProgress, setIsCancelChangeEmailInProgress] = useState<boolean>(false);
+  const [isResendChangeEmailInProgress, setIsResendChangeEmailInProgress] = useState<boolean>(false);
+
+  // We need this here to ensure the existing fullName value is in the form input when the page loads.
   useEffect(() => {
-    if (user) {
-      setFullName(user.fullName || '');
-      // We'll have to implement a fetchChangeEmailRequestId function that fetches the request ID
-      setChangeEmailRequestId('');
-    }
+    setFullName(user.fullName || '');
   }, [user]);
 
-  const handleNameSubmit = (e: SyntheticEvent) => {
+  const handleFullNameSubmit = async (e: SyntheticEvent) => {
     e.preventDefault();
-    // Handle name update logic here
+    setIsUpdateNameInProgress(true);
+
+    try {
+      const res = await fetch('/api/v1/update-name', {
+        method: 'POST',
+        keepalive: true,
+        body: JSON.stringify({ fullName }),
+        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
+      });
+
+      /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
+      if (res.status === 401) {
+        clientRedirectToLogin(window.location.href);
+        return;
+      }
+
+      const data = await res.json();
+      setUser(data); // updates the user (react side)
+      toastSuccess('With a name like that, you must be a VIP everywhere you go!', '👑');
+    } catch (error: unknown) {
+      console.log(error);
+      toastError('An unexpected error occurred.');
+    } finally {
+      setIsUpdateNameInProgress(false);
+    }
   };
 
-  const handlePasswordSubmit = (e: SyntheticEvent) => {
+  const handleChangePasswordSubmit = async (e: SyntheticEvent) => {
     e.preventDefault();
-    // Handle password update logic here
+
+    if (currentPassword === newPassword) {
+      toastError('Only parrots should repeat phrases. Try something truly new.', '🦜');
+      return;
+    }
+
+    setIsChangePasswordInProgress(true);
+
+    try {
+      const res = await fetch('/api/v1/update-password', {
+        method: 'POST',
+        keepalive: true,
+        body: JSON.stringify({ currentPassword, newPassword }),
+        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
+      });
+
+      if (res.status === 400) {
+        const errorData = await res.json();
+
+        if (errorData.error === 'password_breached') {
+          toastError('Detected in a breach! Not even the power of Flex Seal can fix that password.', '🚧');
+          return;
+        }
+        throw new Error(`The following error occurred when changing passwords: ${errorData}`);
+      }
+
+      /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
+      if (res.status === 401) {
+        clientRedirectToLogin(window.location.href);
+        return;
+      }
+
+      // Reset the password form inputs
+      setCurrentPassword('');
+      setNewPassword('');
+      toastSuccess('Your new password is so strong, it could bench press a bear!', '💪');
+    } catch (error: unknown) {
+      console.log(error);
+      toastError('An unexpected error occurred.');
+    } finally {
+      setIsChangePasswordInProgress(false);
+    }
   };
 
-  const handleEmailSubmit = (e: SyntheticEvent) => {
+  const handleChangeEmailSubmit = async (e: SyntheticEvent) => {
     e.preventDefault();
-    // Handle email update logic here
+
+    if (newEmail === user.email) {
+      toastError('Change can be scary, but picking an actual new email could be refreshing.', '💌');
+      return;
+    }
+
+    setIsChangeEmailInProgress(true);
+
+    try {
+      const res = await fetch('/api/v1/change-email', {
+        method: 'POST',
+        keepalive: true,
+        body: JSON.stringify({ newEmail }),
+        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
+      });
+
+      if (res.status === 400) {
+        const errorData = await res.json();
+
+        if (errorData.error === 'invalid_email') {
+          toastError('That email is more invalid than putting pineapple on pizza!', '🍕');
+          return;
+        }
+        if (errorData.error === 'not_unique') {
+          toastError('Sorry champ, somebody beat you to that email. Maybe get a time machine?', '🕒');
+          return;
+        }
+
+        throw new Error(`The following error occurred when changing passwords: ${errorData}`);
+      }
+
+      /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
+      if (res.status === 401) {
+        clientRedirectToLogin(window.location.href);
+        return;
+      }
+
+      const updateChangeEmailRequestResults = await res.json();
+      const { items } = updateChangeEmailRequestResults;
+      setRequestedNewEmail(items.length ? items[0].newEmail : '');
+      setChangeEmailRequestId(items.length ? items[0].id : '');
+      setNewEmail('');
+      toastSuccess('New email? We can pull a few strings for you... just check your inbox first.', '📬');
+    } catch (error: unknown) {
+      console.log(error);
+      toastError('An unexpected error occurred.');
+    } finally {
+      setIsChangeEmailInProgress(false);
+    }
   };
 
-  const handleCancelEmailChange = () => {
-    // Handle cancel email change logic here
-    setChangeEmailRequestId('');
+  const handleCancelEmailChange = async () => {
+    setIsCancelChangeEmailInProgress(true);
+
+    try {
+      const res = await fetch('/api/v1/cancel-change-email', {
+        method: 'POST',
+        keepalive: true,
+        body: JSON.stringify({ changeEmailRequestId }),
+        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
+      });
+
+      /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
+      if (res.status === 401) {
+        clientRedirectToLogin(window.location.href);
+        return;
+      }
+
+      setRequestedNewEmail('');
+      setChangeEmailRequestId('');
+      setNewEmail('');
+      toastSuccess("Don't worry, your old inbox is happy to have you back.", '😊');
+    } catch (error: unknown) {
+      console.log(error);
+      toastError('An unexpected error occurred.');
+    } finally {
+      setIsCancelChangeEmailInProgress(false);
+    }
   };
 
-  const handleResendEmailChange = () => {
-    // Handle resend email change logic here
+  const handleResendEmailChange = async () => {
+    setIsResendChangeEmailInProgress(true);
+
+    try {
+      const res = await fetch('/api/v1/change-email', {
+        method: 'POST',
+        keepalive: true,
+        body: JSON.stringify({ newEmail: requestedNewEmail }),
+        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
+      });
+
+      /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
+      if (res.status === 401) {
+        clientRedirectToLogin(window.location.href);
+        return;
+      }
+
+      const updateChangeEmailRequestResults = await res.json();
+      const { items } = updateChangeEmailRequestResults;
+      setRequestedNewEmail(items.length ? items[0].newEmail : '');
+      setChangeEmailRequestId(items.length ? items[0].id : '');
+      setNewEmail('');
+      toastSuccess("Can't find the email we sent you? This new one is GPS-enabled and is coming in hot!", '📡');
+    } catch (error: unknown) {
+      console.log(error);
+      toastError('An unexpected error occurred.');
+    } finally {
+      setIsResendChangeEmailInProgress(false);
+    }
   };
 
   return (
@@ -51,8 +245,8 @@ export default function ProfileSettings() {
         <h1 className="text-3xl font-bold mb-6">Profile Settings</h1>
 
         {/* Update Name Form */}
-        <form onSubmit={handleNameSubmit} className="mb-8">
-          <h2 className="text-2xl font-semibold mb-4">Update Name</h2>
+        <form onSubmit={handleFullNameSubmit} className="mb-8">
+          <h2 className="text-2xl font-semibold mb-4">Your Profile</h2>
           <div className="mb-4">
             <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
               Full Name
@@ -64,70 +258,113 @@ export default function ProfileSettings() {
               onChange={(e) => setFullName(e.target.value)}
               className="mt-1 p-2 border border-gray-300 rounded-md w-full"
               required
+              maxLength={200}
             />
           </div>
-          <button type="submit" className="bg-pink-600 text-white py-2 px-4 rounded-lg hover:bg-pink-700">
-            Save
+          <button
+            type="submit"
+            disabled={isUpdateNameInProgress}
+            className="min-h-10 min-w-20 bg-pink-600 text-white py-2 px-4 rounded-lg hover:bg-pink-700"
+          >
+            {isUpdateNameInProgress ? <FaSpinner className="animate-spin mx-auto" /> : 'Save'}
           </button>
         </form>
 
         {/* Update Password Form */}
-        <form onSubmit={handlePasswordSubmit} className="mb-8">
-          <h2 className="text-2xl font-semibold mb-4">Update Password</h2>
-          <div className="mb-4">
+        <form onSubmit={handleChangePasswordSubmit} className="mb-8">
+          <h2 className="text-2xl font-semibold mb-4">Change Password</h2>
+          <div className="mb-4 relative">
             <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700">
               Current Password
             </label>
-            <input
-              type="password"
-              id="currentPassword"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              className="mt-1 p-2 border border-gray-300 rounded-md w-full"
-              required
-            />
+            <div className="relative mt-1">
+              <input
+                type={showCurrentPassword ? 'text' : 'password'}
+                id="currentPassword"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className="p-2 border border-gray-300 rounded-md w-full pr-10"
+                required
+                minLength={8}
+                maxLength={64}
+              />
+              <div className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5">
+                <button
+                  className="transition-colors duration-300 hover:text-pink-600 cursor-pointer"
+                  type="button"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                >
+                  {showCurrentPassword ? (
+                    <FaEyeSlash className="text-gray-500 text-xl" />
+                  ) : (
+                    <FaEye className="text-gray-500 text-xl" />
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
-          <div className="mb-4">
+          <div className="mb-4 relative">
             <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
               New Password
             </label>
-            <input
-              type="password"
-              id="newPassword"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="mt-1 p-2 border border-gray-300 rounded-md w-full"
-              required
-            />
+            <div className="relative mt-1">
+              <input
+                type={showNewPassword ? 'text' : 'password'}
+                id="newPassword"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="p-2 border border-gray-300 rounded-md w-full pr-10"
+                required
+                minLength={8}
+                maxLength={64}
+              />
+              <div className="absolute inset-y-0 max-h-full right-0 px-3 flex items-center text-sm leading-5">
+                <button
+                  className="transition-colors duration-300 hover:text-pink-600 cursor-pointer"
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                >
+                  {showNewPassword ? (
+                    <FaEyeSlash className="text-gray-500 text-xl" />
+                  ) : (
+                    <FaEye className="text-gray-500 text-xl" />
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
-          <button type="submit" className="bg-pink-600 text-white py-2 px-4 rounded-lg hover:bg-pink-700">
-            Save
+          <button
+            type="submit"
+            disabled={isChangePasswordInProgress}
+            className="min-h-10 min-w-20 bg-pink-600 text-white py-2 px-4 rounded-lg hover:bg-pink-700"
+          >
+            {isChangePasswordInProgress ? <FaSpinner className="animate-spin mx-auto" /> : 'Save'}
           </button>
         </form>
 
         {/* Update Email Form */}
-        <form onSubmit={handleEmailSubmit} className="mb-8">
-          <h2 className="text-2xl font-semibold mb-4">Update Email</h2>
+        <form onSubmit={handleChangeEmailSubmit} className="mb-8">
+          <h2 className="text-2xl font-semibold mb-4">Change Email</h2>
           <div className="text-lg text-pink-600 mb-4">Current Email: {user.email}</div>
-          {!changeEmailRequestId ? (
+          {requestedNewEmail ? (
             <>
-              <div className="mb-4 text-sm text-blue-600">
-                A confirmation email was sent to: {newEmail || 'test@email.com'}
-              </div>
+              <div className="mb-4 text-sm text-blue-600">A confirmation email was sent to: {requestedNewEmail}</div>
               <div className="flex space-x-4">
                 <button
                   type="button"
                   onClick={handleCancelEmailChange}
-                  className="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700"
+                  disabled={isCancelChangeEmailInProgress || isResendChangeEmailInProgress}
+                  className="min-h-10 min-w-20 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700"
                 >
-                  Cancel
+                  {isCancelChangeEmailInProgress ? <FaSpinner className="animate-spin mx-auto" /> : 'Cancel'}
                 </button>
                 <button
                   type="button"
                   onClick={handleResendEmailChange}
-                  className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+                  disabled={isCancelChangeEmailInProgress || isResendChangeEmailInProgress}
+                  className="min-h-10 min-w-20 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
                 >
-                  Resend
+                  {isResendChangeEmailInProgress ? <FaSpinner className="animate-spin mx-auto" /> : 'Resend'}
                 </button>
               </div>
             </>
@@ -144,10 +381,15 @@ export default function ProfileSettings() {
                   onChange={(e) => setNewEmail(e.target.value)}
                   className="mt-1 p-2 border border-gray-300 rounded-md w-full"
                   required
+                  maxLength={200}
                 />
               </div>
-              <button type="submit" className="bg-pink-600 text-white py-2 px-4 rounded-lg hover:bg-pink-700">
-                Save
+              <button
+                type="submit"
+                disabled={isChangeEmailInProgress}
+                className="min-h-10 min-w-20 bg-pink-600 text-white py-2 px-4 rounded-lg hover:bg-pink-700"
+              >
+                {isChangeEmailInProgress ? <FaSpinner className="animate-spin mx-auto" /> : 'Change'}
               </button>
             </>
           )}
@@ -156,3 +398,30 @@ export default function ProfileSettings() {
     </div>
   );
 }
+
+// NOTE: This gets called first every time BEFORE this page loads. The returned props are passed to the page
+// above. The server will evaluate/render everything once on the server before sending the browser its 1st HTML.
+export const getServerSideProps: GetServerSideProps = async function (context: GetServerSidePropsContext) {
+  const { req, res } = context;
+  const session = await getSession(req, res);
+  const { isAuthenticated, user } = session;
+
+  /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
+  if (!isAuthenticated) {
+    return serverRedirectToLogin(req);
+  }
+
+  try {
+    const changeEmailRequestResults = await wristbandService.getChangeEmailRequests(session.accessToken, user.id!);
+    return { props: { changeEmailRequestResults } };
+  } catch (err: unknown) {
+    console.log(err);
+
+    if (err instanceof FetchError && err.statusCode === 401) {
+      return serverRedirectToLogin(req);
+    }
+
+    // For all other error, return a 500 error.
+    return { props: { err }, status: 500 };
+  }
+};

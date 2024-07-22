@@ -4,29 +4,27 @@ import { getSession } from '@/session/iron-session';
 import wristbandService from '@/services/wristband-service';
 import { FetchError } from '@/error';
 
-export default async function handleUpdateName(req: NextApiRequest, res: NextApiResponse) {
+export default async function handleCancelChangeEmail(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).end();
   }
 
   const session = await getSession(req, res);
-  const { isAuthenticated, user, accessToken } = session;
+  const { isAuthenticated, accessToken } = session;
 
   /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
   if (!isAuthenticated) {
     return res.status(401).end();
   }
 
-  const { fullName } = req.body;
-  if (!fullName) {
+  const { changeEmailRequestId } = req.body;
+  if (!changeEmailRequestId) {
     return res.status(400).end(); // bad request error (internal developer bug)
   }
 
   try {
-    const updatedUser = await wristbandService.updateUser(accessToken, user.id!, { fullName });
-    session.user = updatedUser; // set the user (server side)
-    await session.save();
-    return res.status(200).json(updatedUser);
+    await wristbandService.cancelEmailChange(accessToken, changeEmailRequestId);
+    return res.status(204).end();
   } catch (err: unknown) {
     console.log(err);
 
