@@ -1,5 +1,6 @@
 import React, { createContext, useEffect, useState } from 'react';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { clientRedirectToLogin, clientRedirectToLogout } from '@/utils/helpers';
 import { User } from '@/types';
 
@@ -12,9 +13,9 @@ const DEFAULT_USER_STATE: User = {
   emailVerified: false,
   username: null,
   fullName: null,
-  firstName: null,
+  givenName: null,
   middleName: null,
-  lastName: null,
+  familyName: null,
   nickname: null,
   pictureURL: null,
   gender: null,

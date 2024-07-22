@@ -1,3 +1,12 @@
+export type EntityMetadata = {
+  version: number;
+  lastModifiedTime: string;
+  creationTime: string;
+  activationTime?: string;
+  deactivationTime?: string;
+  lastVerificationTime?: string;
+};
+
 export type Tenant = {
   id: string;
   applicationId: string;
@@ -9,13 +18,7 @@ export type Tenant = {
   status: string;
   publicMetadata: object;
   restrictedMetadata: object;
-  metadata: {
-    version: number;
-    lastModifiedTime: string;
-    creationTime: string;
-    activationTime: string;
-    deactivationTime: string;
-  };
+  metadata: EntityMetadata;
 };
 
 export type Role = {
@@ -24,8 +27,12 @@ export type Role = {
   displayName: string;
 };
 
+export type UserMetadata = {
+  claimedPerks?: string[];
+};
+
 export type User = {
-  id: string;
+  id?: string;
   tenantId?: string;
   applicationId?: string;
   identityProviderName?: string;
@@ -33,9 +40,9 @@ export type User = {
   emailVerified?: boolean;
   username?: string | null;
   fullName?: string | null;
-  firstName?: string | null;
+  givenName?: string | null;
   middleName?: string | null;
-  lastName?: string | null;
+  familyName?: string | null;
   nickname?: string | null;
   pictureURL?: string | null;
   gender?: string | null;
@@ -43,7 +50,7 @@ export type User = {
   timezone?: string | null;
   locale?: string | null;
   updatedAt?: string | null;
-  publicMetadata?: object;
+  publicMetadata?: UserMetadata;
   restrictedMetadata?: object;
   roles?: Role[];
 };
@@ -68,4 +75,44 @@ export type Userinfo = {
   locale: string | null;
   updated_at: string | null;
   roles: Role[];
+};
+
+export type ChangeEmailRequest = {
+  id: string;
+  expirationTime: string;
+  status: string;
+  userId: string;
+  tenantId: string;
+  applicationId: string;
+  newEmail: string;
+  currentEmail: string;
+  currentEmailVerified: boolean;
+  externalIdpName: string;
+  externalIdpDisplayName: string;
+  externalIdpType: string;
+  metadata: EntityMetadata;
+};
+
+export type ChangeEmailRequestResults = {
+  totalResults: number;
+  startIndex: number;
+  itemsPerPage: number;
+  items: ChangeEmailRequest[];
+};
+
+type ConstraintViolationDetails = {
+  code: string;
+  constraintAttributes?: {
+    [key: string]: string;
+  };
+};
+
+export type WristbandRestError = {
+  type: string;
+  code: string;
+  message: string;
+  ticket: string;
+  violations?: {
+    [key: string]: ConstraintViolationDetails[];
+  };
 };

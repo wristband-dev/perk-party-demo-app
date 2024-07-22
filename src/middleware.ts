@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { getSession } from '@/session/iron-session';
 import wristbandAuth from '@/wristband-auth';
-import { HTTP_401_STATUS, UNAUTHORIZED } from '@/utils/constants';
+import { HTTP_401_STATUS, PERK_PARTY_PROTOCOL, UNAUTHORIZED } from '@/utils/constants';
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
@@ -10,7 +10,7 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Path matching here is crude -- replace with whatever matching algorithm your app needs.
-  const isProtectedPage: boolean = pathname === '/settings';
+  const isProtectedPage: boolean = ['/settings', '/admin'].includes(pathname);
   const isProtectedApiRoute: boolean = pathname.startsWith('/api/v1');
 
   // Simply return if the path is not meant to be protected
@@ -21,8 +21,8 @@ export async function middleware(req: NextRequest) {
   const session = await getSession(req, res);
   const { expiresAt, isAuthenticated, refreshToken } = session;
 
-  const returnUrl = `http://${host}${pathname}`;
-  const loginUrl = `http://${host}/api/auth/login?return_url=${returnUrl}`;
+  const returnUrl = `${PERK_PARTY_PROTOCOL}://${host}${pathname}`;
+  const loginUrl = `${PERK_PARTY_PROTOCOL}://${host}/api/auth/login?return_url=${returnUrl}`;
 
   // Send users to the login page if they attempt to access protected paths when unauthenticated.
   if (!isAuthenticated) {
