@@ -3,8 +3,9 @@ import { FaCheck, FaSpinner } from 'react-icons/fa';
 
 import { useWristband } from '@/context/auth-context';
 import { JSON_MEDIA_TYPE } from '@/utils/constants';
-import { clientRedirectToLogin } from '@/utils/helpers';
+import { clientRedirectToLogin, validateFetchResponseStatus } from '@/utils/helpers';
 import { toastSuccess, toastError } from '@/utils/toast';
+import { FetchError } from '@/error';
 
 interface PerkCardProps {
   id: string;
@@ -24,7 +25,6 @@ export function PerkCard({ id, image, perkName, perkDesc, banner }: PerkCardProp
   const claimedPerks = publicMetadata.claimedPerks || [];
   const isClaimed = claimedPerks.indexOf(id) !== -1;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const claimPerk = async (id: string) => {
     try {
       setIsClaimInProgress(true);
@@ -36,11 +36,7 @@ export function PerkCard({ id, image, perkName, perkDesc, banner }: PerkCardProp
         headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
       });
 
-      /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
-      if (res.status === 401) {
-        clientRedirectToLogin(window.location.href);
-        return;
-      }
+      validateFetchResponseStatus(res);
 
       const data = await res.json();
       setIsModalOpen(false); // closes pop up
@@ -48,6 +44,12 @@ export function PerkCard({ id, image, perkName, perkDesc, banner }: PerkCardProp
       toastSuccess(`Woohoo! Enjoy your "${perkName}".`);
     } catch (error: unknown) {
       console.log(error);
+
+      if (error instanceof FetchError && error.statusCode === 401) {
+        clientRedirectToLogin(window.location.href);
+        return;
+      }
+
       toastError('An unexpected error occurred.');
       setIsClaimInProgress(false);
     }

@@ -5,7 +5,7 @@ import { FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 
 import { useWristband } from '@/context/auth-context';
 import { toastError, toastSuccess } from '@/utils/toast';
-import { clientRedirectToLogin, serverRedirectToLogin } from '@/utils/helpers';
+import { clientRedirectToLogin, serverRedirectToLogin, validateFetchResponseStatus } from '@/utils/helpers';
 import { getSession } from '@/session/iron-session';
 import wristbandService from '@/services/wristband-service';
 import { ChangeEmailRequestResults } from '@/types';
@@ -63,17 +63,19 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
         headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
       });
 
-      /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
-      if (res.status === 401) {
-        clientRedirectToLogin(window.location.href);
-        return;
-      }
+      validateFetchResponseStatus(res);
 
       const data = await res.json();
       setUser(data); // updates the user (react side)
       toastSuccess('With a name like that, you must be a VIP everywhere you go!', '👑');
     } catch (error: unknown) {
       console.log(error);
+
+      if (error instanceof FetchError && error.statusCode === 401) {
+        clientRedirectToLogin(window.location.href);
+        return;
+      }
+
       toastError('An unexpected error occurred.');
     } finally {
       setIsUpdateNameInProgress(false);
@@ -91,28 +93,14 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
     setIsChangePasswordInProgress(true);
 
     try {
-      const res = await fetch('/api/v1/update-password', {
+      const res = await fetch('/api/v1/change-password', {
         method: 'POST',
         keepalive: true,
         body: JSON.stringify({ currentPassword, newPassword }),
         headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
       });
 
-      if (res.status === 400) {
-        const errorData = await res.json();
-
-        if (errorData.error === 'password_breached') {
-          toastError('Detected in a breach! Not even the power of Flex Seal can fix that password.', '🚧');
-          return;
-        }
-        throw new Error(`The following error occurred when changing passwords: ${errorData}`);
-      }
-
-      /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
-      if (res.status === 401) {
-        clientRedirectToLogin(window.location.href);
-        return;
-      }
+      validateFetchResponseStatus(res);
 
       // Reset the password form inputs
       setCurrentPassword('');
@@ -120,6 +108,22 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
       toastSuccess('Your new password is so strong, it could bench press a bear!', '💪');
     } catch (error: unknown) {
       console.log(error);
+
+      if (error instanceof FetchError) {
+        if (error.statusCode === 400) {
+          const errorData = await error.res.json();
+
+          if (errorData.error === 'password_breached') {
+            toastError('Detected in a breach! Not even the power of Flex Seal can fix that password.', '🚧');
+            return;
+          }
+        }
+        if (error.statusCode === 401) {
+          clientRedirectToLogin(window.location.href);
+          return;
+        }
+      }
+
       toastError('An unexpected error occurred.');
     } finally {
       setIsChangePasswordInProgress(false);
@@ -144,26 +148,7 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
         headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
       });
 
-      if (res.status === 400) {
-        const errorData = await res.json();
-
-        if (errorData.error === 'invalid_email') {
-          toastError('That email is more invalid than putting pineapple on pizza!', '🍕');
-          return;
-        }
-        if (errorData.error === 'not_unique') {
-          toastError('Sorry champ, somebody beat you to that email. Maybe get a time machine?', '🕒');
-          return;
-        }
-
-        throw new Error(`The following error occurred when changing passwords: ${errorData}`);
-      }
-
-      /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
-      if (res.status === 401) {
-        clientRedirectToLogin(window.location.href);
-        return;
-      }
+      validateFetchResponseStatus(res);
 
       const updateChangeEmailRequestResults = await res.json();
       const { items } = updateChangeEmailRequestResults;
@@ -173,6 +158,26 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
       toastSuccess('New email? We can pull a few strings for you... just check your inbox first.', '📬');
     } catch (error: unknown) {
       console.log(error);
+
+      if (error instanceof FetchError) {
+        if (error.statusCode === 400 && error.res) {
+          const errorData = await error.res.json();
+
+          if (errorData.error === 'invalid_email') {
+            toastError('That email is more invalid than putting pineapple on pizza!', '🍕');
+            return;
+          }
+          if (errorData.error === 'not_unique') {
+            toastError('Sorry champ, somebody beat you to that email. Maybe get a time machine?', '🕒');
+            return;
+          }
+        }
+        if (error.statusCode === 401) {
+          clientRedirectToLogin(window.location.href);
+          return;
+        }
+      }
+
       toastError('An unexpected error occurred.');
     } finally {
       setIsChangeEmailInProgress(false);
@@ -190,11 +195,7 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
         headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
       });
 
-      /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
-      if (res.status === 401) {
-        clientRedirectToLogin(window.location.href);
-        return;
-      }
+      validateFetchResponseStatus(res);
 
       setRequestedNewEmail('');
       setChangeEmailRequestId('');
@@ -202,6 +203,12 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
       toastSuccess("Don't worry, your old inbox is happy to have you back.", '😊');
     } catch (error: unknown) {
       console.log(error);
+
+      if (error instanceof FetchError && error.statusCode === 401) {
+        clientRedirectToLogin(window.location.href);
+        return;
+      }
+
       toastError('An unexpected error occurred.');
     } finally {
       setIsCancelChangeEmailInProgress(false);
@@ -219,11 +226,7 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
         headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
       });
 
-      /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
-      if (res.status === 401) {
-        clientRedirectToLogin(window.location.href);
-        return;
-      }
+      validateFetchResponseStatus(res);
 
       const updateChangeEmailRequestResults = await res.json();
       const { items } = updateChangeEmailRequestResults;
@@ -233,6 +236,12 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
       toastSuccess("Can't find the email we sent you? This new one is GPS-enabled and is coming in hot!", '📡');
     } catch (error: unknown) {
       console.log(error);
+
+      if (error instanceof FetchError && error.statusCode === 401) {
+        clientRedirectToLogin(window.location.href);
+        return;
+      }
+
       toastError('An unexpected error occurred.');
     } finally {
       setIsResendChangeEmailInProgress(false);
