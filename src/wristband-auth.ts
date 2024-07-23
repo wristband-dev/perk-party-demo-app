@@ -14,7 +14,7 @@ const wristbandAuth = createWristbandAuth({
   redirectUri: `${PERK_PARTY_PROTOCOL}://${tenantDomain}${PERKPARTY_HOST}/api/auth/callback`,
   rootDomain: PERKPARTY_HOST,
   scopes: ['openid', 'offline_access', 'profile', 'email', 'roles'],
-  useCustomDomains: true,
+  useCustomDomains: false,
   useTenantSubdomains: process.env.DOMAIN_FORMAT === 'VANITY_DOMAIN',
   wristbandApplicationDomain: process.env.APPLICATION_DOMAIN!,
 });

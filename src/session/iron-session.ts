@@ -21,7 +21,7 @@ const sessionOptions: SessionOptions = {
     httpOnly: true,
     maxAge: 1800,
     path: '/',
-    sameSite: process.env.PUBLIC_DEMO === 'ENABLED' ? true : 'lax',
+    sameSite: 'lax',
     secure: process.env.PUBLIC_DEMO === 'ENABLED',
   },
 };

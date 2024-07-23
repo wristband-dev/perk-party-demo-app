@@ -417,7 +417,6 @@ export const getServerSideProps: GetServerSideProps = async function (context: G
 
   /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
   if (!isAuthenticated) {
-    console.log(`\nSETTINGS_PAGE: SERVER REDIRECT TO LOGIN!!!\n`);
     return serverRedirectToLogin(req);
   }
 
