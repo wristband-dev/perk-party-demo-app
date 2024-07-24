@@ -84,7 +84,7 @@ async function updateUser(accessToken: string, userId: string, userData: User): 
 }
 
 async function updateTenant(accessToken: string, tenantId: string, tenantData: Tenant): Promise<Tenant> {
-  const userResponse = await fetch(`https://${process.env.APPLICATION_DOMAIN}/api/v1/tenants/${tenantId}?fields=publicMetadata,domainName,id`, {
+  const userResponse = await fetch(`https://${process.env.APPLICATION_DOMAIN}/api/v1/tenants/${tenantId}`, {
     method: 'PATCH',
     headers: bearerAuthFetchHeaders(accessToken),
     keepalive: true,
@@ -104,6 +104,6 @@ const wristbandService = {
   getTenant,
   requestEmailChange,
   updateUser,
-  updateTenant
+  updateTenant,
 };
 export default wristbandService;

@@ -10,7 +10,7 @@ export default async function handleUpdatePerkCategories(req: NextApiRequest, re
   }
 
   const session = await getSession(req, res);
-  const { isAuthenticated, accessToken, tenant } = session;
+  const { isAuthenticated, accessToken, tenantId } = session;
 
   /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
   if (!isAuthenticated) {
@@ -23,8 +23,10 @@ export default async function handleUpdatePerkCategories(req: NextApiRequest, re
   }
 
   try {
-    const updatedTenant = await wristbandService.updateTenant(accessToken, tenant.id!, { publicMetadata: { perkCategories } });
-    session.tenant = updatedTenant; // set the user (server side)
+    const updatedTenant = await wristbandService.updateTenant(accessToken, tenantId, {
+      publicMetadata: { perkCategories },
+    });
+    // "Touch" the session timestamp
     await session.save();
     return res.status(200).json(updatedTenant);
   } catch (err: unknown) {

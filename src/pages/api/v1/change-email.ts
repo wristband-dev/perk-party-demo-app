@@ -11,7 +11,7 @@ export default async function handleChangeEmail(req: NextApiRequest, res: NextAp
   }
 
   const session = await getSession(req, res);
-  const { isAuthenticated, user, accessToken } = session;
+  const { isAuthenticated, userId, accessToken } = session;
 
   /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
   if (!isAuthenticated) {
@@ -24,8 +24,8 @@ export default async function handleChangeEmail(req: NextApiRequest, res: NextAp
   }
 
   try {
-    await wristbandService.requestEmailChange(accessToken, user.id!, newEmail);
-    const changeEmailRequestResults = await wristbandService.getChangeEmailRequests(accessToken, user.id!);
+    await wristbandService.requestEmailChange(accessToken, userId, newEmail);
+    const changeEmailRequestResults = await wristbandService.getChangeEmailRequests(accessToken, userId);
     return res.status(200).json(changeEmailRequestResults);
   } catch (err: unknown) {
     console.log(err);

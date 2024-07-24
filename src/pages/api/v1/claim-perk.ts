@@ -1,46 +1,33 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSession } from '@/session/iron-session';
-import { bearerAuthFetchHeaders } from '@/utils/helpers';
+import { FetchError } from '@/error';
+import wristbandService from '@/services/wristband-service';
 
 export default async function handleClaimPerk(req: NextApiRequest, res: NextApiResponse) {
   const session = await getSession(req, res);
-  const { isAuthenticated, user, accessToken } = session;
-  const publicMetadata = user.publicMetadata || {}; // get meta data, if null then pass empty object
-  const claimedPerks = publicMetadata.claimedPerks || []; // get claimed perks array, if null then empty array
+  const { isAuthenticated, userId, accessToken } = session;
 
   /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
   if (!isAuthenticated) {
     return res.status(401).end();
   }
 
-  if (!req.body.perkId) {
+  const { claimedPerks } = req.body;
+  if (!claimedPerks) {
     return res.status(400).end(); // bad request error (internal developer bug)
   }
 
-  // if perk is not already claimed
-  if (claimedPerks.indexOf(req.body.perkId) === -1) {
-    // append id from front end api body
-    claimedPerks.push(req.body.perkId);
-  }
+  try {
+    const user = await wristbandService.updateUser(accessToken, userId, { publicMetadata: { claimedPerks } });
+    return res.status(200).json(user);
+  } catch (err) {
+    console.log(err);
 
-  const userResponse = await fetch(`https://${process.env.APPLICATION_DOMAIN}/api/v1/users/${user.id}`, {
-    method: 'PATCH',
-    headers: bearerAuthFetchHeaders(accessToken),
-    keepalive: true,
-    body: JSON.stringify({ publicMetadata: { claimedPerks } }),
-  });
+    if (err instanceof FetchError && err.statusCode === 401) {
+      return res.status(401).end();
+    }
 
-  // not authenticated -> send to login
-  if (userResponse.status == 401) {
-    return res.status(401).end();
-  }
-  if (userResponse.status !== 200) {
-    console.log(`Update user failed. Status: [${userResponse.status}], Message: [${userResponse.statusText}]`);
+    // For all other error, return a 500 error.
     return res.status(500).end();
   }
-
-  const data = await userResponse.json();
-  session.user = data; // set the user (server side)
-  await session.save();
-  return res.status(200).json(data);
 }

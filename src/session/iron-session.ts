@@ -2,7 +2,6 @@ import { getIronSession, IronSession, SessionOptions } from 'iron-session';
 import * as http from 'http';
 
 import { SESSION_COOKIE_NAME, SESSION_COOKIE_SECRET } from '@/utils/constants';
-import { Tenant, User } from '@/types';
 
 type SessionData = {
   accessToken: string;
@@ -10,8 +9,8 @@ type SessionData = {
   isAuthenticated: boolean;
   refreshToken?: string;
   tenantDomainName: string;
-  user: User;
-  tenant: Tenant;
+  tenantId: string;
+  userId: string;
 };
 
 const sessionOptions: SessionOptions = {
@@ -21,7 +20,7 @@ const sessionOptions: SessionOptions = {
     httpOnly: true,
     maxAge: 1800,
     path: '/',
-    sameSite: process.env.PUBLIC_DEMO === 'ENABLED' ? true : 'lax',
+    sameSite: 'lax',
     secure: process.env.PUBLIC_DEMO === 'ENABLED',
   },
 };

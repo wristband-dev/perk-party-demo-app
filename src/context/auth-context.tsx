@@ -28,9 +28,7 @@ const DEFAULT_USER_STATE: User = {
   roles: [],
 };
 
-const DEFAULT_PERK_CATEGORIES: string[] = [
-  "thrill", "relax", "travel", "food"
-]
+const DEFAULT_PERK_CATEGORIES: string[] = ['thrill', 'relax', 'travel', 'food'];
 
 const DEFAULT_TENANT: Tenant = {
   id: '',
@@ -41,7 +39,7 @@ const DEFAULT_TENANT: Tenant = {
   description: '',
   signupEnabled: false,
   status: '',
-  publicMetadata: {perkCategories: DEFAULT_PERK_CATEGORIES},
+  publicMetadata: { perkCategories: DEFAULT_PERK_CATEGORIES },
   restrictedMetadata: {},
 };
 
@@ -49,9 +47,10 @@ const AuthContext = createContext({
   isAuthenticated: false,
   isLoading: true,
   user: DEFAULT_USER_STATE,
-  tenantDomainName: '',
   tenant: DEFAULT_TENANT,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setTenant: (tenant: Tenant) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setUser: (user: User) => {},
 });
 
@@ -59,7 +58,6 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [user, setUser] = useState<User>({ id: '' });
-  const [tenantDomainName, setTenantDomainName] = useState<string>('');
   const [tenant, setTenant] = useState<Tenant>(DEFAULT_TENANT);
 
   // Bootstrap the application with the authenticated user's session data.
@@ -75,7 +73,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         const data = await res.json();
-        const { isAuthenticated, user, tenantDomainName, tenant } = data;
+        const { isAuthenticated, user, tenant } = data;
 
         if (!isAuthenticated) {
           // We want to preserve the page route that the user lands on when they com back after re-authentication.
@@ -86,7 +84,6 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(false);
         setIsAuthenticated(true);
         setUser(user);
-        setTenantDomainName(tenantDomainName);
         setTenant(tenant);
       } catch (error) {
         console.log(error);
@@ -98,9 +95,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider
-      value={{ isAuthenticated, isLoading, user, setUser, tenantDomainName, tenant, setTenant}}
-    >
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, user, setUser, tenant, setTenant }}>
       {children}
     </AuthContext.Provider>
   );

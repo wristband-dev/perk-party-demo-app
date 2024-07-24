@@ -6,7 +6,7 @@ import { bearerAuthFetchHeaders } from '@/utils/helpers';
 
 export default async function sessionRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = await getSession(req, res);
-  const { accessToken, expiresAt, isAuthenticated, refreshToken, user } = session;
+  const { accessToken, expiresAt, isAuthenticated, refreshToken, tenantId, userId } = session;
 
   if (!isAuthenticated) {
     return res.status(200).json({
@@ -26,13 +26,15 @@ export default async function sessionRoute(req: NextApiRequest, res: NextApiResp
       session.accessToken = tokenData.accessToken;
       session.refreshToken = tokenData.refreshToken;
     }
+    // Save all fields into the session
+    await session.save();
   } catch (error) {
     console.log(`Token refresh failed: `, error);
     return res.status(401).end();
   }
 
   // Grab latest user and their metadata as that is where we store the perks they've redeemed
-  const userResponse = await fetch(`https://${process.env.APPLICATION_DOMAIN}/api/v1/users/${user.id}`, {
+  const userResponse = await fetch(`https://${process.env.APPLICATION_DOMAIN}/api/v1/users/${userId}`, {
     method: 'GET',
     headers: bearerAuthFetchHeaders(accessToken),
     keepalive: true,
@@ -40,29 +42,18 @@ export default async function sessionRoute(req: NextApiRequest, res: NextApiResp
   if (userResponse.status !== 200) {
     return res.status(500).end();
   }
-  const latestUser = await userResponse.json();
-  session.user = latestUser;
+  const user = await userResponse.json();
 
-  // Grab metadata for the tenant as that is where enabled perk categories are stored
-  const tenantResponse = await fetch(
-    `https://${process.env.APPLICATION_DOMAIN}/api/v1/tenants/${user.tenantId}?fields=publicMetadata,domainName,id`,
-    {
-      method: 'GET',
-      headers: bearerAuthFetchHeaders(accessToken),
-      keepalive: true,
-    }
-  );
+  // Grab latest tenant and their metadata as that is where enabled perk categories are stored
+  const tenantResponse = await fetch(`https://${process.env.APPLICATION_DOMAIN}/api/v1/tenants/${tenantId}`, {
+    method: 'GET',
+    headers: bearerAuthFetchHeaders(accessToken),
+    keepalive: true,
+  });
   if (userResponse.status !== 200) {
     return res.status(500).end();
   }
-  const latestTenant = await tenantResponse.json();
-  session.tenant = latestTenant;
+  const tenant = await tenantResponse.json();
 
-  // Save all fields into the session
-  console.log(session)
-  await session.save();
-
-  return res
-    .status(200)
-    .json({ isAuthenticated, user: latestUser, tenant: latestTenant });
+  return res.status(200).json({ isAuthenticated, user, tenant });
 }

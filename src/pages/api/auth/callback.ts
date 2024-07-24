@@ -26,7 +26,10 @@ export default async function handleCallback(req: NextApiRequest, res: NextApiRe
     // Convert the "expiresIn" seconds into an expiration date with the format of milliseconds from the epoch.
     session.expiresAt = Date.now() + callbackData!.expiresIn * 1000;
     session.refreshToken = callbackData!.refreshToken;
-    session.user = parseUserinfo(callbackData!.userinfo as Userinfo);
+    const user = parseUserinfo(callbackData!.userinfo as Userinfo);
+    session.userId = user.id!;
+    session.tenantId = user.tenantId!;
+    session.tenantDomainName = callbackData!.tenantDomainName;
 
     // Save all fields into the session
     await session.save();

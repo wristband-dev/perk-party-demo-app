@@ -10,7 +10,7 @@ export default async function handleUpdateName(req: NextApiRequest, res: NextApi
   }
 
   const session = await getSession(req, res);
-  const { isAuthenticated, user, accessToken } = session;
+  const { isAuthenticated, userId, accessToken } = session;
 
   /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
   if (!isAuthenticated) {
@@ -23,10 +23,8 @@ export default async function handleUpdateName(req: NextApiRequest, res: NextApi
   }
 
   try {
-    const updatedUser = await wristbandService.updateUser(accessToken, user.id!, { fullName });
-    session.user = updatedUser; // set the user (server side)
-    await session.save();
-    return res.status(200).json(updatedUser);
+    const user = await wristbandService.updateUser(accessToken, userId, { fullName });
+    return res.status(200).json(user);
   } catch (err: unknown) {
     console.log(err);
 

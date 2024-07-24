@@ -10,7 +10,7 @@ export default async function handleChangePassword(req: NextApiRequest, res: Nex
   }
 
   const session = await getSession(req, res);
-  const { isAuthenticated, user, accessToken } = session;
+  const { isAuthenticated, userId, accessToken } = session;
 
   /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
   if (!isAuthenticated) {
@@ -23,11 +23,7 @@ export default async function handleChangePassword(req: NextApiRequest, res: Nex
   }
 
   try {
-    await wristbandService.changePassword(accessToken, {
-      userId: user.id!,
-      currentPassword,
-      newPassword,
-    });
+    await wristbandService.changePassword(accessToken, { userId, currentPassword, newPassword });
     return res.status(204).end();
   } catch (err: unknown) {
     console.log(err);

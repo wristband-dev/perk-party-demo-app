@@ -413,7 +413,7 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
 export const getServerSideProps: GetServerSideProps = async function (context: GetServerSidePropsContext) {
   const { req, res } = context;
   const session = await getSession(req, res);
-  const { isAuthenticated, user } = session;
+  const { accessToken, isAuthenticated, userId } = session;
 
   /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
   if (!isAuthenticated) {
@@ -421,7 +421,7 @@ export const getServerSideProps: GetServerSideProps = async function (context: G
   }
 
   try {
-    const changeEmailRequestResults = await wristbandService.getChangeEmailRequests(session.accessToken, user.id!);
+    const changeEmailRequestResults = await wristbandService.getChangeEmailRequests(accessToken, userId);
     return { props: { changeEmailRequestResults } };
   } catch (err: unknown) {
     console.log(err);

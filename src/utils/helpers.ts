@@ -1,6 +1,6 @@
 import { IncomingMessage } from 'http';
 
-import { Userinfo } from '@/types';
+import { User, Userinfo } from '@/types';
 import { JSON_MEDIA_TYPE, PERK_PARTY_PROTOCOL } from '@/utils/constants';
 import { FetchError } from '@/error';
 
@@ -54,7 +54,7 @@ export function serverRedirectToLogin(req: IncomingMessage) {
   };
 }
 
-export function parseUserinfo(userinfo: Userinfo) {
+export function parseUserinfo(userinfo: Userinfo): User {
   return {
     id: userinfo.sub,
     tenantId: userinfo.tnt_id,
@@ -64,9 +64,9 @@ export function parseUserinfo(userinfo: Userinfo) {
     emailVerified: userinfo.email_verified,
     username: userinfo.preferred_username,
     fullName: userinfo.name,
-    firstName: userinfo.given_name,
+    givenName: userinfo.given_name,
     middleName: userinfo.middle_name,
-    lastName: userinfo.family_name,
+    familyName: userinfo.family_name,
     nickname: userinfo.nickname,
     pictureURL: userinfo.picture,
     gender: userinfo.gender,

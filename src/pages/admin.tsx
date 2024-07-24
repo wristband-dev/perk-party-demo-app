@@ -1,45 +1,43 @@
-import { GetServerSideProps, GetServerSidePropsContext } from 'next';
-
-import wristbandService from '@/services/wristband-service';
 import { useWristband } from '@/context/auth-context';
-import { getSession } from '@/session/iron-session';
-import { Tenant } from '@/types';
-import { clientRedirectToLogin, serverRedirectToLogin, validateFetchResponseStatus } from '@/utils/helpers';
+import { validateFetchResponseStatus } from '@/utils/helpers';
 import { FaSpinner } from 'react-icons/fa';
 import { Raleway } from 'next/font/google';
-import { SyntheticEvent, useState } from 'react';
+import { SyntheticEvent, useEffect, useState } from 'react';
 import { JSON_MEDIA_TYPE } from '@/utils/constants';
-import { FetchError } from '@/error';
 import { toastSuccess, toastError } from '@/utils/toast';
+
 const raleway = Raleway({ subsets: ['latin'] });
 
 export default function AdminPage() {
-  const { isAuthenticated, user, tenant, setTenant } = useWristband();
+  const { tenant, setTenant } = useWristband();
   const publicMetaData = tenant.publicMetadata || {};
   const perkCategories = publicMetaData.perkCategories || [];
-  
+
   const [isThrillEnabled, setThrillEnabled] = useState<boolean>(true);
   const [isTravelEnabled, setTravellEnabled] = useState<boolean>(true);
   const [isRelaxEnabled, setRelaxEnabled] = useState<boolean>(true);
   const [isFooodEnabled, setFoodEnabled] = useState<boolean>(true);
-
   const [isPerkUpdateInProgress, setPerkUpdateInProgress] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Initialize the state with the Tenant's metadata when the page first loads in the browser
+    if (tenant) {
+      setThrillEnabled(perkCategories.indexOf('thrill') !== -1);
+      setTravellEnabled(perkCategories.indexOf('travel') !== -1);
+      setRelaxEnabled(perkCategories.indexOf('relax') !== -1);
+      setFoodEnabled(perkCategories.indexOf('food') !== -1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tenant]);
+
   const handlePerkCategoriesSubmit = async (e: SyntheticEvent) => {
     e.preventDefault(); // stops javascripts submit events
-    const perkCategories = [];
-
-    if (isThrillEnabled) {
-      perkCategories.push('thrill')
-    }
-    if (isTravelEnabled) {
-      perkCategories.push('travel')
-    }
-    if (isRelaxEnabled) {
-      perkCategories.push('relax')
-    }
-    if (isFooodEnabled) {
-      perkCategories.push('food')
-    }
+    const updatedPerkCategories = [
+      ...(isThrillEnabled ? ['thrill'] : []),
+      ...(isTravelEnabled ? ['travel'] : []),
+      ...(isRelaxEnabled ? ['relax'] : []),
+      ...(isFooodEnabled ? ['food'] : []),
+    ];
 
     setPerkUpdateInProgress(true);
 
@@ -47,17 +45,27 @@ export default function AdminPage() {
       const res = await fetch('/api/v1/update-perk-categories', {
         method: 'PATCH',
         keepalive: true,
-        body: JSON.stringify({ perkCategories }),
+        body: JSON.stringify({ perkCategories: updatedPerkCategories }),
         headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
       });
 
       validateFetchResponseStatus(res);
 
-      // Reset the password form inputs
-      toastSuccess('Your perks are enabled', '💪');
+      const data = await res.json();
+      setTenant(data); // updates the tenant (react side)
+
+      switch (updatedPerkCategories.length) {
+        case 4:
+          toastSuccess('Maximum perks achieved! Your team is in beast mode!', '🐻');
+          break;
+        case 0:
+          toastSuccess('Team morale hits a new low. Thanks, Captain Killjoy.', '💀');
+          break;
+        default:
+          toastSuccess('The perk party is in progress... but maybe crank it up a notch?', '💃');
+      }
     } catch (error: unknown) {
       console.log(error);
-
       toastError('An unexpected error occurred.');
     } finally {
       setPerkUpdateInProgress(false);
@@ -65,65 +73,64 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className={`min-h-screen bg-gray-100 p-8 ${raleway.className}`}>
       <div className="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md">
-        <h1 className="text-3xl font-bold mb-6">Profile Settings</h1>
+        <h1 className="text-3xl font-bold mb-6 break-all">Admin for {tenant.displayName}</h1>
 
         {/* Perk Categories */}
         <form onSubmit={handlePerkCategoriesSubmit} className="mb-8">
-          
           <h2 className="text-xl font-semibold mb-4">Perk Categories</h2>
           <div className="mb-4">
-            <div className="flex items-center mb-2">
+            <div className="flex items-center mb-3">
               <input
                 type="checkbox"
-                id="ThrillPerk"
-                name="Thrill"
+                id="thrill"
+                name="thrill"
                 checked={isThrillEnabled}
-                onChange={ () => setThrillEnabled(!isThrillEnabled) }
-                className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500"
+                onChange={() => setThrillEnabled(!isThrillEnabled)}
+                className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500 cursor-pointer"
               />
-              <label htmlFor="Thrill" className="ml-2 block text-sm font-medium text-gray-700">
+              <label htmlFor="thrill" className="ml-4 block text-sm font-medium text-gray-700">
                 Thrill
               </label>
             </div>
-            <div className="flex items-center mb-2">
+            <div className="flex items-center mb-3">
               <input
                 type="checkbox"
-                id="perk2"
-                name="perk2"
+                id="travel"
+                name="travel"
                 checked={isTravelEnabled}
-                onChange={ () => setTravellEnabled(!isTravelEnabled) }
-                className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500"
+                onChange={() => setTravellEnabled(!isTravelEnabled)}
+                className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500 cursor-pointer"
               />
-              <label htmlFor="perk2" className="ml-2 block text-sm font-medium text-gray-700">
-                Perk 2
+              <label htmlFor="travel" className="ml-4 block text-sm font-medium text-gray-700">
+                Travel
               </label>
             </div>
-            <div className="flex items-center mb-2">
+            <div className="flex items-center mb-3">
               <input
                 type="checkbox"
-                id="perk3"
-                name="perk3"
+                id="relax"
+                name="relax"
                 checked={isRelaxEnabled}
-                onChange={ () => setRelaxEnabled(!isRelaxEnabled) }
-                className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500"
+                onChange={() => setRelaxEnabled(!isRelaxEnabled)}
+                className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500 cursor-pointer"
               />
-              <label htmlFor="perk3" className="ml-2 block text-sm font-medium text-gray-700">
-                Perk 3
+              <label htmlFor="relax" className="ml-4 block text-sm font-medium text-gray-700">
+                Relax
               </label>
             </div>
-            <div className="flex items-center mb-2">
+            <div className="flex items-center mb-3">
               <input
                 type="checkbox"
                 id="perk4"
                 name="perk4"
                 checked={isFooodEnabled}
-                onChange={ () => setFoodEnabled(!isFooodEnabled) }
-                className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500"
+                onChange={() => setFoodEnabled(!isFooodEnabled)}
+                className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500 cursor-pointer"
               />
-              <label htmlFor="perk4" className="ml-2 block text-sm font-medium text-gray-700">
-                Perk 4
+              <label htmlFor="food" className="ml-4 block text-sm font-medium text-gray-700">
+                Food
               </label>
             </div>
           </div>

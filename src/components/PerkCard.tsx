@@ -32,7 +32,7 @@ export function PerkCard({ id, image, perkName, perkDesc, banner }: PerkCardProp
       const res = await fetch('/api/v1/claim-perk', {
         method: 'PATCH',
         keepalive: true,
-        body: JSON.stringify({ perkId: id }),
+        body: JSON.stringify({ claimedPerks: [...claimedPerks, id] }),
         headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
       });
 
