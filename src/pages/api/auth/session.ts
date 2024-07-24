@@ -6,13 +6,12 @@ import { bearerAuthFetchHeaders } from '@/utils/helpers';
 
 export default async function sessionRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = await getSession(req, res);
-  const { accessToken, expiresAt, isAuthenticated, refreshToken, tenantDomainName, user } = session;
+  const { accessToken, expiresAt, isAuthenticated, refreshToken, user } = session;
 
   if (!isAuthenticated) {
     return res.status(200).json({
       isAuthenticated,
       user: null,
-      tenantDomainName: null,
       tenant: null,
     });
   }
@@ -46,7 +45,7 @@ export default async function sessionRoute(req: NextApiRequest, res: NextApiResp
 
   // Grab metadata for the tenant as that is where enabled perk categories are stored
   const tenantResponse = await fetch(
-    `https://${process.env.APPLICATION_DOMAIN}/api/v1/tenants/${user.tenantId}`,
+    `https://${process.env.APPLICATION_DOMAIN}/api/v1/tenants/${user.tenantId}?fields=publicMetadata,domainName,id`,
     {
       method: 'GET',
       headers: bearerAuthFetchHeaders(accessToken),
@@ -60,9 +59,10 @@ export default async function sessionRoute(req: NextApiRequest, res: NextApiResp
   session.tenant = latestTenant;
 
   // Save all fields into the session
+  console.log(session)
   await session.save();
 
   return res
     .status(200)
-    .json({ isAuthenticated, user: latestUser, tenantDomainName, tenant: latestTenant });
+    .json({ isAuthenticated, user: latestUser, tenant: latestTenant });
 }

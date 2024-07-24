@@ -27,7 +27,6 @@ export default async function handleCallback(req: NextApiRequest, res: NextApiRe
     session.expiresAt = Date.now() + callbackData!.expiresIn * 1000;
     session.refreshToken = callbackData!.refreshToken;
     session.user = parseUserinfo(callbackData!.userinfo as Userinfo);
-    session.tenantDomainName = callbackData!.tenantDomainName;
 
     // Save all fields into the session
     await session.save();

@@ -12,16 +12,16 @@ export type TenantMetadata = {
 };
 
 export type Tenant = {
-  id: string;
-  applicationId: string;
-  vanityDomain: string;
-  domainName: string;
-  displayName: string;
-  description: string;
-  signupEnabled: boolean;
-  status: string;
-  publicMetadata: TenantMetadata;
-  restrictedMetadata: object;
+  id?: string;
+  applicationId?: string;
+  vanityDomain?: string;
+  domainName?: string;
+  displayName?: string;
+  description?: string;
+  signupEnabled?: boolean;
+  status?: string;
+  publicMetadata?: TenantMetadata;
+  restrictedMetadata?: object;
   metadata?: EntityMetadata;
 };
 

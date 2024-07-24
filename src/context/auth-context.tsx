@@ -28,7 +28,11 @@ const DEFAULT_USER_STATE: User = {
   roles: [],
 };
 
-const DEFAULT_TENANT = {
+const DEFAULT_PERK_CATEGORIES: string[] = [
+  "thrill", "relax", "travel", "food"
+]
+
+const DEFAULT_TENANT: Tenant = {
   id: '',
   applicationId: '',
   vanityDomain: '',
@@ -37,7 +41,7 @@ const DEFAULT_TENANT = {
   description: '',
   signupEnabled: false,
   status: '',
-  publicMetadata: {},
+  publicMetadata: {perkCategories: DEFAULT_PERK_CATEGORIES},
   restrictedMetadata: {},
 };
 
