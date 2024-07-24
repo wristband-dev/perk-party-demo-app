@@ -7,6 +7,10 @@ export type EntityMetadata = {
   lastVerificationTime?: string;
 };
 
+export type TenantMetadata = {
+  perkCategories?: string[];
+};
+
 export type Tenant = {
   id: string;
   applicationId: string;
@@ -16,9 +20,9 @@ export type Tenant = {
   description: string;
   signupEnabled: boolean;
   status: string;
-  publicMetadata: object;
+  publicMetadata: TenantMetadata;
   restrictedMetadata: object;
-  metadata: EntityMetadata;
+  metadata?: EntityMetadata;
 };
 
 export type Role = {

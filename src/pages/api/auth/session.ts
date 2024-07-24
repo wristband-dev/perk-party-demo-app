@@ -13,7 +13,7 @@ export default async function sessionRoute(req: NextApiRequest, res: NextApiResp
       isAuthenticated,
       user: null,
       tenantDomainName: null,
-      tenantMetadata: null,
+      tenant: null,
     });
   }
 
@@ -46,7 +46,7 @@ export default async function sessionRoute(req: NextApiRequest, res: NextApiResp
 
   // Grab metadata for the tenant as that is where enabled perk categories are stored
   const tenantResponse = await fetch(
-    `https://${process.env.APPLICATION_DOMAIN}/api/v1/tenants/${user.tenantId}?fields=publicMetadata`,
+    `https://${process.env.APPLICATION_DOMAIN}/api/v1/tenants/${user.tenantId}`,
     {
       method: 'GET',
       headers: bearerAuthFetchHeaders(accessToken),
@@ -57,12 +57,12 @@ export default async function sessionRoute(req: NextApiRequest, res: NextApiResp
     return res.status(500).end();
   }
   const latestTenant = await tenantResponse.json();
-  session.tenantMetadata = latestTenant.publicMetadata;
+  session.tenant = latestTenant;
 
   // Save all fields into the session
   await session.save();
 
   return res
     .status(200)
-    .json({ isAuthenticated, user: latestUser, tenantDomainName, tenantMetadata: latestTenant.publicMetadata });
+    .json({ isAuthenticated, user: latestUser, tenantDomainName, tenant: latestTenant });
 }

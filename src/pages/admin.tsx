@@ -6,13 +6,12 @@ import { getSession } from '@/session/iron-session';
 import { Tenant } from '@/types';
 import { serverRedirectToLogin } from '@/utils/helpers';
 
-type SettingsPageProps = {
-  tenant: Tenant;
-};
+export default function AdminPage() {
+  const { isAuthenticated, user, tenant, setTenant } = useWristband();
+  const publicMetaData = tenant.publicMetadata;
+  const perkCategories = publicMetaData.perkCategories || [];
 
-export default function AdminPage({ tenant }: SettingsPageProps) {
-  const { isAuthenticated, user } = useWristband();
-  const { id, applicationId, vanityDomain, domainName, displayName, description, signupEnabled, status } = tenant;
+
 
   return (
     <section className="p-8">
@@ -27,7 +26,7 @@ export default function AdminPage({ tenant }: SettingsPageProps) {
 
       {isAuthenticated && (
         <div style={{ margin: '2rem auto' }}>
-          <h3>Tenant Info</h3>
+          {/* <h3>Tenant Info</h3>
           <p>ID: {id}</p>
           <p>Application ID: {applicationId}</p>
           <p>Vanity Domain: {vanityDomain}</p>
@@ -35,30 +34,9 @@ export default function AdminPage({ tenant }: SettingsPageProps) {
           <p>Display Name: {displayName}</p>
           <p>Description: {description}</p>
           <p>Tenant Signup Enabled: {signupEnabled ? 'Yes' : 'No'}</p>
-          <p>Status: {status}</p>
+          <p>Status: {status}</p> */}
         </div>
       )}
     </section>
   );
 }
-
-// NOTE: This gets called first every time BEFORE this page loads. The returned props are passed to the page
-// above. The server will evaluate/render everything once on the server before sending the browser its 1st HTML.
-export const getServerSideProps: GetServerSideProps = async function (context: GetServerSidePropsContext) {
-  const { req, res } = context;
-  const session = await getSession(req, res);
-  const { accessToken, isAuthenticated, user } = session;
-
-  /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
-  if (!isAuthenticated) {
-    return serverRedirectToLogin(req);
-  }
-
-  try {
-    const tenant = await wristbandService.getTenant(accessToken, user.tenantId!);
-    return { props: { tenant } };
-  } catch (err: unknown) {
-    console.log(err);
-    throw err;
-  }
-};

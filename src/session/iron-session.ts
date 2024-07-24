@@ -2,7 +2,7 @@ import { getIronSession, IronSession, SessionOptions } from 'iron-session';
 import * as http from 'http';
 
 import { SESSION_COOKIE_NAME, SESSION_COOKIE_SECRET } from '@/utils/constants';
-import { User } from '@/types';
+import { Tenant, User } from '@/types';
 
 type SessionData = {
   accessToken: string;
@@ -11,7 +11,7 @@ type SessionData = {
   refreshToken?: string;
   tenantDomainName: string;
   user: User;
-  tenantMetadata: object;
+  tenant: Tenant;
 };
 
 const sessionOptions: SessionOptions = {
