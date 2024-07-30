@@ -58,11 +58,24 @@ export default function AdminPage() {
         case 4:
           toastSuccess('Maximum perks achieved! Your team is in beast mode!', '🐻');
           break;
+        case 1:
+          if (updatedPerkCategories[0] === 'food') {
+            toastSuccess('Congrats on taking your team to Flavor Town -- Guy Fieri would be proud!', '🌶️');
+          } else if (updatedPerkCategories[0] === 'relax') {
+            toastSuccess("Your employees get to be chillin', and you're anything but the villain. Good on ya!", '❄️');
+          } else if (updatedPerkCategories[0] === 'travel') {
+            toastSuccess("Whatever happens in Vegas stays in Vegas (unless it's a hangover).", '✈️');
+          } else {
+            toastSuccess("You’re bringing the thriller vibes... just don't start moonwalking on me now.", '🧟');
+          }
+          break;
         case 0:
           toastSuccess('Team morale hits a new low. Thanks, Captain Killjoy.', '💀');
           break;
+        case 2:
+        case 3:
         default:
-          toastSuccess('The perk party is in progress... but maybe crank it up a notch?', '💃');
+          toastSuccess('The perk party is in progress... but maybe crank it up another notch?', '💃');
       }
     } catch (error: unknown) {
       console.log(error);

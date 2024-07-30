@@ -3,6 +3,7 @@ import Head from 'next/head';
 import { ReactNode } from 'react';
 
 import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -21,6 +22,7 @@ export default function Layout({ children }: Props) {
       </Head>
       <Navbar />
       <main className={`pt-16 ${inter.className}`}>{children}</main>
+      <Footer />
     </>
   );
 }

@@ -11,6 +11,7 @@ import wristbandService from '@/services/wristband-service';
 import { ChangeEmailRequestResults } from '@/types';
 import { FetchError } from '@/error';
 import { JSON_MEDIA_TYPE } from '@/utils/constants';
+import WristbandBadge from '@/components/wristband-badge';
 
 const raleway = Raleway({ subsets: ['latin'] });
 
@@ -249,14 +250,15 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
   };
 
   return (
-    <div className={`min-h-screen bg-gray-100 p-8 ${raleway.className}`}>
+    <div className={`bg-gray-100 p-8 ${raleway.className}`}>
       <div className="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md">
         <h1 className="text-3xl font-bold mb-6">Profile Settings</h1>
 
         {/* Update Name Form */}
         <form onSubmit={handleFullNameSubmit} className="mb-8">
-          <h2 className="text-2xl font-semibold mb-4">Your Profile</h2>
-          <div className="mb-4">
+          <h2 className="text-2xl font-semibold mb-2">Your Profile</h2>
+          <WristbandBadge title="Update User API" url="https://docs.wristband.dev/reference/patchuserv1" />
+          <div className="my-4">
             <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
               Full Name
             </label>
@@ -273,16 +275,17 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
           <button
             type="submit"
             disabled={isUpdateNameInProgress}
-            className="min-h-10 min-w-20 bg-pink-600 text-white py-2 px-4 rounded-lg hover:bg-pink-700"
+            className="min-h-10 min-w-20 bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
           >
             {isUpdateNameInProgress ? <FaSpinner className="animate-spin mx-auto" /> : 'Save'}
           </button>
         </form>
 
-        {/* Update Password Form */}
+        {/* Change Password Form */}
         <form onSubmit={handleChangePasswordSubmit} className="mb-8">
-          <h2 className="text-2xl font-semibold mb-4">Change Password</h2>
-          <div className="mb-4 relative">
+          <h2 className="text-2xl font-semibold mb-2">Change Password</h2>
+          <WristbandBadge title="Change Password API" url="https://docs.wristband.dev/reference/changepasswordv1" />
+          <div className="my-4 relative">
             <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700">
               Current Password
             </label>
@@ -345,7 +348,7 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
           <button
             type="submit"
             disabled={isChangePasswordInProgress}
-            className="min-h-10 min-w-20 bg-pink-600 text-white py-2 px-4 rounded-lg hover:bg-pink-700"
+            className="min-h-10 min-w-20 bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
           >
             {isChangePasswordInProgress ? <FaSpinner className="animate-spin mx-auto" /> : 'Save'}
           </button>
@@ -353,8 +356,9 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
 
         {/* Update Email Form */}
         <form onSubmit={handleChangeEmailSubmit} className="mb-8">
-          <h2 className="text-2xl font-semibold mb-4">Change Email</h2>
-          <div className="text-lg text-pink-600 mb-4">Current Email: {user.email}</div>
+          <h2 className="text-2xl font-semibold mb-2">Change Email</h2>
+          <WristbandBadge />
+          <div className="text-lg text-pink-600 my-4">Current Email: {user.email}</div>
           {requestedNewEmail ? (
             <>
               <div className="mb-4 text-sm text-blue-600">A confirmation email was sent to: {requestedNewEmail}</div>
@@ -363,7 +367,7 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
                   type="button"
                   onClick={handleCancelEmailChange}
                   disabled={isCancelChangeEmailInProgress || isResendChangeEmailInProgress}
-                  className="min-h-10 min-w-20 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700"
+                  className="min-h-10 min-w-20 bg-red-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
                 >
                   {isCancelChangeEmailInProgress ? <FaSpinner className="animate-spin mx-auto" /> : 'Cancel'}
                 </button>
@@ -371,7 +375,7 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
                   type="button"
                   onClick={handleResendEmailChange}
                   disabled={isCancelChangeEmailInProgress || isResendChangeEmailInProgress}
-                  className="min-h-10 min-w-20 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+                  className="min-h-10 min-w-20 bg-blue-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
                 >
                   {isResendChangeEmailInProgress ? <FaSpinner className="animate-spin mx-auto" /> : 'Resend'}
                 </button>
@@ -396,7 +400,7 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
               <button
                 type="submit"
                 disabled={isChangeEmailInProgress}
-                className="min-h-10 min-w-20 bg-pink-600 text-white py-2 px-4 rounded-lg hover:bg-pink-700"
+                className="min-h-10 min-w-20 bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
               >
                 {isChangeEmailInProgress ? <FaSpinner className="animate-spin mx-auto" /> : 'Change'}
               </button>

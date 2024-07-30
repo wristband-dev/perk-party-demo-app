@@ -1,9 +1,14 @@
 import { Raleway } from 'next/font/google';
+import Image from 'next/image';
 
 import { PerkCard } from '@/components/PerkCard';
 import { useWristband } from '@/context/auth-context';
+import { useEffect, useState } from 'react';
 
 const raleway = Raleway({ subsets: ['latin'] });
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// const perks: any[] = [];
 
 const perks = [
   {
@@ -184,62 +189,103 @@ const perks = [
       'Unleash your creativity with our artisanal craft workshops. Learn new skills and create beautiful handmade items.',
     banner: '',
   },
+  {
+    id: '20',
+    image: '/mustache_rides.jpg',
+    perkName: 'Mustache Rides',
+    category: 'Thrill',
+    perkDesc:
+      'Let someone else do the driving with 30% off any ride-hailing service for a month. Were you... expecting something else?',
+    banner: '',
+  },
 ];
 
 export default function HomePage() {
   const { isAuthenticated } = useWristband();
 
+  const [perksLoaded, setPerksLoaded] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      setTimeout(() => setPerksLoaded(true), 1000);
+    }
+  }, [isAuthenticated]);
+
   return (
     <>
-      <section className="m-0">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="https://cdn.pixabay.com/photo/2022/11/29/08/54/race-car-7624025_1280.jpg"
-          alt="Logo"
-          className="max-h-[450px] w-full object-cover"
+      <section className="m-0 relative w-full h-[450px]">
+        <Image
+          src="/race-car-rental.jpg"
+          alt="race-car-rental"
+          layout="fill"
+          objectFit="cover"
+          className="max-h-[450px] w-full block"
+          quality={75}
         />
       </section>
 
       <section className="relative">
-        <div className="top-0 bg-white z-10 mt-8 mx-16">
-          <h1 className={`font-bold tracking-widest ${raleway.className} text-3xl`}>BENEFITS</h1>
-          <div className="flex items-center pt-4">
-            <h1 className="text-xl">FILTER BY</h1>
-            <div className="ml-4 cursor-pointer">
-              <select disabled={!isAuthenticated} className="border border-gray-300 rounded-md p-2 cursor-pointer">
-                <option value="none">None</option>
-                <option value="thrill">Thrill</option>
-                <option value="relax">Relax</option>
-                <option value="travel">Travel</option>
-                <option value="travel">Food</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
         {/* Show a spinner instead of cards until the user session is loaded. */}
-        {!isAuthenticated && (
-          // <div className="absolute inset-0 flex justify-center items-center">
-          <div className="mt-10 flex justify-center">
+        {(!isAuthenticated || !perksLoaded) && (
+          <div className="my-40 flex justify-center">
             <div className="flex justify-center items-center h-20">
               <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-pink-600" />
             </div>
           </div>
         )}
-        {isAuthenticated && (
-          <div className="mt-10 mx-4 flex flex-wrap justify-center z-10">
-            {perks.map((perk) => (
-              // if perk id is in claimed perks in user meta data then true else false
-              <PerkCard
-                key={perk.id}
-                image={perk.image}
-                perkName={perk.perkName}
-                perkDesc={perk.perkDesc}
-                banner={perk.banner}
-                id={perk.id}
-              />
-            ))}
-          </div>
+        {isAuthenticated && perksLoaded && (
+          <>
+            {perks.length > 0 && (
+              <div className="top-0 bg-white z-10 mt-8 mx-16">
+                <h1 className={`font-bold tracking-widest ${raleway.className} text-3xl`}>BENEFITS</h1>
+                <div className="flex flex-wrap items-center pt-4">
+                  <h1 className="text-xl mr-4">FILTER BY</h1>
+                  <div className="cursor-pointer">
+                    <select className="min-w-[120px] border border-gray-300 rounded-md py-2 px-2 cursor-pointer">
+                      <option value="all">All</option>
+                      <option value="thrill">Thrill</option>
+                      <option value="relax">Relax</option>
+                      <option value="travel">Travel</option>
+                      <option value="travel">Food</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div className="mt-10 mx-4 flex flex-wrap justify-center z-10">
+              {perks.length > 0 ? (
+                <>
+                  {perks.map((perk) => (
+                    // if perk id is in claimed perks in user meta data then true else false
+                    <PerkCard
+                      key={perk.id}
+                      image={perk.image}
+                      perkName={perk.perkName}
+                      perkDesc={perk.perkDesc}
+                      banner={perk.banner}
+                      id={perk.id}
+                    />
+                  ))}
+                </>
+              ) : (
+                <div className="flex flex-col">
+                  <h2 className="my-4 mx-4 text-center text-2xl font-semibold max-w-[900px]">
+                    Uh oh! Looks like upper management brought out the bouncer for this party. No more fun for you.
+                  </h2>
+                  <div className="mt-2 mb-10 mx-auto max-w-[300px]">
+                    <Image
+                      src="/beatings-will-continue.jpg"
+                      alt="beatings-will-continue"
+                      width={300}
+                      height={450}
+                      layout="intrinsic" // or "responsive" if you want it to scale responsively
+                      quality={75}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
         )}
       </section>
     </>
