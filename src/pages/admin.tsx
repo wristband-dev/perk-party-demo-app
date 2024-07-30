@@ -5,6 +5,7 @@ import { Raleway } from 'next/font/google';
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { JSON_MEDIA_TYPE } from '@/utils/constants';
 import { toastSuccess, toastError } from '@/utils/toast';
+import WristbandBadge from '@/components/wristband-badge';
 
 const raleway = Raleway({ subsets: ['latin'] });
 
@@ -107,88 +108,140 @@ export default function AdminPage() {
         <h1 className="text-3xl font-bold mb-6 break-all">Admin for {tenant.displayName}</h1>
 
         {/* Perk Categories */}
-        <form onSubmit={handlePerkCategoriesSubmit} className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">Perk Categories</h2>
-          <div className="mb-4">
-            <div className="flex items-center mb-3">
-              <input
-                type="checkbox"
-                id="selectAll"
-                name="selectAll"
-                checked={isAllSelected}
-                onChange={handleAllChange}
-                className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500 cursor-pointer"
-                disabled={isPerkUpdateInProgress}
-              />
-              <label htmlFor="selectAll" className="ml-4 block text-sm font-medium text-gray-700">
-                All
-              </label>
+        <section>
+          <form onSubmit={handlePerkCategoriesSubmit} className="mb-8">
+            <h2 className="text-xl font-semibold mb-4">Perk Categories</h2>
+            <div className="mb-4">
+              <div className="flex items-center mb-3">
+                <input
+                  type="checkbox"
+                  id="selectAll"
+                  name="selectAll"
+                  checked={isAllSelected}
+                  onChange={handleAllChange}
+                  className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500 cursor-pointer"
+                  disabled={isPerkUpdateInProgress}
+                />
+                <label htmlFor="selectAll" className="ml-4 block text-sm font-medium text-gray-700">
+                  All
+                </label>
+              </div>
+              <div className="flex items-center mb-3">
+                <input
+                  type="checkbox"
+                  id="thrill"
+                  name="thrill"
+                  checked={isThrillEnabled}
+                  onChange={() => setThrillEnabled(!isThrillEnabled)}
+                  className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500 cursor-pointer"
+                  disabled={isPerkUpdateInProgress}
+                />
+                <label htmlFor="thrill" className="ml-4 block text-sm font-medium text-gray-700">
+                  Thrill
+                </label>
+              </div>
+              <div className="flex items-center mb-3">
+                <input
+                  type="checkbox"
+                  id="travel"
+                  name="travel"
+                  checked={isTravelEnabled}
+                  onChange={() => setTravelEnabled(!isTravelEnabled)}
+                  className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500 cursor-pointer"
+                  disabled={isPerkUpdateInProgress}
+                />
+                <label htmlFor="travel" className="ml-4 block text-sm font-medium text-gray-700">
+                  Travel
+                </label>
+              </div>
+              <div className="flex items-center mb-3">
+                <input
+                  type="checkbox"
+                  id="relax"
+                  name="relax"
+                  checked={isRelaxEnabled}
+                  onChange={() => setRelaxEnabled(!isRelaxEnabled)}
+                  className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500 cursor-pointer"
+                  disabled={isPerkUpdateInProgress}
+                />
+                <label htmlFor="relax" className="ml-4 block text-sm font-medium text-gray-700">
+                  Relax
+                </label>
+              </div>
+              <div className="flex items-center mb-3">
+                <input
+                  type="checkbox"
+                  id="food"
+                  name="food"
+                  checked={isFoodEnabled}
+                  onChange={() => setFoodEnabled(!isFoodEnabled)}
+                  className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500 cursor-pointer"
+                  disabled={isPerkUpdateInProgress}
+                />
+                <label htmlFor="food" className="ml-4 block text-sm font-medium text-gray-700">
+                  Food
+                </label>
+              </div>
             </div>
-            <div className="flex items-center mb-3">
-              <input
-                type="checkbox"
-                id="thrill"
-                name="thrill"
-                checked={isThrillEnabled}
-                onChange={() => setThrillEnabled(!isThrillEnabled)}
-                className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500 cursor-pointer"
-                disabled={isPerkUpdateInProgress}
-              />
-              <label htmlFor="thrill" className="ml-4 block text-sm font-medium text-gray-700">
-                Thrill
-              </label>
-            </div>
-            <div className="flex items-center mb-3">
-              <input
-                type="checkbox"
-                id="travel"
-                name="travel"
-                checked={isTravelEnabled}
-                onChange={() => setTravelEnabled(!isTravelEnabled)}
-                className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500 cursor-pointer"
-                disabled={isPerkUpdateInProgress}
-              />
-              <label htmlFor="travel" className="ml-4 block text-sm font-medium text-gray-700">
-                Travel
-              </label>
-            </div>
-            <div className="flex items-center mb-3">
-              <input
-                type="checkbox"
-                id="relax"
-                name="relax"
-                checked={isRelaxEnabled}
-                onChange={() => setRelaxEnabled(!isRelaxEnabled)}
-                className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500 cursor-pointer"
-                disabled={isPerkUpdateInProgress}
-              />
-              <label htmlFor="relax" className="ml-4 block text-sm font-medium text-gray-700">
-                Relax
-              </label>
-            </div>
-            <div className="flex items-center mb-3">
-              <input
-                type="checkbox"
-                id="food"
-                name="food"
-                checked={isFoodEnabled}
-                onChange={() => setFoodEnabled(!isFoodEnabled)}
-                className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500 cursor-pointer"
-                disabled={isPerkUpdateInProgress}
-              />
-              <label htmlFor="food" className="ml-4 block text-sm font-medium text-gray-700">
-                Food
-              </label>
-            </div>
-          </div>
-          <button
-            type="submit"
-            disabled={isPerkUpdateInProgress}
-            className="min-h-10 min-w-20 bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
-          >
-            {isPerkUpdateInProgress ? <FaSpinner className="animate-spin mx-auto" /> : 'Save'}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={isPerkUpdateInProgress}
+              className="min-h-10 min-w-20 bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
+            >
+              {isPerkUpdateInProgress ? <FaSpinner className="animate-spin mx-auto" /> : 'Save'}
+            </button>
+          </form>
+        </section>
+
+        {/* Invite New User Form */}
+        <section>
+          <form onSubmit={handlePerkCategoriesSubmit} className="mb-8">
+            <h2 className="text-xl font-semibold mb-2">Invite Your Friends To Party</h2>
+            <WristbandBadge title="Invite New User API" url="https://docs.wristband.dev/reference/invitenewuserv1" />
+            <p className="my-4">
+              {'Form inputs: email address for new user, role dropdown for "Party Animal" (default) and "VIP Host"'}
+            </p>
+          </form>
+        </section>
+
+        {/* View Current Active Users */}
+        <section>
+          <form onSubmit={handlePerkCategoriesSubmit} className="mb-8">
+            <h2 className="text-xl font-semibold mb-2">Your Fellow Party Animals</h2>
+            <WristbandBadge
+              title="Query Tenant Users API"
+              url="https://docs.wristband.dev/reference/querytenantusersv1"
+            />
+            <p className="my-4">List of users (10 max); fields = fullName, email, role displayName</p>
+          </form>
+        </section>
+
+        {/* View Pending New User Invites */}
+        <section>
+          <form onSubmit={handlePerkCategoriesSubmit} className="mb-8">
+            <h2 className="text-xl font-semibold mb-2">Party Animals Waiting In Line</h2>
+            <WristbandBadge
+              title="Query New User Invitation Requests Filtered By Tenant API"
+              url="https://docs.wristband.dev/reference/querynewuserinvitationrequestsfilteredbytenantv1"
+            />
+            <p className="my-4">
+              List of new user invites (10 max); fields = email, role displayName, resend invite icon, delete invite
+              icon
+            </p>
+          </form>
+        </section>
+
+        {/* Okta SSO */}
+        <section>
+          <form onSubmit={handlePerkCategoriesSubmit} className="mb-8">
+            <h2 className="text-xl font-semibold mb-2">Make It A Corporate Affair</h2>
+            <WristbandBadge
+              title="Create Identity Provider API"
+              url="https://docs.wristband.dev/reference/createidentityprovidersv1"
+            />
+            <p className="my-4">Okta SSO configs</p>
+          </form>
+        </section>
       </div>
     </div>
   );
