@@ -357,7 +357,10 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
         {/* Update Email Form */}
         <form onSubmit={handleChangeEmailSubmit} className="mb-8">
           <h2 className="text-2xl font-semibold mb-2">Change Email</h2>
-          <WristbandBadge />
+          <WristbandBadge
+            title="Request Email Change API"
+            url="https://docs.wristband.dev/reference/requestemailchangev1"
+          />
           <div className="text-lg text-pink-600 my-4">Current Email: {user.email}</div>
           {requestedNewEmail ? (
             <>

@@ -9,10 +9,10 @@ import { toastSuccess, toastError } from '@/utils/toast';
 const raleway = Raleway({ subsets: ['latin'] });
 
 export default function AdminPage() {
+  // Auth Context
   const { tenant, setTenant } = useWristband();
-  const publicMetaData = tenant.publicMetadata || {};
-  const perkCategories = publicMetaData.perkCategories || [];
 
+  // React State
   const [isAllSelected, setAllSelected] = useState<boolean>(false);
   const [isThrillEnabled, setThrillEnabled] = useState<boolean>(false);
   const [isTravelEnabled, setTravelEnabled] = useState<boolean>(false);
@@ -20,18 +20,20 @@ export default function AdminPage() {
   const [isFoodEnabled, setFoodEnabled] = useState<boolean>(false);
   const [isPerkUpdateInProgress, setPerkUpdateInProgress] = useState<boolean>(false);
 
+  // Initialize the state with the Tenant's metadata when the page first loads in the browser
   useEffect(() => {
-    // Initialize the state with the Tenant's metadata when the page first loads in the browser
     if (tenant) {
+      const publicMetaData = tenant.publicMetadata || {};
+      const perkCategories = publicMetaData.perkCategories || [];
       setThrillEnabled(perkCategories.includes('thrill'));
       setTravelEnabled(perkCategories.includes('travel'));
       setRelaxEnabled(perkCategories.includes('relax'));
       setFoodEnabled(perkCategories.includes('food'));
     }
-  }, [tenant, perkCategories]);
+  }, [tenant]);
 
+  // Check if all categories are selected
   useEffect(() => {
-    // Check if all categories are selected
     setAllSelected(isThrillEnabled && isTravelEnabled && isRelaxEnabled && isFoodEnabled);
   }, [isThrillEnabled, isTravelEnabled, isRelaxEnabled, isFoodEnabled]);
 
@@ -116,6 +118,7 @@ export default function AdminPage() {
                 checked={isAllSelected}
                 onChange={handleAllChange}
                 className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500 cursor-pointer"
+                disabled={isPerkUpdateInProgress}
               />
               <label htmlFor="selectAll" className="ml-4 block text-sm font-medium text-gray-700">
                 All
@@ -129,6 +132,7 @@ export default function AdminPage() {
                 checked={isThrillEnabled}
                 onChange={() => setThrillEnabled(!isThrillEnabled)}
                 className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500 cursor-pointer"
+                disabled={isPerkUpdateInProgress}
               />
               <label htmlFor="thrill" className="ml-4 block text-sm font-medium text-gray-700">
                 Thrill
@@ -142,6 +146,7 @@ export default function AdminPage() {
                 checked={isTravelEnabled}
                 onChange={() => setTravelEnabled(!isTravelEnabled)}
                 className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500 cursor-pointer"
+                disabled={isPerkUpdateInProgress}
               />
               <label htmlFor="travel" className="ml-4 block text-sm font-medium text-gray-700">
                 Travel
@@ -155,6 +160,7 @@ export default function AdminPage() {
                 checked={isRelaxEnabled}
                 onChange={() => setRelaxEnabled(!isRelaxEnabled)}
                 className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500 cursor-pointer"
+                disabled={isPerkUpdateInProgress}
               />
               <label htmlFor="relax" className="ml-4 block text-sm font-medium text-gray-700">
                 Relax
@@ -168,17 +174,17 @@ export default function AdminPage() {
                 checked={isFoodEnabled}
                 onChange={() => setFoodEnabled(!isFoodEnabled)}
                 className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500 cursor-pointer"
+                disabled={isPerkUpdateInProgress}
               />
               <label htmlFor="food" className="ml-4 block text-sm font-medium text-gray-700">
                 Food
               </label>
             </div>
           </div>
-
           <button
             type="submit"
             disabled={isPerkUpdateInProgress}
-            className="min-h-10 min-w-20 bg-pink-600 text-white py-2 px-4 rounded-lg hover:bg-pink-700"
+            className="min-h-10 min-w-20 bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
           >
             {isPerkUpdateInProgress ? <FaSpinner className="animate-spin mx-auto" /> : 'Save'}
           </button>

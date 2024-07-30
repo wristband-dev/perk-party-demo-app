@@ -15,7 +15,7 @@ export default function Footer() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          <Image src="/wristband_transparent_logo.svg" alt="wristband logo" width={119} height={26} />
+          <Image src="/wristband_transparent_logo.svg" alt="wristband logo" width={119} height={26} quality={70} />
         </a>
       </div>
       <p className="my-6 mx-auto max-w-[840px]">

@@ -3,7 +3,7 @@ import Image from 'next/image';
 
 import { PerkCard } from '@/components/PerkCard';
 import { useWristband } from '@/context/auth-context';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 const raleway = Raleway({ subsets: ['latin'] });
 
@@ -71,6 +71,7 @@ const perks = [
       'https://images.unsplash.com/photo-1546527868-ccb7ee7dfa6a?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cHVwcHl8ZW58MHx8MHx8fDA%3D',
     perkName: 'Puppy Hour',
     perkDesc: 'Cuddle with adorable puppies every Wednesday during our Puppy Hour. A perfect stress reliever!',
+    category: 'Relax',
     banner: '',
   },
   {
@@ -197,19 +198,20 @@ const perks = [
   },
 ];
 
-
 export default function HomePage() {
-  const { isAuthenticated, tenant } = useWristband(); // get meta data from tenant to show perk cats
+  const { isAuthenticated, tenant, user } = useWristband(); // get meta data from tenant to show perk cats
   const [perksLoaded, setPerksLoaded] = useState<boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  console.log(user.publicMetadata);
+
+  const perkCategories = useMemo(() => tenant?.publicMetadata?.perkCategories ?? [], [tenant]);
+  const claimedPerks = useMemo(() => user?.publicMetadata?.claimedPerks ?? [], [user]);
 
   useEffect(() => {
     if (isAuthenticated) {
-      setTimeout(() => setPerksLoaded(true), 1000);
+      setPerksLoaded(true);
     }
   }, [isAuthenticated]);
-
-  const perkCategories = tenant?.publicMetadata?.perkCategories ?? [];
 
   // Set selectedCategory to the single category if only one exists
   useEffect(() => {
@@ -233,7 +235,7 @@ export default function HomePage() {
           layout="fill"
           objectFit="cover"
           className="max-h-[450px] w-full block"
-          quality={75}
+          quality={70}
         />
       </section>
 
@@ -250,11 +252,26 @@ export default function HomePage() {
           <>
             {perkCategories.length > 0 && (
               <div className="top-0 bg-white z-10 mt-8 mx-16">
+                {claimedPerks.length < perks.length && (
+                  <div className="my-8 mx-auto text-center text-2xl font-semibold max-w-[900px] flex flex-col justify-center items-center">
+                    <Image
+                      src="/party_animal.jpg"
+                      alt="party-animal"
+                      width={150}
+                      height={228}
+                      layout="intrinsic"
+                      className="max-h-[450px]"
+                      quality={70}
+                    />
+                    <h2 className="mt-2 mb-6">
+                      Whoa there, party animal! You&apos;ve used up all your perks — time to take a timeout and let the
+                      rest of us catch up!
+                    </h2>
+                  </div>
+                )}
                 <h1 className={`font-bold tracking-widest ${raleway.className} text-3xl`}>BENEFITS</h1>
                 <div className="flex flex-wrap items-center pt-4">
-                  <h1 className="text-xl mr-4">
-                    {perkCategories.length > 1 ? 'FILTER BY' : 'SHOWING'}
-                  </h1>
+                  <h1 className="text-xl mr-4">{perkCategories.length > 1 ? 'FILTER BY' : 'SHOWING'}</h1>
                   {perkCategories.length > 1 ? (
                     <div className="cursor-pointer">
                       <select
@@ -302,7 +319,7 @@ export default function HomePage() {
                       width={300}
                       height={450}
                       layout="intrinsic"
-                      quality={75}
+                      quality={70}
                     />
                   </div>
                 </div>
