@@ -30,6 +30,7 @@ export default async function handleCallback(req: NextApiRequest, res: NextApiRe
     session.userId = user.id!;
     session.tenantId = user.tenantId!;
     session.tenantDomainName = callbackData!.tenantDomainName;
+    session.role = user?.roles ? user.roles[0] : { id: '', name: 'app:app:party-animal', displayName: 'Party Animal' };
 
     // Save all fields into the session
     await session.save();

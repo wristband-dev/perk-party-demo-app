@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/session/iron-session';
 import wristbandAuth from '@/wristband-auth';
 import { HTTP_401_STATUS, PERK_PARTY_PROTOCOL, UNAUTHORIZED } from '@/utils/constants';
+import { isVipHostRole } from './utils/helpers';
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
@@ -19,7 +20,7 @@ export async function middleware(req: NextRequest) {
   }
 
   const session = await getSession(req, res);
-  const { expiresAt, isAuthenticated, refreshToken } = session;
+  const { expiresAt, isAuthenticated, refreshToken, role } = session;
 
   const returnUrl = `${PERK_PARTY_PROTOCOL}://${host}${pathname}`;
   const loginUrl = `${PERK_PARTY_PROTOCOL}://${host}/api/auth/login?return_url=${returnUrl}`;
@@ -27,6 +28,10 @@ export async function middleware(req: NextRequest) {
   // Send users to the login page if they attempt to access protected paths when unauthenticated.
   if (!isAuthenticated) {
     return isProtectedApiRoute ? NextResponse.json(UNAUTHORIZED, HTTP_401_STATUS) : NextResponse.redirect(loginUrl);
+  }
+  // Only VIP Host roles can access the admin page
+  if (pathname === '/admin' && !isVipHostRole(role)) {
+    return NextResponse.redirect(loginUrl);
   }
 
   // Always verify the refresh token is not expired and touch the session timestamp for any protected paths.

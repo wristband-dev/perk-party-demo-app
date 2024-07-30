@@ -1,7 +1,7 @@
 import { IncomingMessage } from 'http';
 
-import { User, Userinfo } from '@/types';
-import { JSON_MEDIA_TYPE, PERK_PARTY_PROTOCOL } from '@/utils/constants';
+import { Role, User, Userinfo } from '@/types';
+import { JSON_MEDIA_TYPE, PERK_PARTY_PROTOCOL, VIP_HOST_ROLE_NAME } from '@/utils/constants';
 import { FetchError } from '@/error';
 
 export function bearerAuthFetchHeaders(accessToken: string) {
@@ -74,6 +74,11 @@ export function parseUserinfo(userinfo: Userinfo): User {
     timezone: userinfo.zoneinfo,
     locale: userinfo.locale,
     updatedAt: userinfo.updated_at,
-    roles: userinfo.roles,
+    roles: userinfo.roles || [],
   };
 }
+
+export const isVipHostRole = (role: Role) => {
+  const roleParts = role && role.name ? role.name.split(':') : [];
+  return roleParts.length === 3 ? roleParts[2] === VIP_HOST_ROLE_NAME : false;
+};

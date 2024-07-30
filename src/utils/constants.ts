@@ -14,3 +14,4 @@ export const HTTP_401_STATUS = { status: 401 };
 export const UNAUTHORIZED = { statusText: 'Unauthorized' };
 export const LOGIN_REQUIRED_ERROR: string = 'login_required';
 export const FORM_URLENCOED_MEDIA_TYPE: string = 'application/x-www-form-urlencoded';
+export const VIP_HOST_ROLE_NAME = 'vip-host';

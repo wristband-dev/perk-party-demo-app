@@ -202,7 +202,6 @@ export default function HomePage() {
   const { isAuthenticated, tenant, user } = useWristband(); // get meta data from tenant to show perk cats
   const [perksLoaded, setPerksLoaded] = useState<boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  console.log(user.publicMetadata);
 
   const perkCategories = useMemo(() => tenant?.publicMetadata?.perkCategories ?? [], [tenant]);
   const claimedPerks = useMemo(() => user?.publicMetadata?.claimedPerks ?? [], [user]);
@@ -232,10 +231,10 @@ export default function HomePage() {
         <Image
           src="/race-car-rental.jpg"
           alt="race-car-rental"
-          layout="fill"
-          objectFit="cover"
-          className="max-h-[450px] w-full block"
+          fill
+          style={{ objectFit: 'cover' }}
           quality={70}
+          priority
         />
       </section>
 
@@ -252,14 +251,13 @@ export default function HomePage() {
           <>
             {perkCategories.length > 0 && (
               <div className="top-0 bg-white z-10 mt-8 mx-16">
-                {claimedPerks.length < perks.length && (
+                {claimedPerks.length >= perks.length && (
                   <div className="my-8 mx-auto text-center text-2xl font-semibold max-w-[900px] flex flex-col justify-center items-center">
                     <Image
                       src="/party_animal.jpg"
                       alt="party-animal"
                       width={150}
                       height={228}
-                      layout="intrinsic"
                       className="max-h-[450px]"
                       quality={70}
                     />

@@ -6,11 +6,12 @@ import { bearerAuthFetchHeaders } from '@/utils/helpers';
 
 export default async function sessionRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = await getSession(req, res);
-  const { accessToken, expiresAt, isAuthenticated, refreshToken, tenantId, userId } = session;
+  const { accessToken, expiresAt, isAuthenticated, refreshToken, role, tenantId, userId } = session;
 
   if (!isAuthenticated) {
     return res.status(200).json({
       isAuthenticated,
+      role: null,
       user: null,
       tenant: null,
     });
@@ -55,5 +56,5 @@ export default async function sessionRoute(req: NextApiRequest, res: NextApiResp
   }
   const tenant = await tenantResponse.json();
 
-  return res.status(200).json({ isAuthenticated, user, tenant });
+  return res.status(200).json({ isAuthenticated, role, user, tenant });
 }

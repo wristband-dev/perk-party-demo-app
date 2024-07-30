@@ -2,6 +2,7 @@ import { getIronSession, IronSession, SessionOptions } from 'iron-session';
 import * as http from 'http';
 
 import { SESSION_COOKIE_NAME, SESSION_COOKIE_SECRET } from '@/utils/constants';
+import { Role } from '@/types';
 
 type SessionData = {
   accessToken: string;
@@ -11,6 +12,7 @@ type SessionData = {
   tenantDomainName: string;
   tenantId: string;
   userId: string;
+  role: Role;
 };
 
 const sessionOptions: SessionOptions = {

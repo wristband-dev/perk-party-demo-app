@@ -5,11 +5,16 @@ import { FaHome } from 'react-icons/fa';
 
 import { Raleway } from 'next/font/google';
 
-import { clientRedirectToLogout } from '@/utils/helpers';
+import { clientRedirectToLogout, isVipHostRole } from '@/utils/helpers';
+import { useWristband } from '@/context/auth-context';
 
 const raleway = Raleway({ subsets: ['latin'] });
 
 const Navbar = () => {
+  // Auth Context
+  const { role } = useWristband();
+
+  // React State
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
   const handleNav = () => setMenuOpen(!menuOpen);
 
@@ -30,11 +35,13 @@ const Navbar = () => {
                 <FaHome />
               </li>
             </Link>
-            <Link href="/admin">
-              <li className="ml-8 capitalize border-b-2 border-transparent hover:border-b-2 hover:border-pink-600 hover:text-pink-600 text-l font-bold cursor-pointer transition duration-300">
-                ADMIN
-              </li>
-            </Link>
+            {isVipHostRole(role) && (
+              <Link href="/admin">
+                <li className="ml-8 capitalize border-b-2 border-transparent hover:border-b-2 hover:border-pink-600 hover:text-pink-600 text-l font-bold cursor-pointer transition duration-300">
+                  ADMIN
+                </li>
+              </Link>
+            )}
             <Link href="/settings">
               <li className="ml-8 capitalize border-b-2 border-transparent hover:border-b-2 hover:border-pink-600 hover:text-pink-600 text-l font-bold cursor-pointer transition duration-300">
                 SETTINGS

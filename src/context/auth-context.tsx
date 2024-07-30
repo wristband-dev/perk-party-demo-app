@@ -1,8 +1,13 @@
 import React, { createContext, useEffect, useState } from 'react';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { clientRedirectToLogin, clientRedirectToLogout } from '@/utils/helpers';
-import { Tenant, User } from '@/types';
+import { Role, Tenant, User } from '@/types';
+
+const DEFAULT_ROLE_STATE: Role = {
+  id: '',
+  name: 'app:app:party-animal',
+  displayName: 'Party Animal',
+};
 
 const DEFAULT_USER_STATE: User = {
   id: '',
@@ -46,6 +51,7 @@ const DEFAULT_TENANT: Tenant = {
 const AuthContext = createContext({
   isAuthenticated: false,
   isLoading: true,
+  role: DEFAULT_ROLE_STATE,
   user: DEFAULT_USER_STATE,
   tenant: DEFAULT_TENANT,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -57,7 +63,8 @@ const AuthContext = createContext({
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [user, setUser] = useState<User>({ id: '' });
+  const [role, setRole] = useState<Role>(DEFAULT_ROLE_STATE);
+  const [user, setUser] = useState<User>(DEFAULT_USER_STATE);
   const [tenant, setTenant] = useState<Tenant>(DEFAULT_TENANT);
 
   // Bootstrap the application with the authenticated user's session data.
@@ -73,7 +80,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         const data = await res.json();
-        const { isAuthenticated, user, tenant } = data;
+        const { isAuthenticated, role, user, tenant } = data;
 
         if (!isAuthenticated) {
           // We want to preserve the page route that the user lands on when they com back after re-authentication.
@@ -83,6 +90,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
         setIsLoading(false);
         setIsAuthenticated(true);
+        setRole(role);
         setUser(user);
         setTenant(tenant);
       } catch (error) {
@@ -95,7 +103,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, user, setUser, tenant, setTenant }}>
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, role, user, setUser, tenant, setTenant }}>
       {children}
     </AuthContext.Provider>
   );
