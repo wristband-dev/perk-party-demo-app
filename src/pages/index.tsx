@@ -7,9 +7,6 @@ import { useEffect, useState } from 'react';
 
 const raleway = Raleway({ subsets: ['latin'] });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-// const perks: any[] = [];
-
 const perks = [
   {
     id: '1',
@@ -200,16 +197,32 @@ const perks = [
   },
 ];
 
-export default function HomePage() {
-  const { isAuthenticated } = useWristband();
 
+export default function HomePage() {
+  const { isAuthenticated, tenant } = useWristband(); // get meta data from tenant to show perk cats
   const [perksLoaded, setPerksLoaded] = useState<boolean>(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   useEffect(() => {
     if (isAuthenticated) {
       setTimeout(() => setPerksLoaded(true), 1000);
     }
   }, [isAuthenticated]);
+
+  const perkCategories = tenant?.publicMetadata?.perkCategories ?? [];
+
+  // Set selectedCategory to the single category if only one exists
+  useEffect(() => {
+    if (perkCategories.length === 1) {
+      setSelectedCategory(perkCategories[0].toLowerCase());
+    }
+  }, [perkCategories]);
+
+  const filteredPerks = perks.filter((perk) =>
+    selectedCategory === 'all'
+      ? perkCategories.includes(perk.category?.toLowerCase() || '')
+      : perk.category?.toLowerCase() === selectedCategory
+  );
 
   return (
     <>
@@ -235,38 +248,48 @@ export default function HomePage() {
         )}
         {isAuthenticated && perksLoaded && (
           <>
-            {perks.length > 0 && (
+            {perkCategories.length > 0 && (
               <div className="top-0 bg-white z-10 mt-8 mx-16">
                 <h1 className={`font-bold tracking-widest ${raleway.className} text-3xl`}>BENEFITS</h1>
                 <div className="flex flex-wrap items-center pt-4">
-                  <h1 className="text-xl mr-4">FILTER BY</h1>
-                  <div className="cursor-pointer">
-                    <select className="min-w-[120px] border border-gray-300 rounded-md py-2 px-2 cursor-pointer">
-                      <option value="all">All</option>
-                      <option value="thrill">Thrill</option>
-                      <option value="relax">Relax</option>
-                      <option value="travel">Travel</option>
-                      <option value="travel">Food</option>
-                    </select>
-                  </div>
+                  <h1 className="text-xl mr-4">
+                    {perkCategories.length > 1 ? 'FILTER BY' : 'SHOWING'}
+                  </h1>
+                  {perkCategories.length > 1 ? (
+                    <div className="cursor-pointer">
+                      <select
+                        className="min-w-[120px] border border-gray-300 rounded-md py-2 px-2 cursor-pointer"
+                        value={selectedCategory}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                      >
+                        <option value="all">All</option>
+                        {perkCategories.map((category) => (
+                          <option key={category} value={category.toLowerCase()}>
+                            {category.charAt(0).toUpperCase() + category.slice(1)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : (
+                    <h2 className="text-xl font-medium">
+                      {perkCategories[0].charAt(0).toUpperCase() + perkCategories[0].slice(1)}
+                    </h2>
+                  )}
                 </div>
               </div>
             )}
             <div className="mt-10 mx-4 flex flex-wrap justify-center z-10">
-              {perks.length > 0 ? (
-                <>
-                  {perks.map((perk) => (
-                    // if perk id is in claimed perks in user meta data then true else false
-                    <PerkCard
-                      key={perk.id}
-                      image={perk.image}
-                      perkName={perk.perkName}
-                      perkDesc={perk.perkDesc}
-                      banner={perk.banner}
-                      id={perk.id}
-                    />
-                  ))}
-                </>
+              {filteredPerks.length > 0 ? (
+                filteredPerks.map((perk) => (
+                  <PerkCard
+                    key={perk.id}
+                    image={perk.image}
+                    perkName={perk.perkName}
+                    perkDesc={perk.perkDesc}
+                    banner={perk.banner}
+                    id={perk.id}
+                  />
+                ))
               ) : (
                 <div className="flex flex-col">
                   <h2 className="my-4 mx-4 text-center text-2xl font-semibold max-w-[900px]">
@@ -278,7 +301,7 @@ export default function HomePage() {
                       alt="beatings-will-continue"
                       width={300}
                       height={450}
-                      layout="intrinsic" // or "responsive" if you want it to scale responsively
+                      layout="intrinsic"
                       quality={75}
                     />
                   </div>
