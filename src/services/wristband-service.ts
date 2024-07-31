@@ -1,6 +1,7 @@
 import {
   ChangeEmailRequestResults,
   IdentityProviderDto,
+  PaginatedEntityResults,
   ResolveEntityOverrideResults,
   ResolveIdpRedirectUrlOverridesResult,
   Tenant,
@@ -63,6 +64,19 @@ async function getTenant(accessToken: string, tenantId: string): Promise<Tenant>
 
   const data = await tenantResponse.json();
   return data as Tenant;
+}
+
+async function getUsersInTenantWithRoles(accessToken: string, tenantId: string): Promise<PaginatedEntityResults<User>> {
+  const tenantOverridesResponse = await fetch(`${API_URL}/tenants/${tenantId}/users`, {
+    method: 'GET',
+    headers: bearerAuthFetchHeaders(accessToken),
+    keepalive: true,
+  });
+
+  validateFetchResponseStatus(tenantOverridesResponse);
+
+  const data = await tenantOverridesResponse.json();
+  return data as PaginatedEntityResults<User>;
 }
 
 async function resolveTenantIdpOverrides(
@@ -178,6 +192,7 @@ const wristbandService = {
   changePassword,
   getChangeEmailRequests,
   getTenant,
+  getUsersInTenantWithRoles,
   requestEmailChange,
   resolveTenantIdpOverrides,
   resolveTenantIdpRedirectUrlOverrides,
