@@ -193,20 +193,6 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users }: Props) {
     }
   };
 
-  // TODO Remove
-  const dummyUsers = [
-    { fullName: 'Perky Pete', email: 'pete@perkparty.com', role: 'Admin' },
-    { fullName: 'Party Pam', email: 'pam@perkparty.com', role: 'User' },
-    { fullName: 'Rewarding Rob', email: 'rob@perkparty.com', role: 'Manager' },
-    { fullName: 'Benefit Betty', email: 'betty@perkparty.com', role: 'User' },
-    { fullName: 'Fun Frank', email: 'frank@perkparty.com', role: 'User' },
-    { fullName: 'Gifted Greg', email: 'greg@perkparty.com', role: 'User' },
-    { fullName: 'Treasure Tina', email: 'tina@perkparty.com', role: 'Admin' },
-    { fullName: 'Bonus Ben', email: 'ben@perkparty.com', role: 'Manager' },
-    { fullName: 'Prize Penny', email: 'penny@perkparty.com', role: 'User' },
-    { fullName: 'Cheerful Charlie', email: 'charlie@perkparty.com', role: 'User' },
-  ];
-
   return (
     <div className={`min-h-screen bg-gray-100 p-8 ${raleway.className}`}>
       <div className="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md">
@@ -339,19 +325,21 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users }: Props) {
               url="https://docs.wristband.dev/reference/querytenantusersv1"
             />
             <ul className="pt-4">
-              {dummyUsers.map((user, index) => (
-                <li key={index} className="flex items-center mb-2">
-                  <span role="img" aria-label="people icon" className="mr-2">
-                    🕺
-                  </span>
-                  <span className="flex-grow">{user.fullName}</span>
+              {users.map((user, index) => (
+                <li key={index} className="flex flex-col md:flex-row md:justify-between md:items-center mb-2">
+                  <div className="flex items-center mb-2 md:mb-0">
+                    <span role="img" aria-label="people icon" className="mr-2">
+                      🕺
+                    </span>
+                    <span>{user.fullName} - {user.email}</span>
+                  </div>
                   <button
                     type="submit"
                     // TODO add remove user in progress below
                     // disabled={isPerkUpdateInProgress}
-                    className="min-h-10 min-w-20 bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
+                    className="self-start md:self-auto bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
                   >
-                    {false ? <FaSpinner className="animate-spin mx-auto" /> : 'Deactive'}
+                    {false ? <FaSpinner className="animate-spin mx-auto" /> : 'Deactivate'}
                   </button>
                 </li>
               ))}
@@ -369,19 +357,21 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users }: Props) {
               url="https://docs.wristband.dev/reference/querynewuserinvitationrequestsfilteredbytenantv1"
             />
             <ul className="pt-4">
-              {dummyUsers.map((user, index) => (
-                <li key={index} className="flex items-center mb-2">
-                  <span role="img" aria-label="people icon" className="mr-2">
-                    🕺
-                  </span>
-                  <span className="flex-grow">{user.fullName}</span>
+              {users.map((user, index) => (
+                <li key={index} className="flex flex-col md:flex-row md:justify-between md:items-center mb-2">
+                  <div className="flex items-center mb-2 md:mb-0">
+                    <span role="img" aria-label="people icon" className="mr-2">
+                      🕺
+                    </span>
+                    <span>{user.fullName} - {user.email}</span>
+                  </div>
                   <button
                     type="submit"
                     // TODO add remove user in progress below
                     // disabled={isPerkUpdateInProgress}
-                    className="min-h-10 min-w-20 bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
+                    className="self-start md:self-auto bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
                   >
-                    {false ? <FaSpinner className="animate-spin mx-auto" /> : 'Delete'}
+                    {false ? <FaSpinner className="animate-spin mx-auto" /> : 'Deactivate'}
                   </button>
                 </li>
               ))}
