@@ -359,24 +359,28 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
               url="https://docs.wristband.dev/reference/querynewuserinvitationrequestsfilteredbytenantv1"
             />
             <ul className="pt-4">
-              {users.map((user, index) => (
-                <li key={index} className="flex flex-col md:flex-row md:justify-between md:items-center mb-2">
-                  <div className="flex items-center mb-2 md:mb-0">
-                    <span role="img" aria-label="people icon" className="mr-2">
-                      🕺
-                    </span>
-                    <span>{user.fullName} - {user.email}</span>
-                  </div>
-                  <button
-                    type="submit"
-                    // TODO add remove user in progress below
-                    // disabled={isPerkUpdateInProgress}
-                    className="self-start md:self-auto bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
-                  >
-                    {false ? <FaSpinner className="animate-spin mx-auto" /> : 'Deactivate'}
-                  </button>
-                </li>
-              ))}
+              {invites && invites.length > 0 ? (
+                invites.map((user, index) => (
+                  <li key={index} className="flex flex-col md:flex-row md:justify-between md:items-center mb-2">
+                    <div className="flex items-center mb-2 md:mb-0">
+                      <span role="img" aria-label="people icon" className="mr-2">
+                        🕺
+                      </span>
+                      <span>{user.email}</span>
+                    </div>
+                    <button
+                      type="submit"
+                      // TODO add remove user in progress below
+                      // disabled={isPerkUpdateInProgress}
+                      className="self-start md:self-auto bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
+                    >
+                      {false ? <FaSpinner className="animate-spin mx-auto" /> : 'Deactivate'}
+                    </button>
+                  </li>
+                ))
+              ) : (
+                <li className="text-center text-gray-500">No invites at the moment</li>
+              )}
             </ul>
           </form>
         </section>
