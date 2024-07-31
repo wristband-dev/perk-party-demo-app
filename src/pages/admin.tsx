@@ -312,7 +312,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
               // disabled={isChangePasswordInProgress}
               className="min-h-10 min-w-20 bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
             >
-              {false ? <FaSpinner className="animate-spin mx-auto" /> : 'Save'}
+              {false ? <FaSpinner className="animate-spin mx-auto" /> : 'Invite'}
             </button>
           </form>
         </section>
