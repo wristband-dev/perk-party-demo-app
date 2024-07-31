@@ -34,6 +34,9 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl }: Props) {
   const [isFoodEnabled, setFoodEnabled] = useState<boolean>(false);
   const [isPerkUpdateInProgress, setPerkUpdateInProgress] = useState<boolean>(false);
 
+  // Invite User
+  const [inviteEmail, setInviteEmail] = useState<string>('');
+
   // Okta IDP State
   const [isOktaIdpInProgress, setOktaIdpInProgress] = useState<boolean>(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -189,6 +192,20 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl }: Props) {
     }
   };
 
+  // TODO Remove
+  const dummyUsers = [
+    { fullName: 'Perky Pete', email: 'pete@perkparty.com', role: 'Admin' },
+    { fullName: 'Party Pam', email: 'pam@perkparty.com', role: 'User' },
+    { fullName: 'Rewarding Rob', email: 'rob@perkparty.com', role: 'Manager' },
+    { fullName: 'Benefit Betty', email: 'betty@perkparty.com', role: 'User' },
+    { fullName: 'Fun Frank', email: 'frank@perkparty.com', role: 'User' },
+    { fullName: 'Gifted Greg', email: 'greg@perkparty.com', role: 'User' },
+    { fullName: 'Treasure Tina', email: 'tina@perkparty.com', role: 'Admin' },
+    { fullName: 'Bonus Ben', email: 'ben@perkparty.com', role: 'Manager' },
+    { fullName: 'Prize Penny', email: 'penny@perkparty.com', role: 'User' },
+    { fullName: 'Cheerful Charlie', email: 'charlie@perkparty.com', role: 'User' },
+  ];
+
   return (
     <div className={`min-h-screen bg-gray-100 p-8 ${raleway.className}`}>
       <div className="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md">
@@ -287,14 +304,32 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl }: Props) {
           <form onSubmit={handlePerkCategoriesSubmit} className="mb-8">
             <h2 className="text-xl font-semibold mb-2">Invite Your Friends To Party</h2>
             <WristbandBadge title="Invite New User API" url="https://docs.wristband.dev/reference/invitenewuserv1" />
-            <p className="my-4">
-              {'Form inputs: email address for new user, role dropdown for "Party Animal" (default) and "VIP Host"'}
-            </p>
+            <div className="mb-4 pt-4">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Invite Friends to the Party
+              </label>
+              <input
+                type="email"
+                id="email"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                className="mt-1 p-2 border border-gray-300 rounded-md w-full"
+                required
+                maxLength={200}
+              />
+            </div>
+            <button
+              type="submit"
+              // disabled={isChangePasswordInProgress}
+              className="min-h-10 min-w-20 bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
+            >
+              {false ? <FaSpinner className="animate-spin mx-auto" /> : 'Save'}
+            </button>
           </form>
         </section>
 
         {/* ********************** View Current Active Users ********************** */}
-
+        
         <section>
           <form onSubmit={handlePerkCategoriesSubmit} className="mb-8">
             <h2 className="text-xl font-semibold mb-2">Your Fellow Party Animals</h2>
@@ -302,7 +337,24 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl }: Props) {
               title="Query Tenant Users API"
               url="https://docs.wristband.dev/reference/querytenantusersv1"
             />
-            <p className="my-4">List of users (10 max); fields = fullName, email, role displayName</p>
+            <ul className="pt-4">
+              {dummyUsers.map((user, index) => (
+                <li key={index} className="flex items-center mb-2">
+                  <span role="img" aria-label="people icon" className="mr-2">
+                    🕺
+                  </span>
+                  <span className="flex-grow">{user.fullName}</span>
+                  <button
+                    type="submit"
+                    // TODO add remove user in progress below
+                    // disabled={isPerkUpdateInProgress}
+                    className="min-h-10 min-w-20 bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
+                  >
+                    {false ? <FaSpinner className="animate-spin mx-auto" /> : 'Deactive'}
+                  </button>
+                </li>
+              ))}
+            </ul>
           </form>
         </section>
 
@@ -315,10 +367,24 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl }: Props) {
               title="Query New User Invitation Requests Filtered By Tenant API"
               url="https://docs.wristband.dev/reference/querynewuserinvitationrequestsfilteredbytenantv1"
             />
-            <p className="my-4">
-              List of new user invites (10 max); fields = email, role displayName, resend invite icon, delete invite
-              icon
-            </p>
+            <ul className="pt-4">
+              {dummyUsers.map((user, index) => (
+                <li key={index} className="flex items-center mb-2">
+                  <span role="img" aria-label="people icon" className="mr-2">
+                    🕺
+                  </span>
+                  <span className="flex-grow">{user.fullName}</span>
+                  <button
+                    type="submit"
+                    // TODO add remove user in progress below
+                    // disabled={isPerkUpdateInProgress}
+                    className="min-h-10 min-w-20 bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
+                  >
+                    {false ? <FaSpinner className="animate-spin mx-auto" /> : 'Delete'}
+                  </button>
+                </li>
+              ))}
+            </ul>
           </form>
         </section>
 
