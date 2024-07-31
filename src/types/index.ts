@@ -56,6 +56,7 @@ export type User = {
   updatedAt?: string | null;
   publicMetadata?: UserMetadata;
   restrictedMetadata?: object;
+  status?: string;
   roles?: Role[];
 };
 
