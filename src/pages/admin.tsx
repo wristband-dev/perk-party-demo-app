@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { GetServerSideProps, GetServerSidePropsContext } from 'next/types';
 import { Raleway } from 'next/font/google';
 import { SyntheticEvent, useEffect, useState } from 'react';
@@ -13,16 +12,19 @@ import WristbandBadge from '@/components/wristband-badge';
 import { getSession } from '@/session/iron-session';
 import wristbandService from '@/services/wristband-service';
 import { FetchError } from '@/error';
-import { IdentityProviderDto } from '@/types';
+import { IdentityProviderDto, User } from '@/types';
 
 const raleway = Raleway({ subsets: ['latin'] });
 
 type Props = {
   oktaIdp: IdentityProviderDto | null;
   oktaRedirectUrl: string | null;
+  users: User[];
 };
 
-export default function AdminPage({ oktaIdp, oktaRedirectUrl }: Props) {
+export default function AdminPage({ oktaIdp, oktaRedirectUrl, users }: Props) {
+  console.log(users);
+
   // Auth Context
   const { tenant, setTenant } = useWristband();
 
@@ -39,7 +41,6 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl }: Props) {
 
   // Okta IDP State
   const [isOktaIdpInProgress, setOktaIdpInProgress] = useState<boolean>(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [currentOktaIdp, setCurrentOktaIdp] = useState<IdentityProviderDto | null>(oktaIdp);
   const [domainName, setDomainName] = useState<string>(oktaIdp?.domainName || '');
   const [clientId, setClientId] = useState<string>(oktaIdp?.protocol?.clientId || '');
@@ -576,13 +577,15 @@ export const getServerSideProps: GetServerSideProps = async function (context: G
   }
 
   try {
-    const [tenantIdpOverrideResults, tenantIdpRedirectUrlOverrideResults] = await Promise.all([
+    const [tenantIdpOverrideResults, tenantIdpRedirectUrlOverrideResults, userResults] = await Promise.all([
       wristbandService.resolveTenantIdpOverrides(accessToken, tenantId),
       wristbandService.resolveTenantIdpRedirectUrlOverrides(accessToken, tenantId),
+      wristbandService.getUsersInTenantWithRoles(accessToken, tenantId),
     ]);
 
     const { items: idpOverrides } = tenantIdpOverrideResults;
     const { items: idpRedirectUrlOverrides } = tenantIdpRedirectUrlOverrideResults;
+    const { items: users } = userResults;
 
     return {
       props: {
@@ -592,6 +595,7 @@ export const getServerSideProps: GetServerSideProps = async function (context: G
           idpRedirectUrlOverrides.length && idpRedirectUrlOverrides[0].identityProviderType === 'OKTA'
             ? idpRedirectUrlOverrides[0].redirectUrls[0].redirectUrl
             : null,
+        users,
       },
     };
   } catch (err: unknown) {

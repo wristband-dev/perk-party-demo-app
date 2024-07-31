@@ -169,3 +169,10 @@ export type ResolveEntityOverrideResult<T> = {
 export type ResolveEntityOverrideResults<T> = {
   items: ResolveEntityOverrideResult<T>[];
 };
+
+export type PaginatedEntityResults<T> = {
+  totalResults: number;
+  startIndex: number;
+  itemsPerPage: number;
+  items: T[];
+};
