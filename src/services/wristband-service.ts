@@ -1,6 +1,7 @@
 import {
   ChangeEmailRequestResults,
   IdentityProviderDto,
+  NewUserInvite,
   PaginatedEntityResults,
   ResolveEntityOverrideResults,
   ResolveIdpRedirectUrlOverridesResult,
@@ -64,6 +65,22 @@ async function getTenant(accessToken: string, tenantId: string): Promise<Tenant>
 
   const data = await tenantResponse.json();
   return data as Tenant;
+}
+
+async function getNewUserInvitesInTenant(
+  accessToken: string,
+  tenantId: string
+): Promise<PaginatedEntityResults<NewUserInvite>> {
+  const tenantOverridesResponse = await fetch(`${API_URL}/tenants/${tenantId}/new-user-invitation-requests`, {
+    method: 'GET',
+    headers: bearerAuthFetchHeaders(accessToken),
+    keepalive: true,
+  });
+
+  validateFetchResponseStatus(tenantOverridesResponse);
+
+  const data = await tenantOverridesResponse.json();
+  return data as PaginatedEntityResults<NewUserInvite>;
 }
 
 async function getUsersInTenantWithRoles(accessToken: string, tenantId: string): Promise<PaginatedEntityResults<User>> {
@@ -191,6 +208,7 @@ const wristbandService = {
   cancelEmailChange,
   changePassword,
   getChangeEmailRequests,
+  getNewUserInvitesInTenant,
   getTenant,
   getUsersInTenantWithRoles,
   requestEmailChange,
