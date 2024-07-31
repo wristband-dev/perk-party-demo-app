@@ -5,12 +5,17 @@ import { FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 
 import { useWristband } from '@/context/auth-context';
 import { toastError, toastSuccess } from '@/utils/toast';
-import { clientRedirectToLogin, isVipHostRole, serverRedirectToLogin, validateFetchResponseStatus } from '@/utils/helpers';
+import {
+  clientRedirectToLogin,
+  isVipHostRole,
+  serverRedirectToLogin,
+  validateFetchResponseStatus,
+} from '@/utils/helpers';
 import { getSession } from '@/session/iron-session';
 import wristbandService from '@/services/wristband-service';
 import { ChangeEmailRequestResults } from '@/types';
 import { FetchError } from '@/error';
-import { JSON_MEDIA_TYPE, VIP_HOST_ROLE_NAME } from '@/utils/constants';
+import { JSON_MEDIA_TYPE } from '@/utils/constants';
 import WristbandBadge from '@/components/wristband-badge';
 
 const raleway = Raleway({ subsets: ['latin'] });
