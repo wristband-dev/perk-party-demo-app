@@ -142,6 +142,7 @@ export type IdentityProviderDto = {
   domainName?: string;
   isExternal?: boolean;
   protocol?: IdpProtocolDto;
+  jitProvisioningEnabled: boolean;
   status?: string;
   loginIdentifiers?: string[];
   loginFactors?: string[];

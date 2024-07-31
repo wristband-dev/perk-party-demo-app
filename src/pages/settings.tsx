@@ -5,12 +5,12 @@ import { FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 
 import { useWristband } from '@/context/auth-context';
 import { toastError, toastSuccess } from '@/utils/toast';
-import { clientRedirectToLogin, serverRedirectToLogin, validateFetchResponseStatus } from '@/utils/helpers';
+import { clientRedirectToLogin, isVipHostRole, serverRedirectToLogin, validateFetchResponseStatus } from '@/utils/helpers';
 import { getSession } from '@/session/iron-session';
 import wristbandService from '@/services/wristband-service';
 import { ChangeEmailRequestResults } from '@/types';
 import { FetchError } from '@/error';
-import { JSON_MEDIA_TYPE } from '@/utils/constants';
+import { JSON_MEDIA_TYPE, VIP_HOST_ROLE_NAME } from '@/utils/constants';
 import WristbandBadge from '@/components/wristband-badge';
 
 const raleway = Raleway({ subsets: ['latin'] });
@@ -22,7 +22,7 @@ type ProfileSettingsPageProps = {
 export default function ProfileSettingsPage({ changeEmailRequestResults }: ProfileSettingsPageProps) {
   const { items: changeEmailRequests, totalResults } = changeEmailRequestResults;
 
-  const { user, setUser } = useWristband();
+  const { role, user, setUser } = useWristband();
 
   // Full Name Form State
   const [fullName, setFullName] = useState<string>('');
@@ -253,6 +253,15 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
     <div className={`bg-gray-100 p-8 ${raleway.className}`}>
       <div className="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md">
         <h1 className="text-3xl font-bold mb-6">Profile Settings</h1>
+
+        {/* Role Display */}
+        <div className="flex flex-wrap my-4">
+          <h3 className="text-xl font-semibold mb-2 mr-4">Role:</h3>
+          <div className="flex flex-row items-center">
+            <h2 className="text-xl font-medium mb-2 mr-4">{role.displayName || ''}</h2>
+            <p className="text-xl mb-2">{isVipHostRole(role) ? '👑' : '🍺'}</p>
+          </div>
+        </div>
 
         {/* Update Name Form */}
         <form onSubmit={handleFullNameSubmit} className="mb-8">
