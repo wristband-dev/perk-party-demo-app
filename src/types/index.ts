@@ -176,3 +176,18 @@ export type PaginatedEntityResults<T> = {
   itemsPerPage: number;
   items: T[];
 };
+
+export type NewUserInvite = {
+  id: string;
+  expirationTime: string;
+  status: string;
+  tenantId: string;
+  applicationId: string;
+  email: string;
+  rolesToAssign: string[];
+  externalIdpRequestStatus: string;
+  externalIdpName: string;
+  externalIdpDisplayName: string;
+  externalIdpType: string;
+  metadata?: EntityMetadata;
+};

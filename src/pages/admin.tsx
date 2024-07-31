@@ -12,18 +12,20 @@ import WristbandBadge from '@/components/wristband-badge';
 import { getSession } from '@/session/iron-session';
 import wristbandService from '@/services/wristband-service';
 import { FetchError } from '@/error';
-import { IdentityProviderDto, User } from '@/types';
+import { IdentityProviderDto, NewUserInvite, User } from '@/types';
 
 const raleway = Raleway({ subsets: ['latin'] });
 
 type Props = {
+  invites: NewUserInvite[];
   oktaIdp: IdentityProviderDto | null;
   oktaRedirectUrl: string | null;
   users: User[];
 };
 
-export default function AdminPage({ oktaIdp, oktaRedirectUrl, users }: Props) {
+export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: Props) {
   console.log(users);
+  console.log(invites);
 
   // Auth Context
   const { tenant, setTenant } = useWristband();
@@ -577,15 +579,18 @@ export const getServerSideProps: GetServerSideProps = async function (context: G
   }
 
   try {
-    const [tenantIdpOverrideResults, tenantIdpRedirectUrlOverrideResults, userResults] = await Promise.all([
-      wristbandService.resolveTenantIdpOverrides(accessToken, tenantId),
-      wristbandService.resolveTenantIdpRedirectUrlOverrides(accessToken, tenantId),
-      wristbandService.getUsersInTenantWithRoles(accessToken, tenantId),
-    ]);
+    const [tenantIdpOverrideResults, tenantIdpRedirectUrlOverrideResults, userResults, inviteResults] =
+      await Promise.all([
+        wristbandService.resolveTenantIdpOverrides(accessToken, tenantId),
+        wristbandService.resolveTenantIdpRedirectUrlOverrides(accessToken, tenantId),
+        wristbandService.getUsersInTenantWithRoles(accessToken, tenantId),
+        wristbandService.getNewUserInvitesInTenant(accessToken, tenantId),
+      ]);
 
     const { items: idpOverrides } = tenantIdpOverrideResults;
     const { items: idpRedirectUrlOverrides } = tenantIdpRedirectUrlOverrideResults;
     const { items: users } = userResults;
+    const { items: invites } = inviteResults;
 
     return {
       props: {
@@ -596,6 +601,7 @@ export const getServerSideProps: GetServerSideProps = async function (context: G
             ? idpRedirectUrlOverrides[0].redirectUrls[0].redirectUrl
             : null,
         users,
+        invites,
       },
     };
   } catch (err: unknown) {
