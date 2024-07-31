@@ -8,6 +8,14 @@ export function isDuplicateNewEmail(error: WristbandRestError) {
   );
 }
 
+export function isInvalidDomainName(error: WristbandRestError) {
+  return (
+    error.violations &&
+    error.violations.domainName &&
+    error.violations.domainName.map((item) => item.code).includes('invalid_domain_name')
+  );
+}
+
 export function isInvalidNewEmail(error: WristbandRestError) {
   return (
     error.violations &&

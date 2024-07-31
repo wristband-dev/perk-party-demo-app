@@ -1,4 +1,11 @@
-import { ChangeEmailRequestResults, Tenant, User } from '@/types';
+import {
+  ChangeEmailRequestResults,
+  IdentityProviderDto,
+  ResolveEntityOverrideResults,
+  ResolveIdpRedirectUrlOverridesResult,
+  Tenant,
+  User,
+} from '@/types';
 import { bearerAuthFetchHeaders, validateFetchResponseStatus } from '@/utils/helpers';
 
 const API_URL = `https://${process.env.APPLICATION_DOMAIN}/api/v1`;
@@ -58,6 +65,47 @@ async function getTenant(accessToken: string, tenantId: string): Promise<Tenant>
   return data as Tenant;
 }
 
+async function resolveTenantIdpOverrides(
+  accessToken: string,
+  tenantId: string
+): Promise<ResolveEntityOverrideResults<IdentityProviderDto>> {
+  // We'll just hard-code to Okta type for now for demo purposes. Wristband type will always be enabled.
+  const tenantOverridesResponse = await fetch(
+    `${API_URL}/tenants/${tenantId}/identity-providers/resolve-overrides?types=OKTA`,
+    {
+      method: 'POST',
+      headers: bearerAuthFetchHeaders(accessToken),
+      keepalive: true,
+    }
+  );
+
+  validateFetchResponseStatus(tenantOverridesResponse);
+
+  const data = await tenantOverridesResponse.json();
+  return data as ResolveEntityOverrideResults<IdentityProviderDto>;
+}
+
+async function resolveTenantIdpRedirectUrlOverrides(
+  accessToken: string,
+  tenantId: string
+): Promise<ResolveIdpRedirectUrlOverridesResult> {
+  // We'll just hard-code to Okta type for now for demo purposes. Wristband type will always be enabled.
+  const tenantOverridesResponse = await fetch(
+    `${API_URL}/tenants/${tenantId}/identity-providers/resolve-redirect-urls`,
+    {
+      method: 'POST',
+      headers: bearerAuthFetchHeaders(accessToken),
+      body: JSON.stringify({ identityProviderTypes: ['OKTA'] }),
+      keepalive: true,
+    }
+  );
+
+  validateFetchResponseStatus(tenantOverridesResponse);
+
+  const data = await tenantOverridesResponse.json();
+  return data as ResolveIdpRedirectUrlOverridesResult;
+}
+
 async function requestEmailChange(accessToken: string, userId: string, newEmail: string): Promise<void> {
   const changeResponse = await fetch(`${API_URL}/change-email/request-email-change`, {
     method: 'POST',
@@ -97,13 +145,45 @@ async function updateTenant(accessToken: string, tenantId: string, tenantData: T
   return data as Tenant;
 }
 
+async function upsertIdp(accessToken: string, idpData: IdentityProviderDto): Promise<IdentityProviderDto> {
+  const userResponse = await fetch(`https://${process.env.APPLICATION_DOMAIN}/api/v1/identity-providers?upsert=true`, {
+    method: 'POST',
+    headers: bearerAuthFetchHeaders(accessToken),
+    keepalive: true,
+    body: JSON.stringify(idpData),
+  });
+
+  validateFetchResponseStatus(userResponse);
+
+  const data = await userResponse.json();
+  return data as IdentityProviderDto;
+}
+
+async function upsertIdpOverrideToggle(accessToken: string, tenantId: string): Promise<void> {
+  const response = await fetch(
+    `https://${process.env.APPLICATION_DOMAIN}/api/v1/identity-provider-override-toggles?upsert=true`,
+    {
+      method: 'POST',
+      headers: bearerAuthFetchHeaders(accessToken),
+      keepalive: true,
+      body: JSON.stringify({ ownerType: 'TENANT', ownerId: tenantId, status: 'ENABLED' }),
+    }
+  );
+
+  validateFetchResponseStatus(response);
+}
+
 const wristbandService = {
   cancelEmailChange,
   changePassword,
   getChangeEmailRequests,
   getTenant,
   requestEmailChange,
+  resolveTenantIdpOverrides,
+  resolveTenantIdpRedirectUrlOverrides,
   updateUser,
   updateTenant,
+  upsertIdp,
+  upsertIdpOverrideToggle,
 };
 export default wristbandService;

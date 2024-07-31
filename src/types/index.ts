@@ -120,3 +120,52 @@ export type WristbandRestError = {
     [key: string]: ConstraintViolationDetails[];
   };
 };
+
+export interface IdpProtocolDto {
+  type?: string;
+  clientId?: string;
+  clientSecret?: string;
+  teamId?: string;
+  serviceId?: string;
+  keyId?: string;
+  privateKey?: string;
+  scopes?: string[];
+}
+
+export type IdentityProviderDto = {
+  ownerType?: string;
+  ownerId?: string;
+  type?: string;
+  name?: string;
+  displayName?: string;
+  domainName?: string;
+  isExternal?: boolean;
+  protocol?: IdpProtocolDto;
+  status?: string;
+  loginIdentifiers?: string[];
+  loginFactors?: string[];
+};
+
+export type IdpRedirectUrl = {
+  protocolType: string;
+  redirectUrl: string;
+  redirectDomainName: string;
+};
+
+export type IdpRedirectUrlConfig = {
+  identityProviderType: string;
+  redirectUrls: IdpRedirectUrl[];
+};
+
+export type ResolveIdpRedirectUrlOverridesResult = {
+  items: IdpRedirectUrlConfig[];
+};
+
+export type ResolveEntityOverrideResult<T> = {
+  item: T;
+  isDefault: boolean;
+};
+
+export type ResolveEntityOverrideResults<T> = {
+  items: ResolveEntityOverrideResult<T>[];
+};
