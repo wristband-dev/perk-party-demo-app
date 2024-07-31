@@ -24,11 +24,13 @@ type Props = {
 };
 
 export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: Props) {
-  console.log(users);
-  console.log(invites);
 
   // Auth Context
   const { tenant, setTenant } = useWristband();
+
+  // User State Session
+  const [currentUsers, setCurrentUsers] = useState<User[]>(users);
+  const [currentInvites, setCurrentInvites] = useState<NewUserInvite[]>(invites);
 
   // Perk Category State
   const [isAllSelected, setAllSelected] = useState<boolean>(false);
@@ -40,6 +42,139 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
 
   // Invite User
   const [inviteEmail, setInviteEmail] = useState<string>('');
+  const [isInviteEmailInProgress, setIsInviteEmailInProgress] = useState<boolean>(false);
+
+
+  const handleInviteEmail = async (e: SyntheticEvent) => {
+    e.preventDefault(); // stops javascript submit events
+    setIsInviteEmailInProgress(true);
+
+    try {
+      const res = await fetch('/api/v1/cancel-change-email', {
+        method: 'POST',
+        keepalive: true,
+        body: JSON.stringify({ inviteEmail }),
+        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
+      });
+
+      validateFetchResponseStatus(res);
+      const data = await res.json();
+      setCurrentInvites(data); // updates the tenant (react side)
+
+      setInviteEmail('');
+      toastSuccess("User is on their way!", '😊');
+    } catch (error: unknown) {
+      console.log(error);
+
+      if (error instanceof FetchError && error.statusCode === 401) {
+        clientRedirectToLogin(window.location.href);
+        return;
+      }
+
+      toastError('An unexpected error occurred.');
+    } finally {
+      setIsInviteEmailInProgress(false);
+    }
+  };
+
+  // Deactivate User
+  const [isDeactivateUserInProgress, setDeactivateUserInProgress] = useState<boolean>(false);
+  const handleDeactivateUser = async (e: SyntheticEvent, userId: string) => {
+    e.preventDefault(); // stops javascript submit events
+    setDeactivateUserInProgress(true);
+
+    try {
+      const res = await fetch('/api/v1/deactivate-user', {
+        method: 'PATCH',
+        keepalive: true,
+        body: JSON.stringify({ userId }),
+        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
+      });
+
+      validateFetchResponseStatus(res);
+      const data = await res.json();
+      console.log(data);
+      setCurrentUsers(data); // updates the tenant (react side)
+      
+      toastSuccess("User sent to the penalty box", '😊');
+    } catch (error: unknown) {
+      console.log(error);
+
+      if (error instanceof FetchError && error.statusCode === 401) {
+        clientRedirectToLogin(window.location.href);
+        return;
+      }
+
+      toastError('An unexpected error occurred.');
+    } finally {
+      setDeactivateUserInProgress(false);
+    }
+  };
+
+
+  // Activate User
+  const [isActivateUserInProgress, setActivateUserInProgress] = useState<boolean>(false);
+  const handleActivateUser = async (e: SyntheticEvent,userId: string) => {
+    e.preventDefault(); // stops javascript submit events
+    setActivateUserInProgress(true);
+
+    try {
+      const res = await fetch('/api/v1/activate-user', {
+        method: 'PATCH',
+        keepalive: true,
+        body: JSON.stringify({ userId }),
+        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
+      });
+
+      validateFetchResponseStatus(res);
+      const data = await res.json();
+      setCurrentUsers(data); // updates the tenant (react side)
+
+      toastSuccess("User sent to the penalty box", '😊');
+    } catch (error: unknown) {
+      console.log(error);
+
+      if (error instanceof FetchError && error.statusCode === 401) {
+        clientRedirectToLogin(window.location.href);
+        return;
+      }
+
+      toastError('An unexpected error occurred.');
+    } finally {
+      setActivateUserInProgress(false);
+    }
+  };
+
+  // Remove Pending Invite
+  const [isRemovePendingInviteInProgress, setRemovePendingInviteInProgress] = useState<boolean>(false);
+  const handleRemovePendingInvite = async (userId: string) => {
+    setRemovePendingInviteInProgress(true);
+
+    try {
+      const res = await fetch('/api/v1/remove-pending-invite', {
+        method: 'PATCH',
+        keepalive: true,
+        body: JSON.stringify({ userId }),
+        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
+      });
+
+      validateFetchResponseStatus(res);
+
+      toastSuccess("User sent to the penalty box", '😊');
+    } catch (error: unknown) {
+      console.log(error);
+
+      if (error instanceof FetchError && error.statusCode === 401) {
+        clientRedirectToLogin(window.location.href);
+        return;
+      }
+
+      toastError('An unexpected error occurred.');
+    } finally {
+      setRemovePendingInviteInProgress(false);
+    }
+  };
+  
 
   // Okta IDP State
   const [isOktaIdpInProgress, setOktaIdpInProgress] = useState<boolean>(false);
@@ -309,10 +444,11 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
             </div>
             <button
               type="submit"
-              // disabled={isChangePasswordInProgress}
+              disabled={isInviteEmailInProgress}
+              onClick={(e) => handleInviteEmail(e)}
               className="min-h-10 min-w-20 bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
             >
-              {false ? <FaSpinner className="animate-spin mx-auto" /> : 'Invite'}
+              {isInviteEmailInProgress ? <FaSpinner className="animate-spin mx-auto" /> : 'Invite'}
             </button>
           </form>
         </section>
@@ -327,24 +463,28 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
               url="https://docs.wristband.dev/reference/querytenantusersv1"
             />
             <ul className="pt-4">
-              {users.map((user, index) => (
-                <li key={index} className="flex flex-col md:flex-row md:justify-between md:items-center mb-2">
-                  <div className="flex items-center mb-2 md:mb-0">
-                    <span role="img" aria-label="people icon" className="mr-2">
-                      🕺
-                    </span>
-                    <span>{user.fullName} - {user.email}</span>
-                  </div>
-                  <button
-                    type="submit"
-                    // TODO add remove user in progress below
-                    // disabled={isPerkUpdateInProgress}
-                    className="self-start md:self-auto bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
-                  >
-                    {false ? <FaSpinner className="animate-spin mx-auto" /> : 'Deactivate'}
-                  </button>
-                </li>
-              ))}
+              {currentUsers.length === 0 ? (
+                <li>No current users</li>
+              ) : (
+                currentUsers.map((user, index) => (
+                  <li key={index} className="flex flex-col md:flex-row md:justify-between md:items-center mb-2">
+                    <div className="flex items-center mb-2 md:mb-0">
+                      <span role="img" aria-label="people icon" className="mr-2">
+                        🕺
+                      </span>
+                      <span>{user.fullName} - {user.email}</span>
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={isDeactivateUserInProgress || isActivateUserInProgress}
+                      onClick={(e) => user.status === 'ACTIVE' ? handleDeactivateUser(e, user.id!) : handleActivateUser(e, user.id!) }
+                      className="self-start md:self-auto bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
+                    >
+                      {isDeactivateUserInProgress || isActivateUserInProgress ? <FaSpinner className="animate-spin mx-auto" /> : user.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
+                    </button>
+                  </li>
+                ))
+              )}
             </ul>
           </form>
         </section>
@@ -359,7 +499,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
               url="https://docs.wristband.dev/reference/querynewuserinvitationrequestsfilteredbytenantv1"
             />
             <ul className="pt-4">
-              {invites && invites.length > 0 ? (
+              {currentInvites && invites.length > 0 ? (
                 invites.map((user, index) => (
                   <li key={index} className="flex flex-col md:flex-row md:justify-between md:items-center mb-2">
                     <div className="flex items-center mb-2 md:mb-0">
