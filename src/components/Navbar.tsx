@@ -7,6 +7,7 @@ import { Raleway } from 'next/font/google';
 
 import { clientRedirectToLogout, isVipHostRole } from '@/utils/helpers';
 import { useWristband } from '@/context/auth-context';
+import WristbandBadge from '@/components/wristband-badge';
 
 const raleway = Raleway({ subsets: ['latin'] });
 
@@ -47,10 +48,18 @@ const Navbar = () => {
                 SETTINGS
               </li>
             </Link>
-            <div onClick={clientRedirectToLogout} className="cursor-pointer">
+            <div onClick={clientRedirectToLogout} className="cursor-pointer relative">
               <li className="ml-8 capitalize border-b-2 border-transparent hover:border-b-2 hover:border-pink-600 hover:text-pink-600 text-l font-bold cursor-pointer transition duration-300">
                 LOG OUT
               </li>
+              <div className="absolute left-4 bottom-[25px]">
+                <WristbandBadge
+                  isNavbar
+                  title="Logout API"
+                  buttonText="Wristband Auth"
+                  url="https://docs.wristband.dev/reference/logoutv1"
+                />
+              </div>
             </div>
           </ul>
         </div>
@@ -75,7 +84,7 @@ const Navbar = () => {
             <Link href="/">
               <li
                 onClick={() => setMenuOpen(false)}
-                className="py-4 cursor-pointer hover:text-pink-600 transition duration-300 list-none"
+                className="my-6 cursor-pointer hover:text-pink-600 transition duration-300 list-none"
               >
                 Home
               </li>
@@ -83,7 +92,7 @@ const Navbar = () => {
             <Link href="/admin">
               <li
                 onClick={() => setMenuOpen(false)}
-                className="py-4 cursor-pointer hover:text-pink-600 transition duration-300 list-none"
+                className="my-6 cursor-pointer hover:text-pink-600 transition duration-300 list-none"
               >
                 Admin
               </li>
@@ -91,7 +100,7 @@ const Navbar = () => {
             <Link href="/settings">
               <li
                 onClick={() => setMenuOpen(false)}
-                className="py-4 cursor-pointer hover:text-pink-600 transition duration-300 list-none"
+                className="my-6 cursor-pointer hover:text-pink-600 transition duration-300 list-none"
               >
                 Settings
               </li>
@@ -99,10 +108,17 @@ const Navbar = () => {
             <div onClick={clientRedirectToLogout} className="cursor-pointer">
               <li
                 onClick={() => setMenuOpen(false)}
-                className="py-4 cursor-pointer hover:text-pink-600 transition duration-300 list-none"
+                className="mt-6 mb-2 cursor-pointer hover:text-pink-600 transition duration-300 list-none"
               >
                 Log Out
               </li>
+            </div>
+            <div>
+              <WristbandBadge
+                title="Logout API"
+                buttonText="Wristband Auth"
+                url="https://docs.wristband.dev/reference/logoutv1"
+              />
             </div>
           </ul>
         </div>

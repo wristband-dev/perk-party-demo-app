@@ -291,6 +291,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
             domainName,
             status: isOktaEnabled ? 'ENABLED' : 'DISABLED',
             protocol: { type: 'OAUTH2', clientId, clientSecret },
+            jitProvisioningEnabled: true,
           },
         }),
         headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
@@ -338,7 +339,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
         {/* ********************** Perk Categories ********************** */}
 
         <section>
-          <form onSubmit={handlePerkCategoriesSubmit} className="mb-8">
+          <form onSubmit={handlePerkCategoriesSubmit} className="mb-12">
             <h2 className="text-xl font-semibold mb-4">Perk Categories</h2>
             <div className="mb-4">
               <div className="flex items-center mb-3">
@@ -425,7 +426,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
         {/* ********************** Invite New User Form ********************** */}
 
         <section>
-          <form onSubmit={handlePerkCategoriesSubmit} className="mb-8">
+          <form onSubmit={handlePerkCategoriesSubmit} className="mb-12">
             <h2 className="text-xl font-semibold mb-2">Invite Your Friends To Party</h2>
             <WristbandBadge title="Invite New User API" url="https://docs.wristband.dev/reference/invitenewuserv1" />
             <div className="mb-4 pt-4">
@@ -454,9 +455,9 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
         </section>
 
         {/* ********************** View Current Active Users ********************** */}
-        
+
         <section>
-          <form onSubmit={handlePerkCategoriesSubmit} className="mb-8">
+          <form onSubmit={handlePerkCategoriesSubmit} className="mb-12">
             <h2 className="text-xl font-semibold mb-2">Your Fellow Party Animals</h2>
             <WristbandBadge
               title="Query Tenant Users API"
@@ -492,7 +493,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
         {/* ********************** View Pending New User Invites ********************** */}
 
         <section>
-          <form onSubmit={handlePerkCategoriesSubmit} className="mb-8">
+          <form onSubmit={handlePerkCategoriesSubmit} className="mb-12">
             <h2 className="text-xl font-semibold mb-2">Party Animals Waiting In Line</h2>
             <WristbandBadge
               title="Query New User Invitation Requests Filtered By Tenant API"
