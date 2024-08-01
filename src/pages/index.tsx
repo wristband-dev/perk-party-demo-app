@@ -209,16 +209,6 @@ export default function HomePage() {
 
   return (
     <>
-      {/* <section className="m-0 relative w-full h-[450px]">
-        <Image
-          src="/race-car-rental.jpg"
-          alt="race-car-rental"
-          fill
-          style={{ objectFit: 'cover' }}
-          quality={70}
-          priority
-        />
-      </section> */}
       <section className="relative w-full h-[450px]">
         <Image
           src="/race-car-rental.jpg"
@@ -304,7 +294,7 @@ export default function HomePage() {
               ) : (
                 <div className="flex flex-col">
                   <h2 className="my-4 mx-4 text-center text-2xl font-semibold max-w-[900px]">
-                    Uh oh! Looks like upper management brought out the bouncer for this party. No more fun for you.
+                    Quick! Get someone to the Admin menu to turn on all the perks before the employees riot!
                   </h2>
                   <div className="mt-2 mb-10 mx-auto max-w-[300px]">
                     <Image
