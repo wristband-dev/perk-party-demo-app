@@ -7,10 +7,11 @@ import { useEffect, useMemo, useState } from 'react';
 
 const raleway = Raleway({ subsets: ['latin'] });
 
+
 const perks = [
   {
     id: '1',
-    image: 'https://cdn.pixabay.com/photo/2022/11/29/08/54/race-car-7624025_1280.jpg',
+    image: '/race-car-rental.jpg',
     perkName: 'Race Rental Car',
     category: 'Thrill',
     perkDesc:
@@ -19,8 +20,7 @@ const perks = [
   },
   {
     id: '2',
-    image:
-      'https://images.unsplash.com/photo-1501147830916-ce44a6359892?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8YmlrZXxlbnwwfHwwfHx8MA%3D%3D',
+    image: '/bike-pass.jpeg',
     perkName: 'Bike Pass',
     category: 'Travel',
     perkDesc:
@@ -29,8 +29,7 @@ const perks = [
   },
   {
     id: '3',
-    image:
-      'https://images.unsplash.com/uploads/1413387158190559d80f7/6108b580?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    image: '/rail-pass.jpeg',
     perkName: 'Rail Pass',
     category: 'Travel',
     perkDesc:
@@ -39,8 +38,7 @@ const perks = [
   },
   {
     id: '4',
-    image:
-      'https://images.unsplash.com/photo-1556695736-d287caebc48e?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bWV0cm98ZW58MHx8MHx8fDA%3D',
+    image: '/metro-pass.jpeg',
     perkName: 'Metro Pass',
     category: 'Travel',
     perkDesc: 'Unlimited metro rides for a month, ensuring seamless and affordable city travel for your daily commute.',
@@ -48,8 +46,7 @@ const perks = [
   },
   {
     id: '5',
-    image:
-      'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8eW9nYXxlbnwwfHwwfHx8MA%3D%3D',
+    image: '/30-minute-hot-yoga-coupons.jpeg',
     perkName: '30 Minute Hot Yoga Coupons',
     category: 'Relax',
     perkDesc: 'Relax and rejuvenate with 30-minute hot yoga sessions. Perfect for unwinding after a long day.',
@@ -57,8 +54,7 @@ const perks = [
   },
   {
     id: '6',
-    image:
-      'https://plus.unsplash.com/premium_photo-1669374537810-f88d8ad82818?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8Y29mZmVlfGVufDB8fDB8fHww',
+    image: '/blue-bottle-coffee-delivered-intravenously.jpeg',
     perkName: 'Blue Bottle Coffee Delivered Intravenously',
     category: 'Relax',
     perkDesc:
@@ -67,8 +63,7 @@ const perks = [
   },
   {
     id: '7',
-    image:
-      'https://images.unsplash.com/photo-1546527868-ccb7ee7dfa6a?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cHVwcHl8ZW58MHx8MHx8fDA%3D',
+    image: '/puppy-hour.jpeg',
     perkName: 'Puppy Hour',
     perkDesc: 'Cuddle with adorable puppies every Wednesday during our Puppy Hour. A perfect stress reliever!',
     category: 'Relax',
@@ -76,8 +71,7 @@ const perks = [
   },
   {
     id: '8',
-    image:
-      'https://images.unsplash.com/photo-1457732815361-daa98277e9c8?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8c2NyZWFtJTIwcm9vbXxlbnwwfHwwfHx8MA%3D%3D',
+    image: '/1-hour-scream-room-coupons.jpeg',
     perkName: '1-Hour Scream Room Coupons',
     category: 'Thrill',
     perkDesc:
@@ -86,8 +80,7 @@ const perks = [
   },
   {
     id: '9',
-    image:
-      'https://media.istockphoto.com/id/613668916/photo/woman-breaking-the-wall.jpg?s=612x612&w=0&k=20&c=dWYIdwoToWQP0qLzXM6hAcLOuleMLmTtn4A4DlsHViw=',
+    image: '/1-hour-rage-room-tokens.jpg',
     perkName: '1-Hour Rage Room Tokens',
     category: 'Thrill',
     perkDesc: 'Smash away your stress in our Rage Room. Enjoy an hour of therapeutic destruction.',
@@ -95,8 +88,7 @@ const perks = [
   },
   {
     id: '10',
-    image:
-      'https://images.unsplash.com/photo-1540946485063-a40da27545f8?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c2FpbGJvYXR8ZW58MHx8MHx8fDA%3D',
+    image: '/free-sailing-lessons.jpeg',
     perkName: 'Free Sailing Lessons',
     category: 'Travel',
     perkDesc: 'Learn the basics of sailing with our free lessons. Perfect for aspiring sailors and water enthusiasts.',
@@ -104,8 +96,7 @@ const perks = [
   },
   {
     id: '11',
-    image:
-      'https://images.unsplash.com/photo-1565109254792-8856bba5abfb?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8c2Nvb3RlcnxlbnwwfHwwfHx8MA%3D%3D',
+    image: '/e-scooters-for-remote-workers.jpeg',
     perkName: 'E-Scooters for Remote Workers',
     category: 'Travel',
     perkDesc: 'Refuse to work in the office? No problem! Enjoy free e-scooter rides to get around the city.',
@@ -113,8 +104,7 @@ const perks = [
   },
   {
     id: '12',
-    image:
-      'https://images.unsplash.com/photo-1504708706948-13d6cbba4062?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8R3Jhbm9sYXxlbnwwfHwwfHx8MA%3D%3D',
+    image: '/granola.jpeg',
     perkName: 'Granola',
     category: 'Food',
     perkDesc: 'Keep your energy up with our delicious and nutritious granola packs. Perfect for snacking on the go.',
@@ -122,8 +112,7 @@ const perks = [
   },
   {
     id: '13',
-    image:
-      'https://images.unsplash.com/photo-1577344718665-3e7c0c1ecf6b?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWVkaXRhdGlvbnxlbnwwfHwwfHx8MA%3D%3D',
+    image: '/virtual-reality-meditation.jpeg',
     perkName: 'Virtual Reality Meditation',
     category: 'Relax',
     perkDesc:
@@ -132,8 +121,7 @@ const perks = [
   },
   {
     id: '14',
-    image:
-      'https://images.unsplash.com/photo-1577106263724-2c8e03bfe9cf?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Y2hlZnxlbnwwfHwwfHx8MA%3D%3D',
+    image: '/personal-chef-service.jpeg',
     perkName: 'Personal Chef Service',
     category: 'Food',
     perkDesc:
@@ -142,8 +130,7 @@ const perks = [
   },
   {
     id: '15',
-    image:
-      'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c3BhfGVufDB8fDB8fHww',
+    image: '/spa-day-pass.jpeg',
     perkName: 'Spa Day Pass',
     category: 'Relax',
     perkDesc: 'Relax and rejuvenate with a full day pass to our luxurious spa. Enjoy massages, facials, and more.',
@@ -151,8 +138,7 @@ const perks = [
   },
   {
     id: '16',
-    image:
-      'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Y2luZW1hfGVufDB8fDB8fHww',
+    image: '/private-cinema-screening.jpeg',
     perkName: 'Private Cinema Screening',
     category: 'Relax',
     perkDesc: 'Watch your favorite movies in a private cinema setting. Enjoy a personalized viewing experience.',
@@ -160,8 +146,7 @@ const perks = [
   },
   {
     id: '17',
-    image:
-      'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fGNvb2tpbmd8ZW58MHx8MHx8fDA%3D',
+    image: '/gourmet-cooking-classes.jpeg',
     perkName: 'Gourmet Cooking Classes',
     category: 'Food',
     perkDesc:
@@ -170,8 +155,7 @@ const perks = [
   },
   {
     id: '18',
-    image:
-      'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y29uY2VydHxlbnwwfHwwfHx8MA%3D%3D',
+    image: '/exclusive-concert-tickets.jpeg',
     perkName: 'Exclusive Concert Tickets',
     category: 'Relax',
     perkDesc: 'Get front-row tickets to exclusive concerts and enjoy live performances from your favorite artists.',
@@ -179,8 +163,7 @@ const perks = [
   },
   {
     id: '19',
-    image:
-      'https://plus.unsplash.com/premium_photo-1674852890869-045efbe8c54b?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8d29vZHdvcmtpbmd8ZW58MHx8MHx8fDA%3D',
+    image: '/artisanal-craft-workshops.jpeg',
     perkName: 'Artisanal Craft Workshops',
     category: 'Thrill',
     perkDesc:
@@ -189,7 +172,7 @@ const perks = [
   },
   {
     id: '20',
-    image: '/mustache_rides.jpg',
+    image: '/mustache-rides.jpg',
     perkName: 'Mustache Rides',
     category: 'Thrill',
     perkDesc:

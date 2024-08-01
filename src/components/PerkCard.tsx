@@ -6,6 +6,7 @@ import { JSON_MEDIA_TYPE } from '@/utils/constants';
 import { clientRedirectToLogin, validateFetchResponseStatus } from '@/utils/helpers';
 import { toastSuccess, toastError } from '@/utils/toast';
 import { FetchError } from '@/error';
+import Image from 'next/image';
 
 interface PerkCardProps {
   id: string;
@@ -73,11 +74,14 @@ export function PerkCard({ id, image, perkName, perkDesc, banner }: PerkCardProp
           <div className="relative w-full h-full">
             {/* Black overlay */}
             {isClaimed && <div className="absolute inset-0 bg-black opacity-50" />}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
+              className={`w-full h-full object-cover ${isClaimed ? 'cursor-not-allowed' : 'cursor-pointer'}`}
               src={image}
               alt="Logo"
-              className={`w-full h-full object-cover ${isClaimed ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+              fill
+              style={{ objectFit: 'cover' }}
+              quality={70}
+              priority
             />
           </div>
           {banner && (
