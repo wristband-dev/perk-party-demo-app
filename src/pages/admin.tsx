@@ -126,7 +126,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
 
       setCurrentUsers(data.users);
 
-      toastSuccess('User sent to the penalty box', '😊');
+      toastSuccess("User deactivated. Looks like someone's getting a breather in the drunk tank! ", '😴');
     } catch (error: unknown) {
       console.log(error);
 
@@ -159,7 +159,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
       const data = await res.json();
       setCurrentUsers(data.users);
 
-      toastSuccess('User sent to the penalty box', '😊');
+      toastSuccess('The life of the party is back in action. Raise the roof!', '🎊');
     } catch (error: unknown) {
       console.log(error);
 
@@ -192,7 +192,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
       const data = await res.json();
       setCurrentInvites(data.invites);
 
-      toastSuccess('Invite caanceled. Guess the bouncer saw that person as a party foul waiting to happen!', '🚫');
+      toastSuccess('Invite canceled. Guess the bouncer saw that person as a party foul waiting to happen!', '👀');
     } catch (error: unknown) {
       console.log(error);
 
@@ -487,13 +487,13 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
             <ul className="pt-4">
               {currentUsers && currentUsers.length > 0 ? (
                 currentUsers.map((user, index) => (
-                  <li key={index} className="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
+                  <li key={index} className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
                     <div className="flex items-center mb-2 md:mb-0">
                       <span role="img" aria-label="people icon" className="mr-2">
                         🕺
                       </span>
-                      <span>
-                        {user.fullName} - {user.email}
+                      <span className="break-all" title={`${user.fullName} / ${user.email}`}>
+                        {user.fullName}&nbsp;&nbsp;/&nbsp;&nbsp;{user.email}
                       </span>
                     </div>
                     <button
@@ -502,7 +502,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
                       onClick={(e) =>
                         user.status === 'ACTIVE' ? handleDeactivateUser(e, user.id!) : handleActivateUser(e, user.id!)
                       }
-                      className="self-start md:self-auto bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
+                      className="self-start min-w-28 h-8 md:self-auto bg-pink-600 text-white rounded-lg transition duration-300 hover:filter hover:brightness-90"
                     >
                       {isDeactivateUserInProgress || isActivateUserInProgress ? (
                         <FaSpinner className="animate-spin mx-auto" />
@@ -533,18 +533,20 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
             <ul className="pt-4">
               {currentInvites && currentInvites.length > 0 ? (
                 currentInvites.map((invite, index) => (
-                  <li key={index} className="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
+                  <li key={index} className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
                     <div className="flex items-center mb-2 md:mb-0">
                       <span role="img" aria-label="people icon" className="mr-2">
                         📨
                       </span>
-                      <span>{invite.email}</span>
+                      <span title={invite.email} className="break-all">
+                        {invite.email}
+                      </span>
                     </div>
                     <button
                       type="submit"
                       disabled={isCancelInviteInProgress}
                       onClick={(e) => handleCancelNewUserInvite(e, invite.id)}
-                      className="self-start md:self-auto bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
+                      className="self-start min-w-28 h-8 md:self-auto bg-pink-600 text-white rounded-lg transition duration-300 hover:filter hover:brightness-90"
                     >
                       {isCancelInviteInProgress ? <FaSpinner className="animate-spin mx-auto" /> : 'Cancel'}
                     </button>
