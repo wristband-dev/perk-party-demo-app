@@ -209,7 +209,7 @@ export default function HomePage() {
 
   return (
     <>
-      <section className="m-0 relative w-full h-[450px]">
+      {/* <section className="m-0 relative w-full h-[450px]">
         <Image
           src="/race-car-rental.jpg"
           alt="race-car-rental"
@@ -218,6 +218,20 @@ export default function HomePage() {
           quality={70}
           priority
         />
+      </section> */}
+      <section className="relative w-full h-[450px]">
+        <Image
+          src="/race-car-rental.jpg"
+          alt="race-car-rental"
+          fill
+          style={{ objectFit: 'cover' }}
+          quality={70}
+          priority
+        />
+        <div className="absolute inset-0 bg-black opacity-60"></div>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <p className="text-white mx-8 text-3xl font-semibold text-center">Come for the perks. Stay for the auth.</p>
+        </div>
       </section>
 
       <section className="relative">
