@@ -77,8 +77,9 @@ export function PerkCard({ id, image, perkName, perkDesc, banner }: PerkCardProp
             <Image
               className={`w-full h-full object-cover ${isClaimed ? 'cursor-not-allowed' : 'cursor-pointer'}`}
               src={image}
-              alt="Logo"
-              fill
+              alt="perk image"
+              width={320}
+              height={150}
               style={{ objectFit: 'cover' }}
               quality={70}
               priority

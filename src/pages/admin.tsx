@@ -74,7 +74,8 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
     setAllSelected(isThrillEnabled && isTravelEnabled && isRelaxEnabled && isFoodEnabled);
   }, [isThrillEnabled, isTravelEnabled, isRelaxEnabled, isFoodEnabled]);
 
-  const handleInviteEmail = async (e: SyntheticEvent) => {
+  // Invite New User
+  const handleInviteNewUser = async (e: SyntheticEvent) => {
     e.preventDefault(); // stops javascript submit events
     setIsInviteEmailInProgress(true);
 
@@ -88,8 +89,8 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
 
       validateFetchResponseStatus(res);
       const data = await res.json();
-      setCurrentInvites(data.invites); // updates the tenant (react side)
 
+      setCurrentInvites(data.invites);
       setInviteEmail('');
       setSelectedRole('Party Animal');
       toastSuccess("Perk Party’s about to get wild. Hopefully you didn't invite a party pooper!", '🥳');
@@ -107,6 +108,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
     }
   };
 
+  // Deactivate User
   const handleDeactivateUser = async (e: SyntheticEvent, userId: string) => {
     e.preventDefault(); // stops javascript submit events
     setDeactivateUserInProgress(true);
@@ -121,6 +123,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
 
       validateFetchResponseStatus(res);
       const data = await res.json();
+
       setCurrentUsers(data.users);
 
       toastSuccess('User sent to the penalty box', '😊');
@@ -138,6 +141,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
     }
   };
 
+  // Activate User
   const handleActivateUser = async (e: SyntheticEvent, userId: string) => {
     e.preventDefault(); // stops javascript submit events
     setActivateUserInProgress(true);
@@ -170,6 +174,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
     }
   };
 
+  // Cancel Invite
   const handleCancelNewUserInvite = async (e: SyntheticEvent, newUserInvitationRequestId: string) => {
     e.preventDefault();
     setIsCancelInviteInProgress(true);
@@ -202,7 +207,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
     }
   };
 
-  const handleAllChange = () => {
+  const handleAllPerksChange = () => {
     const allChecked = !isAllSelected;
     setAllSelected(allChecked);
     setThrillEnabled(allChecked);
@@ -211,6 +216,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
     setFoodEnabled(allChecked);
   };
 
+  // Update Perk Categories
   const handlePerkCategoriesSubmit = async (e: SyntheticEvent) => {
     e.preventDefault(); // stops javascript submit events
     const updatedPerkCategories = [
@@ -271,6 +277,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
     toastSuccess('Got it! Now you’re officially on your way to Okta greatness!', '🗂️');
   };
 
+  // Upsert Okta IDP
   const handleUpsertOktaIdp = async (e: SyntheticEvent) => {
     e.preventDefault();
 
@@ -347,7 +354,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
                   id="selectAll"
                   name="selectAll"
                   checked={isAllSelected}
-                  onChange={handleAllChange}
+                  onChange={handleAllPerksChange}
                   className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500 cursor-pointer"
                   disabled={isPerkUpdateInProgress}
                 />
@@ -425,7 +432,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
         {/* ********************** Invite New User Form ********************** */}
 
         <section>
-          <form onSubmit={handleInviteEmail} className="mb-12">
+          <form onSubmit={handleInviteNewUser} className="mb-12">
             <h2 className="text-xl font-semibold mb-2">Invite Your Friends To Party</h2>
             <WristbandBadge title="Invite New User API" url="https://docs.wristband.dev/reference/invitenewuserv1" />
             <div className="mb-4 pt-4">
@@ -455,7 +462,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
                 required
               >
                 <option value="Party Animal">Party Animal</option>
-                <option value="VIP Host">VIP Host</option>
+                <option value="VIP Host">VIP Host (aka Admin)</option>
               </select>
             </div>
             <button
@@ -480,7 +487,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
             <ul className="pt-4">
               {currentUsers && currentUsers.length > 0 ? (
                 currentUsers.map((user, index) => (
-                  <li key={index} className="flex flex-col md:flex-row md:justify-between md:items-center mb-2">
+                  <li key={index} className="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
                     <div className="flex items-center mb-2 md:mb-0">
                       <span role="img" aria-label="people icon" className="mr-2">
                         🕺
@@ -508,7 +515,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
                   </li>
                 ))
               ) : (
-                <li>No current users</li>
+                <li className="text-center text-gray-500 my-8">No users at the moment. Bummer.</li>
               )}
             </ul>
           </form>
@@ -517,7 +524,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
         {/* ********************** View Pending New User Invites ********************** */}
 
         <section>
-          <form onSubmit={handlePerkCategoriesSubmit} className="mb-12">
+          <form className="mb-12">
             <h2 className="text-xl font-semibold mb-2">Party Animals Waiting In Line</h2>
             <WristbandBadge
               title="Query New User Invitation Requests Filtered By Tenant API"
@@ -526,7 +533,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
             <ul className="pt-4">
               {currentInvites && currentInvites.length > 0 ? (
                 currentInvites.map((invite, index) => (
-                  <li key={index} className="flex flex-col md:flex-row md:justify-between md:items-center mb-2">
+                  <li key={index} className="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
                     <div className="flex items-center mb-2 md:mb-0">
                       <span role="img" aria-label="people icon" className="mr-2">
                         📨
@@ -539,12 +546,12 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
                       onClick={(e) => handleCancelNewUserInvite(e, invite.id)}
                       className="self-start md:self-auto bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
                     >
-                      {isCancelInviteInProgress ? <FaSpinner className="animate-spin mx-auto" /> : ''}
+                      {isCancelInviteInProgress ? <FaSpinner className="animate-spin mx-auto" /> : 'Cancel'}
                     </button>
                   </li>
                 ))
               ) : (
-                <li className="text-center text-gray-500">No invites at the moment</li>
+                <li className="text-center text-gray-500 my-8">No invites at the moment. Bummer.</li>
               )}
             </ul>
           </form>

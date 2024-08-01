@@ -5,6 +5,7 @@ import {
   PaginatedEntityResults,
   ResolveEntityOverrideResults,
   ResolveIdpRedirectUrlOverridesResult,
+  Role,
   Tenant,
   User,
 } from '@/types';
@@ -78,15 +79,19 @@ async function getTenant(accessToken: string, tenantId: string): Promise<Tenant>
   return data as Tenant;
 }
 
+const invitesQuery = `${encodeURIComponent(`status eq "PENDING_INVITE_ACCEPTANCE"`)}`;
 async function getNewUserInvitesInTenant(
   accessToken: string,
   tenantId: string
 ): Promise<PaginatedEntityResults<NewUserInvite>> {
-  const tenantOverridesResponse = await fetch(`${API_URL}/tenants/${tenantId}/new-user-invitation-requests`, {
-    method: 'GET',
-    headers: bearerAuthFetchHeaders(accessToken),
-    keepalive: true,
-  });
+  const tenantOverridesResponse = await fetch(
+    `${API_URL}/tenants/${tenantId}/new-user-invitation-requests?query=${invitesQuery}`,
+    {
+      method: 'GET',
+      headers: bearerAuthFetchHeaders(accessToken),
+      keepalive: true,
+    }
+  );
 
   validateFetchResponseStatus(tenantOverridesResponse);
 
@@ -103,8 +108,42 @@ async function getUsersInTenantWithRoles(accessToken: string, tenantId: string):
 
   validateFetchResponseStatus(tenantOverridesResponse);
 
+  // TODO: Make query to get the role for each user
+
   const data = await tenantOverridesResponse.json();
   return data as PaginatedEntityResults<User>;
+}
+
+async function getTenantRoles(accessToken: string, tenantId: string): Promise<PaginatedEntityResults<Role>> {
+  const tenantOverridesResponse = await fetch(
+    `${API_URL}/tenants/${tenantId}/roles?include_application_roles=true&fields=id,name,displayName`,
+    {
+      method: 'GET',
+      headers: bearerAuthFetchHeaders(accessToken),
+      keepalive: true,
+    }
+  );
+
+  validateFetchResponseStatus(tenantOverridesResponse);
+
+  const data = await tenantOverridesResponse.json();
+  return data as PaginatedEntityResults<Role>;
+}
+
+async function inviteNewUser(
+  accessToken: string,
+  tenantId: string,
+  email: string,
+  roleToAssign: string
+): Promise<void> {
+  const changeResponse = await fetch(`${API_URL}/new-user-invitation/invite-user`, {
+    method: 'POST',
+    headers: bearerAuthFetchHeaders(accessToken),
+    keepalive: true,
+    body: JSON.stringify({ tenantId, email, rolesToAssign: [roleToAssign] }),
+  });
+
+  validateFetchResponseStatus(changeResponse);
 }
 
 async function resolveTenantIdpOverrides(
@@ -222,7 +261,9 @@ const wristbandService = {
   getChangeEmailRequests,
   getNewUserInvitesInTenant,
   getTenant,
+  getTenantRoles,
   getUsersInTenantWithRoles,
+  inviteNewUser,
   requestEmailChange,
   resolveTenantIdpOverrides,
   resolveTenantIdpRedirectUrlOverrides,

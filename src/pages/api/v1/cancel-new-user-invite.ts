@@ -4,13 +4,13 @@ import { getSession } from '@/session/iron-session';
 import wristbandService from '@/services/wristband-service';
 import { FetchError } from '@/error';
 
-export default async function handleCancelChangeEmail(req: NextApiRequest, res: NextApiResponse) {
+export default async function handleCancelNewUserInvite(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).end();
   }
 
   const session = await getSession(req, res);
-  const { isAuthenticated, accessToken } = session;
+  const { isAuthenticated, accessToken, tenantId } = session;
 
   /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
   if (!isAuthenticated) {
@@ -23,8 +23,9 @@ export default async function handleCancelChangeEmail(req: NextApiRequest, res: 
   }
 
   try {
-    await wristbandService.cancelEmailChange(accessToken, newUserInvitationRequestId);
-    return res.status(204).end();
+    await wristbandService.cancelNewUserInvite(accessToken, newUserInvitationRequestId);
+    const results = await wristbandService.getNewUserInvitesInTenant(accessToken, tenantId);
+    return res.status(200).json({ invites: results.items });
   } catch (err: unknown) {
     console.log(err);
 

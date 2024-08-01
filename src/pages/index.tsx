@@ -7,7 +7,6 @@ import { useEffect, useMemo, useState } from 'react';
 
 const raleway = Raleway({ subsets: ['latin'] });
 
-
 const perks = [
   {
     id: '1',
