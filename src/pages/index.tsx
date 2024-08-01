@@ -181,11 +181,12 @@ const perks = [
 ];
 
 export default function HomePage() {
-  const { isAuthenticated, tenant, user } = useWristband(); // get meta data from tenant to show perk cats
+  const { isAuthenticated, user } = useWristband(); // get meta data from tenant to show perk cats
   const [perksLoaded, setPerksLoaded] = useState<boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
-  const perkCategories = useMemo(() => tenant?.publicMetadata?.perkCategories ?? [], [tenant]);
+  // const perkCategories = useMemo(() => tenant?.publicMetadata?.perkCategories ?? [], [tenant]);
+  const perkCategories = useMemo(() => ['thrill', 'travel', 'relax', 'food'], []);
   const claimedPerks = useMemo(() => user?.publicMetadata?.claimedPerks ?? [], [user]);
 
   useEffect(() => {

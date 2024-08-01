@@ -1,6 +1,6 @@
 import { GetServerSideProps, GetServerSidePropsContext } from 'next/types';
 import { Raleway } from 'next/font/google';
-import { SyntheticEvent, useEffect, useState } from 'react';
+import { SyntheticEvent, useState } from 'react';
 import { FaCopy, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 import copy from 'copy-to-clipboard';
 
@@ -25,15 +25,15 @@ type Props = {
 
 export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: Props) {
   // Auth Context
-  const { tenant, setTenant, user: loggedInUser } = useWristband();
+  const { tenant, user: loggedInUser } = useWristband();
 
   // Perk Category State
-  const [isAllSelected, setAllSelected] = useState<boolean>(false);
-  const [isThrillEnabled, setThrillEnabled] = useState<boolean>(false);
-  const [isTravelEnabled, setTravelEnabled] = useState<boolean>(false);
-  const [isRelaxEnabled, setRelaxEnabled] = useState<boolean>(false);
-  const [isFoodEnabled, setFoodEnabled] = useState<boolean>(false);
-  const [isPerkUpdateInProgress, setPerkUpdateInProgress] = useState<boolean>(false);
+  // const [isAllSelected, setAllSelected] = useState<boolean>(false);
+  // const [isThrillEnabled, setThrillEnabled] = useState<boolean>(false);
+  // const [isTravelEnabled, setTravelEnabled] = useState<boolean>(false);
+  // const [isRelaxEnabled, setRelaxEnabled] = useState<boolean>(false);
+  // const [isFoodEnabled, setFoodEnabled] = useState<boolean>(false);
+  // const [isPerkUpdateInProgress, setPerkUpdateInProgress] = useState<boolean>(false);
 
   // Invite User State
   const [currentInvites, setCurrentInvites] = useState<NewUserInvite[]>(invites);
@@ -58,21 +58,21 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
   const [showClientSecret, setShowClientSecret] = useState<boolean>(false);
 
   // Initialize the state with the Tenant's metadata when the page first loads in the browser
-  useEffect(() => {
-    if (tenant) {
-      const publicMetaData = tenant.publicMetadata || {};
-      const perkCategories = publicMetaData.perkCategories || [];
-      setThrillEnabled(perkCategories.includes('thrill'));
-      setTravelEnabled(perkCategories.includes('travel'));
-      setRelaxEnabled(perkCategories.includes('relax'));
-      setFoodEnabled(perkCategories.includes('food'));
-    }
-  }, [tenant]);
+  // useEffect(() => {
+  //   if (tenant) {
+  //     const publicMetaData = tenant.publicMetadata || {};
+  //     const perkCategories = publicMetaData.perkCategories || [];
+  //     setThrillEnabled(perkCategories.includes('thrill'));
+  //     setTravelEnabled(perkCategories.includes('travel'));
+  //     setRelaxEnabled(perkCategories.includes('relax'));
+  //     setFoodEnabled(perkCategories.includes('food'));
+  //   }
+  // }, [tenant]);
 
   // Check if all categories are selected
-  useEffect(() => {
-    setAllSelected(isThrillEnabled && isTravelEnabled && isRelaxEnabled && isFoodEnabled);
-  }, [isThrillEnabled, isTravelEnabled, isRelaxEnabled, isFoodEnabled]);
+  // useEffect(() => {
+  //   setAllSelected(isThrillEnabled && isTravelEnabled && isRelaxEnabled && isFoodEnabled);
+  // }, [isThrillEnabled, isTravelEnabled, isRelaxEnabled, isFoodEnabled]);
 
   // Invite New User
   const handleInviteNewUser = async (e: SyntheticEvent) => {
@@ -207,70 +207,70 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
     }
   };
 
-  const handleAllPerksChange = () => {
-    const allChecked = !isAllSelected;
-    setAllSelected(allChecked);
-    setThrillEnabled(allChecked);
-    setTravelEnabled(allChecked);
-    setRelaxEnabled(allChecked);
-    setFoodEnabled(allChecked);
-  };
+  // const handleAllPerksChange = () => {
+  //   const allChecked = !isAllSelected;
+  //   setAllSelected(allChecked);
+  //   setThrillEnabled(allChecked);
+  //   setTravelEnabled(allChecked);
+  //   setRelaxEnabled(allChecked);
+  //   setFoodEnabled(allChecked);
+  // };
 
   // Update Perk Categories
-  const handlePerkCategoriesSubmit = async (e: SyntheticEvent) => {
-    e.preventDefault(); // stops javascript submit events
-    const updatedPerkCategories = [
-      ...(isThrillEnabled ? ['thrill'] : []),
-      ...(isTravelEnabled ? ['travel'] : []),
-      ...(isRelaxEnabled ? ['relax'] : []),
-      ...(isFoodEnabled ? ['food'] : []),
-    ];
+  // const handlePerkCategoriesSubmit = async (e: SyntheticEvent) => {
+  //   e.preventDefault(); // stops javascript submit events
+  //   const updatedPerkCategories = [
+  //     ...(isThrillEnabled ? ['thrill'] : []),
+  //     ...(isTravelEnabled ? ['travel'] : []),
+  //     ...(isRelaxEnabled ? ['relax'] : []),
+  //     ...(isFoodEnabled ? ['food'] : []),
+  //   ];
 
-    setPerkUpdateInProgress(true);
+  //   setPerkUpdateInProgress(true);
 
-    try {
-      const res = await fetch('/api/v1/update-perk-categories', {
-        method: 'PATCH',
-        keepalive: true,
-        body: JSON.stringify({ perkCategories: updatedPerkCategories }),
-        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
-      });
+  //   try {
+  //     const res = await fetch('/api/v1/update-perk-categories', {
+  //       method: 'PATCH',
+  //       keepalive: true,
+  //       body: JSON.stringify({ perkCategories: updatedPerkCategories }),
+  //       headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
+  //     });
 
-      validateFetchResponseStatus(res);
+  //     validateFetchResponseStatus(res);
 
-      const data = await res.json();
-      setTenant(data); // updates the tenant (react side)
+  //     const data = await res.json();
+  //     setTenant(data); // updates the tenant (react side)
 
-      switch (updatedPerkCategories.length) {
-        case 4:
-          toastSuccess('Maximum perks achieved! Your team is in beast mode!', '🐻');
-          break;
-        case 1:
-          if (updatedPerkCategories[0] === 'food') {
-            toastSuccess('Congrats on taking your team to Flavor Town -- Guy Fieri would be proud!', '🌶️');
-          } else if (updatedPerkCategories[0] === 'relax') {
-            toastSuccess("Your employees get to be chillin', and you're anything but the villain. Good on ya!", '❄️');
-          } else if (updatedPerkCategories[0] === 'travel') {
-            toastSuccess("Whatever happens in Vegas stays in Vegas (unless it's a hangover).", '✈️');
-          } else {
-            toastSuccess("You’re bringing the thriller vibes... just don't start moonwalking on me now.", '🧟');
-          }
-          break;
-        case 0:
-          toastSuccess('Team morale hits a new low. Thanks, Captain Killjoy.', '💀');
-          break;
-        case 2:
-        case 3:
-        default:
-          toastSuccess('The perk party is in progress... but maybe crank it up another notch?', '💃');
-      }
-    } catch (error: unknown) {
-      console.log(error);
-      toastError('An unexpected error occurred.');
-    } finally {
-      setPerkUpdateInProgress(false);
-    }
-  };
+  //     switch (updatedPerkCategories.length) {
+  //       case 4:
+  //         toastSuccess('Maximum perks achieved! Your team is in beast mode!', '🐻');
+  //         break;
+  //       case 1:
+  //         if (updatedPerkCategories[0] === 'food') {
+  //           toastSuccess('Congrats on taking your team to Flavor Town -- Guy Fieri would be proud!', '🌶️');
+  //         } else if (updatedPerkCategories[0] === 'relax') {
+  //           toastSuccess("Your employees get to be chillin', and you're anything but the villain. Good on ya!", '❄️');
+  //         } else if (updatedPerkCategories[0] === 'travel') {
+  //           toastSuccess("Whatever happens in Vegas stays in Vegas (unless it's a hangover).", '✈️');
+  //         } else {
+  //           toastSuccess("You’re bringing the thriller vibes... just don't start moonwalking on me now.", '🧟');
+  //         }
+  //         break;
+  //       case 0:
+  //         toastSuccess('Team morale hits a new low. Thanks, Captain Killjoy.', '💀');
+  //         break;
+  //       case 2:
+  //       case 3:
+  //       default:
+  //         toastSuccess('The perk party is in progress... but maybe crank it up another notch?', '💃');
+  //     }
+  //   } catch (error: unknown) {
+  //     console.log(error);
+  //     toastError('An unexpected error occurred.');
+  //   } finally {
+  //     setPerkUpdateInProgress(false);
+  //   }
+  // };
 
   const handleCopyClick = () => {
     copy(oktaRedirectUrl!);
@@ -344,7 +344,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
 
         {/* ********************** Perk Categories ********************** */}
 
-        <section>
+        {/* <section>
           <form onSubmit={handlePerkCategoriesSubmit} className="mb-12">
             <h2 className="text-xl font-semibold mb-4">Perk Categories</h2>
             <div className="mb-4">
@@ -427,7 +427,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
               {isPerkUpdateInProgress ? <FaSpinner className="animate-spin mx-auto" /> : 'Save'}
             </button>
           </form>
-        </section>
+        </section> */}
 
         {/* ********************** Invite New User Form ********************** */}
 
