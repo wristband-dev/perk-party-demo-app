@@ -23,6 +23,17 @@ async function cancelEmailChange(accessToken: string, changeEmailRequestId: stri
   validateFetchResponseStatus(cancelResponse);
 }
 
+async function cancelNewUserInvite(accessToken: string, newUserInvitationRequestId: string): Promise<void> {
+  const cancelResponse = await fetch(`${API_URL}/new-user-invitation/cancel-invite`, {
+    method: 'POST',
+    headers: bearerAuthFetchHeaders(accessToken),
+    keepalive: true,
+    body: JSON.stringify({ newUserInvitationRequestId }),
+  });
+
+  validateFetchResponseStatus(cancelResponse);
+}
+
 async function changePassword(
   accessToken: string,
   requestData: { userId: string; currentPassword: string; newPassword: string }
@@ -206,6 +217,7 @@ async function upsertIdpOverrideToggle(accessToken: string, tenantId: string): P
 
 const wristbandService = {
   cancelEmailChange,
+  cancelNewUserInvite,
   changePassword,
   getChangeEmailRequests,
   getNewUserInvitesInTenant,
