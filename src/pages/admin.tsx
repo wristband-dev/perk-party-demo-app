@@ -25,7 +25,7 @@ type Props = {
 
 export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: Props) {
   // Auth Context
-  const { tenant, setTenant } = useWristband();
+  const { tenant, setTenant, user: loggedInUser } = useWristband();
 
   // Perk Category State
   const [isAllSelected, setAllSelected] = useState<boolean>(false);
@@ -479,7 +479,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
 
         <section>
           <form className="mb-12">
-            <h2 className="text-xl font-semibold mb-2">Your Fellow Party Animals</h2>
+            <h2 className="text-xl font-semibold mb-2">All Party Animals</h2>
             <WristbandBadge
               title="Query Tenant Users API"
               url="https://docs.wristband.dev/reference/querytenantusersv1"
@@ -496,22 +496,27 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
                         {user.fullName}&nbsp;&nbsp;/&nbsp;&nbsp;{user.email}
                       </span>
                     </div>
-                    <button
-                      type="submit"
-                      disabled={isDeactivateUserInProgress || isActivateUserInProgress}
-                      onClick={(e) =>
-                        user.status === 'ACTIVE' ? handleDeactivateUser(e, user.id!) : handleActivateUser(e, user.id!)
-                      }
-                      className="self-start min-w-28 h-8 md:self-auto bg-pink-600 text-white rounded-lg transition duration-300 hover:filter hover:brightness-90"
-                    >
-                      {isDeactivateUserInProgress || isActivateUserInProgress ? (
-                        <FaSpinner className="animate-spin mx-auto" />
-                      ) : user.status === 'ACTIVE' ? (
-                        'Deactivate'
-                      ) : (
-                        'Activate'
-                      )}
-                    </button>
+                    {loggedInUser.email === user.email && (
+                      <p className="min-w-28 text-center font-semibold">{"That's You!"}</p>
+                    )}
+                    {loggedInUser.email !== user.email && (
+                      <button
+                        type="submit"
+                        disabled={isDeactivateUserInProgress || isActivateUserInProgress}
+                        onClick={(e) =>
+                          user.status === 'ACTIVE' ? handleDeactivateUser(e, user.id!) : handleActivateUser(e, user.id!)
+                        }
+                        className="self-start min-w-28 h-8 md:self-auto bg-pink-600 text-white rounded-lg transition duration-300 hover:filter hover:brightness-90"
+                      >
+                        {isDeactivateUserInProgress || isActivateUserInProgress ? (
+                          <FaSpinner className="animate-spin mx-auto" />
+                        ) : user.status === 'ACTIVE' ? (
+                          'Deactivate'
+                        ) : (
+                          'Activate'
+                        )}
+                      </button>
+                    )}
                   </li>
                 ))
               ) : (
@@ -525,7 +530,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
 
         <section>
           <form className="mb-12">
-            <h2 className="text-xl font-semibold mb-2">Party Animals Waiting In Line</h2>
+            <h2 className="text-xl font-semibold mb-2">Party Animals Waiting To RSVP</h2>
             <WristbandBadge
               title="Query New User Invitation Requests Filtered By Tenant API"
               url="https://docs.wristband.dev/reference/querynewuserinvitationrequestsfilteredbytenantv1"
