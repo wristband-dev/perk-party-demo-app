@@ -24,9 +24,6 @@ type Props = {
 };
 
 export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: Props) {
-  console.log(users);
-  console.log(invites);
-
   // Auth Context
   const { tenant, setTenant } = useWristband();
 
@@ -38,8 +35,17 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
   const [isFoodEnabled, setFoodEnabled] = useState<boolean>(false);
   const [isPerkUpdateInProgress, setPerkUpdateInProgress] = useState<boolean>(false);
 
-  // Invite User
+  // Invite User State
+  const [currentInvites, setCurrentInvites] = useState<NewUserInvite[]>(invites);
   const [inviteEmail, setInviteEmail] = useState<string>('');
+  const [selectedRole, setSelectedRole] = useState<string>('Party Animal');
+  const [isInviteEmailInProgress, setIsInviteEmailInProgress] = useState<boolean>(false);
+  const [isCancelInviteInProgress, setIsCancelInviteInProgress] = useState<boolean>(false);
+
+  // User State Session
+  const [currentUsers, setCurrentUsers] = useState<User[]>(users);
+  const [isActivateUserInProgress, setActivateUserInProgress] = useState<boolean>(false);
+  const [isDeactivateUserInProgress, setDeactivateUserInProgress] = useState<boolean>(false);
 
   // Okta IDP State
   const [isOktaIdpInProgress, setOktaIdpInProgress] = useState<boolean>(false);
@@ -68,7 +74,140 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
     setAllSelected(isThrillEnabled && isTravelEnabled && isRelaxEnabled && isFoodEnabled);
   }, [isThrillEnabled, isTravelEnabled, isRelaxEnabled, isFoodEnabled]);
 
-  const handleAllChange = () => {
+  // Invite New User
+  const handleInviteNewUser = async (e: SyntheticEvent) => {
+    e.preventDefault(); // stops javascript submit events
+    setIsInviteEmailInProgress(true);
+
+    try {
+      const res = await fetch('/api/v1/invite-new-user', {
+        method: 'POST',
+        keepalive: true,
+        body: JSON.stringify({ inviteEmail, roleName: selectedRole }),
+        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
+      });
+
+      validateFetchResponseStatus(res);
+      const data = await res.json();
+
+      setCurrentInvites(data.invites);
+      setInviteEmail('');
+      setSelectedRole('Party Animal');
+      toastSuccess("Perk Party’s about to get wild. Hopefully you didn't invite a party pooper!", '🥳');
+    } catch (error: unknown) {
+      console.log(error);
+
+      if (error instanceof FetchError && error.statusCode === 401) {
+        clientRedirectToLogin(window.location.href);
+        return;
+      }
+
+      toastError('An unexpected error occurred.');
+    } finally {
+      setIsInviteEmailInProgress(false);
+    }
+  };
+
+  // Deactivate User
+  const handleDeactivateUser = async (e: SyntheticEvent, userId: string) => {
+    e.preventDefault(); // stops javascript submit events
+    setDeactivateUserInProgress(true);
+
+    try {
+      const res = await fetch('/api/v1/deactivate-user', {
+        method: 'PATCH',
+        keepalive: true,
+        body: JSON.stringify({ userId }),
+        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
+      });
+
+      validateFetchResponseStatus(res);
+      const data = await res.json();
+
+      setCurrentUsers(data.users);
+
+      toastSuccess("User deactivated. Looks like someone's getting a breather in the drunk tank! ", '😴');
+    } catch (error: unknown) {
+      console.log(error);
+
+      if (error instanceof FetchError && error.statusCode === 401) {
+        clientRedirectToLogin(window.location.href);
+        return;
+      }
+
+      toastError('An unexpected error occurred.');
+    } finally {
+      setDeactivateUserInProgress(false);
+    }
+  };
+
+  // Activate User
+  const handleActivateUser = async (e: SyntheticEvent, userId: string) => {
+    e.preventDefault(); // stops javascript submit events
+    setActivateUserInProgress(true);
+
+    try {
+      const res = await fetch('/api/v1/activate-user', {
+        method: 'PATCH',
+        keepalive: true,
+        body: JSON.stringify({ userId }),
+        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
+      });
+
+      validateFetchResponseStatus(res);
+
+      const data = await res.json();
+      setCurrentUsers(data.users);
+
+      toastSuccess('The life of the party is back in action. Raise the roof!', '🎊');
+    } catch (error: unknown) {
+      console.log(error);
+
+      if (error instanceof FetchError && error.statusCode === 401) {
+        clientRedirectToLogin(window.location.href);
+        return;
+      }
+
+      toastError('An unexpected error occurred.');
+    } finally {
+      setActivateUserInProgress(false);
+    }
+  };
+
+  // Cancel Invite
+  const handleCancelNewUserInvite = async (e: SyntheticEvent, newUserInvitationRequestId: string) => {
+    e.preventDefault();
+    setIsCancelInviteInProgress(true);
+
+    try {
+      const res = await fetch('/api/v1/cancel-new-user-invite', {
+        method: 'POST',
+        keepalive: true,
+        body: JSON.stringify({ newUserInvitationRequestId }),
+        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
+      });
+
+      validateFetchResponseStatus(res);
+
+      const data = await res.json();
+      setCurrentInvites(data.invites);
+
+      toastSuccess('Invite canceled. Guess the bouncer saw that person as a party foul waiting to happen!', '👀');
+    } catch (error: unknown) {
+      console.log(error);
+
+      if (error instanceof FetchError && error.statusCode === 401) {
+        clientRedirectToLogin(window.location.href);
+        return;
+      }
+
+      toastError('An unexpected error occurred.');
+    } finally {
+      setIsCancelInviteInProgress(false);
+    }
+  };
+
+  const handleAllPerksChange = () => {
     const allChecked = !isAllSelected;
     setAllSelected(allChecked);
     setThrillEnabled(allChecked);
@@ -77,6 +216,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
     setFoodEnabled(allChecked);
   };
 
+  // Update Perk Categories
   const handlePerkCategoriesSubmit = async (e: SyntheticEvent) => {
     e.preventDefault(); // stops javascript submit events
     const updatedPerkCategories = [
@@ -137,6 +277,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
     toastSuccess('Got it! Now you’re officially on your way to Okta greatness!', '🗂️');
   };
 
+  // Upsert Okta IDP
   const handleUpsertOktaIdp = async (e: SyntheticEvent) => {
     e.preventDefault();
 
@@ -213,7 +354,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
                   id="selectAll"
                   name="selectAll"
                   checked={isAllSelected}
-                  onChange={handleAllChange}
+                  onChange={handleAllPerksChange}
                   className="h-4 w-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500 cursor-pointer"
                   disabled={isPerkUpdateInProgress}
                 />
@@ -291,16 +432,17 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
         {/* ********************** Invite New User Form ********************** */}
 
         <section>
-          <form onSubmit={handlePerkCategoriesSubmit} className="mb-12">
+          <form onSubmit={handleInviteNewUser} className="mb-12">
             <h2 className="text-xl font-semibold mb-2">Invite Your Friends To Party</h2>
             <WristbandBadge title="Invite New User API" url="https://docs.wristband.dev/reference/invitenewuserv1" />
             <div className="mb-4 pt-4">
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Invite Friends to the Party
+                Email Address
               </label>
               <input
                 type="email"
                 id="email"
+                placeholder="homelander@perkparty.club"
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
                 className="mt-1 p-2 border border-gray-300 rounded-md w-full"
@@ -308,12 +450,27 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
                 maxLength={200}
               />
             </div>
+            <div className="mb-4">
+              <label htmlFor="role" className="block text-sm font-medium text-gray-700">
+                Choose a Role
+              </label>
+              <select
+                id="role"
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value)}
+                className="mt-1 p-2 border border-gray-300 rounded-md w-full cursor-pointer"
+                required
+              >
+                <option value="Party Animal">Party Animal</option>
+                <option value="VIP Host">VIP Host (aka Admin)</option>
+              </select>
+            </div>
             <button
               type="submit"
-              // disabled={isChangePasswordInProgress}
+              disabled={isInviteEmailInProgress}
               className="min-h-10 min-w-20 bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
             >
-              {false ? <FaSpinner className="animate-spin mx-auto" /> : 'Invite'}
+              {isInviteEmailInProgress ? <FaSpinner className="animate-spin mx-auto" /> : 'Invite'}
             </button>
           </form>
         </section>
@@ -321,33 +478,45 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
         {/* ********************** View Current Active Users ********************** */}
 
         <section>
-          <form onSubmit={handlePerkCategoriesSubmit} className="mb-12">
+          <form className="mb-12">
             <h2 className="text-xl font-semibold mb-2">Your Fellow Party Animals</h2>
             <WristbandBadge
               title="Query Tenant Users API"
               url="https://docs.wristband.dev/reference/querytenantusersv1"
             />
             <ul className="pt-4">
-              {users.map((user, index) => (
-                <li key={index} className="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
-                  <div className="flex items-center mb-2 md:mb-0">
-                    <span role="img" aria-label="people icon" className="mr-2">
-                      🕺
-                    </span>
-                    <span>
-                      {user.fullName} - {user.email}
-                    </span>
-                  </div>
-                  <button
-                    type="submit"
-                    // TODO add remove user in progress below
-                    // disabled={isPerkUpdateInProgress}
-                    className="self-start md:self-auto bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
-                  >
-                    {false ? <FaSpinner className="animate-spin mx-auto" /> : 'Deactivate'}
-                  </button>
-                </li>
-              ))}
+              {currentUsers && currentUsers.length > 0 ? (
+                currentUsers.map((user, index) => (
+                  <li key={index} className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
+                    <div className="flex items-center mb-2 md:mb-0">
+                      <span role="img" aria-label="people icon" className="mr-2">
+                        🕺
+                      </span>
+                      <span className="break-all" title={`${user.fullName} / ${user.email}`}>
+                        {user.fullName}&nbsp;&nbsp;/&nbsp;&nbsp;{user.email}
+                      </span>
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={isDeactivateUserInProgress || isActivateUserInProgress}
+                      onClick={(e) =>
+                        user.status === 'ACTIVE' ? handleDeactivateUser(e, user.id!) : handleActivateUser(e, user.id!)
+                      }
+                      className="self-start min-w-28 h-8 md:self-auto bg-pink-600 text-white rounded-lg transition duration-300 hover:filter hover:brightness-90"
+                    >
+                      {isDeactivateUserInProgress || isActivateUserInProgress ? (
+                        <FaSpinner className="animate-spin mx-auto" />
+                      ) : user.status === 'ACTIVE' ? (
+                        'Deactivate'
+                      ) : (
+                        'Activate'
+                      )}
+                    </button>
+                  </li>
+                ))
+              ) : (
+                <li className="text-center text-gray-500 my-8">No users at the moment. Bummer.</li>
+              )}
             </ul>
           </form>
         </section>
@@ -355,34 +524,36 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
         {/* ********************** View Pending New User Invites ********************** */}
 
         <section>
-          <form onSubmit={handlePerkCategoriesSubmit} className="mb-12">
+          <form className="mb-12">
             <h2 className="text-xl font-semibold mb-2">Party Animals Waiting In Line</h2>
             <WristbandBadge
               title="Query New User Invitation Requests Filtered By Tenant API"
               url="https://docs.wristband.dev/reference/querynewuserinvitationrequestsfilteredbytenantv1"
             />
             <ul className="pt-4">
-              {invites && invites.length > 0 ? (
-                invites.map((user, index) => (
-                  <li key={index} className="flex flex-col md:flex-row md:justify-between md:items-center mb-2">
+              {currentInvites && currentInvites.length > 0 ? (
+                currentInvites.map((invite, index) => (
+                  <li key={index} className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
                     <div className="flex items-center mb-2 md:mb-0">
                       <span role="img" aria-label="people icon" className="mr-2">
-                        🕺
+                        📨
                       </span>
-                      <span>{user.email}</span>
+                      <span title={invite.email} className="break-all">
+                        {invite.email}
+                      </span>
                     </div>
                     <button
                       type="submit"
-                      // TODO add remove user in progress below
-                      // disabled={isPerkUpdateInProgress}
-                      className="self-start md:self-auto bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
+                      disabled={isCancelInviteInProgress}
+                      onClick={(e) => handleCancelNewUserInvite(e, invite.id)}
+                      className="self-start min-w-28 h-8 md:self-auto bg-pink-600 text-white rounded-lg transition duration-300 hover:filter hover:brightness-90"
                     >
-                      {false ? <FaSpinner className="animate-spin mx-auto" /> : 'Deactivate'}
+                      {isCancelInviteInProgress ? <FaSpinner className="animate-spin mx-auto" /> : 'Cancel'}
                     </button>
                   </li>
                 ))
               ) : (
-                <li className="text-center text-gray-500">No invites at the moment</li>
+                <li className="text-center text-gray-500 my-8">No invites at the moment. Bummer.</li>
               )}
             </ul>
           </form>
@@ -495,6 +666,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
               <input
                 type="text"
                 id="domainName"
+                placeholder="mydomain.com"
                 value={domainName}
                 onChange={(e) => setDomainName(e.target.value)}
                 className="mt-1 p-2 border border-gray-300 rounded-md w-full"

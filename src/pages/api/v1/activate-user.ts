@@ -4,7 +4,7 @@ import { getSession } from '@/session/iron-session';
 import wristbandService from '@/services/wristband-service';
 import { FetchError } from '@/error';
 
-export default async function handleDeactivateUser(req: NextApiRequest, res: NextApiResponse) {
+export default async function handleActivateUser(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'PATCH') {
     return res.status(405).end();
   }
@@ -23,7 +23,7 @@ export default async function handleDeactivateUser(req: NextApiRequest, res: Nex
   }
 
   try {
-    await wristbandService.updateUser(accessToken, userId, { status: 'INACTIVE' });
+    await wristbandService.updateUser(accessToken, userId, { status: 'ACTIVE' });
     const results = await wristbandService.getUsersInTenantWithRoles(accessToken, tenantId);
     return res.status(200).json({ users: results.items });
   } catch (err: unknown) {

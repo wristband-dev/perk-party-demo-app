@@ -4,7 +4,7 @@ import { getSession } from '@/session/iron-session';
 import wristbandService from '@/services/wristband-service';
 import { FetchError } from '@/error';
 
-export default async function handleDeactivateUser(req: NextApiRequest, res: NextApiResponse) {
+export default async function handleRemovePendingInvite(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'PATCH') {
     return res.status(405).end();
   }

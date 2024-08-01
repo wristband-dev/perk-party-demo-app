@@ -4,8 +4,8 @@ import { getSession } from '@/session/iron-session';
 import wristbandService from '@/services/wristband-service';
 import { FetchError } from '@/error';
 
-export default async function handleDeactivateUser(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'PATCH') {
+export default async function handleInviteNewUser(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') {
     return res.status(405).end();
   }
 
@@ -17,15 +17,18 @@ export default async function handleDeactivateUser(req: NextApiRequest, res: Nex
     return res.status(401).end();
   }
 
-  const { userId } = req.body;
-  if (!userId) {
+  const { inviteEmail, roleName } = req.body;
+  if (!inviteEmail || !roleName) {
     return res.status(400).end(); // bad request error (internal developer bug)
   }
 
   try {
-    await wristbandService.updateUser(accessToken, userId, { status: 'INACTIVE' });
-    const results = await wristbandService.getUsersInTenantWithRoles(accessToken, tenantId);
-    return res.status(200).json({ users: results.items });
+    const roleResults = await wristbandService.getTenantRoles(accessToken, tenantId);
+    const { items: roles } = roleResults;
+    const role = roles.find((role) => role.displayName === roleName);
+    await wristbandService.inviteNewUser(accessToken, tenantId, inviteEmail, role?.id || 'Party Animal');
+    const results = await wristbandService.getNewUserInvitesInTenant(accessToken, tenantId);
+    return res.status(200).json({ invites: results.items });
   } catch (err: unknown) {
     console.log(err);
 
