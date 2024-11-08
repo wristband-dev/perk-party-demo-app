@@ -1,20 +1,25 @@
 import { GetServerSideProps, GetServerSidePropsContext } from 'next/types';
-import { Raleway } from 'next/font/google';
-import { SyntheticEvent, useState } from 'react';
+import { SyntheticEvent, useEffect, useState } from 'react';
 import { FaCopy, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
+import { FaImage } from 'react-icons/fa';
 import copy from 'copy-to-clipboard';
 
 import { useWristband } from '@/context/auth-context';
-import { clientRedirectToLogin, serverRedirectToLogin, validateFetchResponseStatus } from '@/utils/helpers';
+import {
+  clientRedirectToLogin,
+  serverRedirectToLogin,
+  updateTenantOption,
+  validateFetchResponseStatus,
+} from '@/utils/helpers';
 import { JSON_MEDIA_TYPE } from '@/utils/constants';
 import { toastSuccess, toastError } from '@/utils/toast';
 import WristbandBadge from '@/components/wristband-badge';
 import { getSession } from '@/session/iron-session';
 import wristbandService from '@/services/wristband-service';
 import { FetchError } from '@/error';
-import { IdentityProviderDto, NewUserInvite, User } from '@/types';
-
-const raleway = Raleway({ subsets: ['latin'] });
+import { IdentityProviderDto, NewUserInvite, Tenant, User } from '@/types';
+import { ralewayFont } from '@/utils/fonts';
+import { useApiTouchpoints } from '@/context/api-touchpoint-context';
 
 type Props = {
   invites: NewUserInvite[];
@@ -24,8 +29,9 @@ type Props = {
 };
 
 export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: Props) {
-  // Auth Context
-  const { tenant, user: loggedInUser } = useWristband();
+  // Contexts
+  const { setTenant, setTenantOptions, tenant, tenantOptions, user: loggedInUser } = useWristband();
+  const { showApiTouchpoints } = useApiTouchpoints();
 
   // Perk Category State
   // const [isAllSelected, setAllSelected] = useState<boolean>(false);
@@ -34,6 +40,11 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
   // const [isRelaxEnabled, setRelaxEnabled] = useState<boolean>(false);
   // const [isFoodEnabled, setFoodEnabled] = useState<boolean>(false);
   // const [isPerkUpdateInProgress, setPerkUpdateInProgress] = useState<boolean>(false);
+
+  // Company Details Form State
+  const [tenantDisplayName, setTenantDisplayName] = useState<string>('');
+  const [tenantLogoUrl, setTenantLogoUrl] = useState<string>('');
+  const [isUpdateTenantInProgress, setIsUpdateTenantInProgress] = useState<boolean>(false);
 
   // Invite User State
   const [currentInvites, setCurrentInvites] = useState<NewUserInvite[]>(invites);
@@ -73,6 +84,55 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
   // useEffect(() => {
   //   setAllSelected(isThrillEnabled && isTravelEnabled && isRelaxEnabled && isFoodEnabled);
   // }, [isThrillEnabled, isTravelEnabled, isRelaxEnabled, isFoodEnabled]);
+
+  // We need this here to ensure the existing tenant values in the form inputs when the page loads.
+  useEffect(() => {
+    setTenantDisplayName(tenant.displayName || '');
+    setTenantLogoUrl(tenant.logoUrl || '');
+  }, [tenant]);
+
+  const handleTenantDisplayNameSubmit = async (e: SyntheticEvent) => {
+    e.preventDefault();
+    setIsUpdateTenantInProgress(true);
+
+    try {
+      const res = await fetch('/api/v1/update-tenant', {
+        method: 'PATCH',
+        keepalive: true,
+        body: JSON.stringify({ displayName: tenantDisplayName, logoUrl: tenantLogoUrl || null }),
+        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
+      });
+
+      validateFetchResponseStatus(res);
+
+      const data: Tenant = await res.json();
+      // updates the tenant and options (react side)
+      setTenant(data);
+      setTenantOptions(updateTenantOption(tenantOptions, data));
+      toastSuccess('All you need now is a shell corporation in the Cayman Islands for that new company name.', '🌴');
+    } catch (error: unknown) {
+      console.log(error);
+
+      if (error instanceof FetchError) {
+        if (error.statusCode === 400) {
+          const errorData = await error.res.json();
+          if (errorData.error === 'invalid_logo_url') {
+            toastError('BADDDDD');
+            return;
+          }
+        }
+
+        if (error.statusCode === 401) {
+          clientRedirectToLogin(window.location.href);
+          return;
+        }
+      }
+
+      toastError('An unexpected error occurred.');
+    } finally {
+      setIsUpdateTenantInProgress(false);
+    }
+  };
 
   // Invite New User
   const handleInviteNewUser = async (e: SyntheticEvent) => {
@@ -338,9 +398,52 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
   };
 
   return (
-    <div className={`min-h-screen bg-gray-100 p-8 ${raleway.className}`}>
+    <div className={`min-h-screen bg-gray-100 p-8 ${ralewayFont.className}`}>
       <div className="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md">
-        <h1 className="text-3xl font-bold mb-6 break-all">Admin for {tenant.displayName}</h1>
+        <h1 className="text-3xl font-bold mb-8 break-all">Admin Portal</h1>
+
+        {/* ********************** Other API Endpoints ********************** */}
+
+        {showApiTouchpoints && (
+          <div className="p-4 mb-8 border-2 border-solid border-wristband-green rounded-md">
+            <h2 className="text-xl font-semibold mb-4">Other APIs Used to Load This Page</h2>
+            <p className="mb-2">&#8226; Query New User Invitation Requests Filtered By Tenant</p>
+            <div className="mb-4 ml-2">
+              <WristbandBadge
+                title="Query New User Invitation Requests Filtered By Tenant API"
+                url="https://docs.wristband.dev/reference/querynewuserinvitationrequestsfilteredbytenantv1"
+              />
+            </div>
+            <p className="mb-2">&#8226; Query Tenant Roles</p>
+            <div className="mb-4 ml-2">
+              <WristbandBadge
+                title="Query Tenant Roles API"
+                url="https://docs.wristband.dev/reference/querytenantrolesv1"
+              />
+            </div>
+            <p className="mb-2">&#8226; Query Tenant Users</p>
+            <div className="mb-4 ml-2">
+              <WristbandBadge
+                title="Query Tenant Users API"
+                url="https://docs.wristband.dev/reference/querytenantusersv1"
+              />
+            </div>
+            <p className="mb-2">&#8226; Resolve Tenant Identity Provider Overrides</p>
+            <div className="mb-4 ml-2">
+              <WristbandBadge
+                title="Resolve Tenant Identity Provider Overrides API"
+                url="https://docs.wristband.dev/reference/resolvetenantidentityprovideroverridesv1"
+              />
+            </div>
+            <p className="mb-2">&#8226; Resolve Tenant Identity Provider Redirect URLs</p>
+            <div className="mb-2 ml-2">
+              <WristbandBadge
+                title="Resolve Tenant Identity Provider Redirect URLs API"
+                url="https://docs.wristband.dev/reference/resolvetenantidentityproviderredirectsurlsv1"
+              />
+            </div>
+          </div>
+        )}
 
         {/* ********************** Perk Categories ********************** */}
 
@@ -429,12 +532,67 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
           </form>
         </section> */}
 
+        {/* ********************** Company Details Form ********************** */}
+
+        <form onSubmit={handleTenantDisplayNameSubmit} className="mb-12">
+          <h2 className="text-xl font-semibold mb-2">Company Details</h2>
+          {showApiTouchpoints && (
+            <WristbandBadge title="Wristband API" url="https://docs.wristband.dev/reference/patchtenantv1" />
+          )}
+          <div className="my-4">
+            <label htmlFor="displayName" className="block text-sm font-medium text-gray-700">
+              Display Name
+            </label>
+            <input
+              type="text"
+              id="displayName"
+              value={tenantDisplayName}
+              onChange={(e) => setTenantDisplayName(e.target.value)}
+              className="mt-1 p-2 border border-gray-300 rounded-md w-full"
+              required
+              maxLength={60}
+            />
+          </div>
+          <div className="my-4">
+            <label htmlFor="logoUrl" className="block text-sm font-medium text-gray-700">
+              Logo URL
+            </label>
+            <input
+              type="url"
+              id="logoUrl"
+              value={tenantLogoUrl}
+              onChange={(e) => setTenantLogoUrl(e.target.value)}
+              className="mt-1 p-2 border border-gray-300 rounded-md w-full"
+              maxLength={2000}
+            />
+          </div>
+          <div className="mb-2 flex flex-col items-start justify-start">
+            <div className="p-2 w-20 h-20 border border-gray-500 rounded-md flex items-center justify-center">
+              {tenantLogoUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={tenantLogoUrl} alt="Company Logo" className="w-full h-full object-contain text-xs" />
+              )}
+              {!tenantLogoUrl && <FaImage className="w-10 h-10" />}
+            </div>
+            <p className="text-xs my-2">Company Logo</p>
+          </div>
+          <button
+            type="submit"
+            disabled={isUpdateTenantInProgress}
+            className="min-h-10 min-w-20 bg-pink-600 text-white py-2 px-4 rounded-lg transition duration-300 hover:filter hover:brightness-90"
+          >
+            {isUpdateTenantInProgress ? <FaSpinner className="animate-spin mx-auto" /> : 'Save'}
+          </button>
+        </form>
+
         {/* ********************** Invite New User Form ********************** */}
 
         <section>
           <form onSubmit={handleInviteNewUser} className="mb-12">
             <h2 className="text-xl font-semibold mb-2">Invite Your Friends To Party</h2>
-            <WristbandBadge title="Invite New User API" url="https://docs.wristband.dev/reference/invitenewuserv1" />
+            {showApiTouchpoints && (
+              <WristbandBadge title="Invite New User API" url="https://docs.wristband.dev/reference/invitenewuserv1" />
+            )}
             <div className="mb-4 pt-4">
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email Address
@@ -480,10 +638,12 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
         <section>
           <form className="mb-12">
             <h2 className="text-xl font-semibold mb-2">All Party Animals</h2>
-            <WristbandBadge
-              title="Query Tenant Users API"
-              url="https://docs.wristband.dev/reference/querytenantusersv1"
-            />
+            {showApiTouchpoints && (
+              <WristbandBadge
+                title="Query Tenant Users API"
+                url="https://docs.wristband.dev/reference/querytenantusersv1"
+              />
+            )}
             <ul className="pt-4">
               {currentUsers && currentUsers.length > 0 ? (
                 currentUsers.map((user, index) => (
@@ -531,10 +691,12 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
         <section>
           <form className="mb-12">
             <h2 className="text-xl font-semibold mb-2">Party Animals Waiting To RSVP</h2>
-            <WristbandBadge
-              title="Query New User Invitation Requests Filtered By Tenant API"
-              url="https://docs.wristband.dev/reference/querynewuserinvitationrequestsfilteredbytenantv1"
-            />
+            {showApiTouchpoints && (
+              <WristbandBadge
+                title="Query New User Invitation Requests Filtered By Tenant API"
+                url="https://docs.wristband.dev/reference/querynewuserinvitationrequestsfilteredbytenantv1"
+              />
+            )}
             <ul className="pt-4">
               {currentInvites && currentInvites.length > 0 ? (
                 currentInvites.map((invite, index) => (
@@ -569,10 +731,12 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
         <section>
           <form onSubmit={handleUpsertOktaIdp} className="mb-8">
             <h2 className="text-xl font-semibold mb-2">Make It A Corporate Affair</h2>
-            <WristbandBadge
-              title="Create Identity Provider API"
-              url="https://docs.wristband.dev/reference/createidentityprovidersv1"
-            />
+            {showApiTouchpoints && (
+              <WristbandBadge
+                title="Create Identity Provider API"
+                url="https://docs.wristband.dev/reference/createidentityprovidersv1"
+              />
+            )}
             <p className="mt-4 mb-8">
               You can enable Okta SSO for Perk Party. Impress your boss both with your commitment to security as well as
               your dance moves!

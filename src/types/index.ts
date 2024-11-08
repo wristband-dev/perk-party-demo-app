@@ -18,6 +18,7 @@ export type Tenant = {
   domainName?: string;
   displayName?: string;
   description?: string;
+  logoUrl?: string;
   signupEnabled?: boolean;
   status?: string;
   publicMetadata?: TenantMetadata;
@@ -193,3 +194,14 @@ export type NewUserInvite = {
   externalIdpType: string;
   metadata?: EntityMetadata;
 };
+
+export type TenantOption = {
+  tenantId: string;
+  tenantVanityDomain: string;
+  tenantDomainName: string;
+  tenantDisplayName: string;
+  tenantLoginUrl: string;
+  tenantLogoUrl?: string;
+};
+
+export type TenantOptionsList = TenantOption[];

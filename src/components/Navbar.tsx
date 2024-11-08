@@ -1,129 +1,114 @@
 import Link from 'next/link';
-import { useState } from 'react';
-import { AiOutlineMenu, AiOutlineClose } from 'react-icons/ai';
-import { FaHome } from 'react-icons/fa';
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
+import { AiOutlineMenu } from 'react-icons/ai';
 
-import { Raleway } from 'next/font/google';
-
-import { clientRedirectToLogout, isVipHostRole } from '@/utils/helpers';
+import { useApiTouchpoints } from '@/context/api-touchpoint-context';
 import { useWristband } from '@/context/auth-context';
 import WristbandBadge from '@/components/wristband-badge';
-
-const raleway = Raleway({ subsets: ['latin'] });
+import TenantSwitcher from '@/components/tenant-switcher';
+import MobileNavMenu from '@/components/mobile-nav-menu';
+import { clientRedirectToLogout, isVipHostRole } from '@/utils/helpers';
 
 const Navbar = () => {
-  // Auth Context
-  const { role } = useWristband();
+  // Contexts
+  const { role, tenant } = useWristband();
+  const { showApiTouchpoints } = useApiTouchpoints();
 
-  // React State
-  const [menuOpen, setMenuOpen] = useState<boolean>(false);
-  const handleNav = () => setMenuOpen(!menuOpen);
+  // Mobile Nav State
+  const [isMobileNavMenuOpen, setIsMobileNavMenuOpen] = useState<boolean>(false);
+
+  // Disable body scroll when the menu is open
+  useEffect(() => {
+    if (isMobileNavMenuOpen) {
+      document.body.classList.add('overflow-hidden');
+    } else {
+      document.body.classList.remove('overflow-hidden');
+    }
+
+    // Cleanup when component unmounts
+    return () => document.body.classList.remove('overflow-hidden');
+  }, [isMobileNavMenuOpen]);
 
   return (
-    <nav className="fixed w-full h-16 shadow-xl bg-black text-white z-[3200]">
-      <div className="flex justify-between items-center h-full w-full px-10 2xl:px-16">
-        <Link
-          href="/"
-          className={`font-bold tracking-widest ${raleway.className} hover:text-pink-600 cursor-pointer transition duration-300`}
-          style={{ fontSize: 'clamp(1.625rem, 5vw, 2rem)', textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)' }}
-        >
-          PERK PARTY
-        </Link>
-        <div className="hidden md:flex">
-          <ul className="hidden md:flex">
-            <Link href="/">
-              <li className="mr-2 capitalize hover:text-pink-600 text-2xl font-bold cursor-pointer transition duration-300 list-none flex items-center">
-                <FaHome />
-              </li>
+    <>
+      <nav className="fixed w-full h-16 shadow-xl bg-black text-white z-[3200]">
+        <div className="flex justify-between items-center h-full w-full pl-8 pr-10 2xl:px-16">
+          <div className="flex justify-start items-center">
+            <Link
+              href="/"
+              className="block cursor-pointer border border-white rounded-md transition-shadow duration-300 ease-in-out hover:shadow-[0px_0px_8px_3px_rgba(255,255,255,0.5)]"
+            >
+              <Image src="/perk-party-icon.png" alt="perk-party-icon" width={48} height={48} quality={70} />
             </Link>
-            {isVipHostRole(role) && (
-              <Link href="/admin">
-                <li className="ml-8 capitalize border-b-2 border-transparent hover:border-b-2 hover:border-pink-600 hover:text-pink-600 text-l font-bold cursor-pointer transition duration-300">
-                  ADMIN
-                </li>
-              </Link>
+            {tenant.logoUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={tenant.logoUrl}
+                alt="Company Logo"
+                width={40}
+                height={40}
+                className="object-contain text-xs ml-6"
+              />
             )}
-            <Link href="/settings">
-              <li className="ml-8 capitalize border-b-2 border-transparent hover:border-b-2 hover:border-pink-600 hover:text-pink-600 text-l font-bold cursor-pointer transition duration-300">
-                SETTINGS
-              </li>
-            </Link>
-            <div onClick={clientRedirectToLogout} className="cursor-pointer relative">
-              <li className="ml-8 capitalize border-b-2 border-transparent hover:border-b-2 hover:border-pink-600 hover:text-pink-600 text-l font-bold cursor-pointer transition duration-300">
-                LOG OUT
-              </li>
-              <div className="absolute left-4 bottom-[25px]">
-                <WristbandBadge
-                  isNavbar
-                  title="Logout API"
-                  buttonText="Wristband Auth"
-                  url="https://docs.wristband.dev/reference/logoutv1"
-                />
+          </div>
+          <ul className="hidden navbar-md:flex">
+            <li className="relative ml-8">
+              <div className="absolute bottom-[25px] left-8">
+                {showApiTouchpoints && (
+                  <WristbandBadge
+                    isNavbar
+                    title="Fetch Tenants API"
+                    url="https://docs.wristband.dev/reference/fetchtenantsv1"
+                  />
+                )}
               </div>
-            </div>
+              <TenantSwitcher />
+            </li>
+            {isVipHostRole(role) && (
+              <li className="relative ml-6">
+                <Link
+                  href="/admin"
+                  className="block capitalize border-b-2 border-transparent hover:border-b-2 hover:border-pink-600 hover:text-pink-600 text-l font-bold cursor-pointer transition duration-300"
+                >
+                  ADMIN
+                </Link>
+              </li>
+            )}
+            <li className="relative ml-8">
+              <Link
+                href="/settings"
+                className="block capitalize border-b-2 border-transparent hover:border-b-2 hover:border-pink-600 hover:text-pink-600 text-l font-bold cursor-pointer transition duration-300"
+              >
+                SETTINGS
+              </Link>
+            </li>
+            <li className="relative ml-8">
+              <div className="absolute bottom-[25px] right-[-15px]">
+                {showApiTouchpoints && (
+                  <WristbandBadge
+                    isNavbar
+                    title="Logout API"
+                    buttonText="Wristband API"
+                    url="https://docs.wristband.dev/reference/logoutv1"
+                  />
+                )}
+              </div>
+              <div
+                onClick={clientRedirectToLogout}
+                className="capitalize border-b-2 border-transparent hover:border-b-2 hover:border-pink-600 hover:text-pink-600 text-l font-bold cursor-pointer transition duration-300"
+              >
+                LOG OUT
+              </div>
+            </li>
           </ul>
-        </div>
-        <div onClick={handleNav} className="md:hidden cursor-pointer">
-          <AiOutlineMenu size={25} className="hover:text-pink-600 transition duration-300 list-none" />
-        </div>
-      </div>
-      <div
-        className={
-          menuOpen
-            ? 'fixed left-0 top-0 w-[100%] h-screen p-8 bg-[#ecf0f3] ease-in duration-300 md:hidden'
-            : 'fixed left-[-100%] top-0 w-[100%] h-screen p-8 ease-in duration-300'
-        }
-      >
-        <div className="flex w-full items-center justify-end text-black">
-          <div onClick={handleNav} className="cursor-pointer hover:text-pink-600 transition duration-300">
-            <AiOutlineClose size={25} />
+          <div onClick={() => setIsMobileNavMenuOpen(!isMobileNavMenuOpen)} className="navbar-md:hidden cursor-pointer">
+            <AiOutlineMenu size={25} className="hover:text-pink-600 transition duration-300 list-none" />
           </div>
         </div>
-        <div className="flex-col py-4 text-black">
-          <ul>
-            <Link href="/">
-              <li
-                onClick={() => setMenuOpen(false)}
-                className="my-6 cursor-pointer hover:text-pink-600 transition duration-300 list-none"
-              >
-                Home
-              </li>
-            </Link>
-            <Link href="/admin">
-              <li
-                onClick={() => setMenuOpen(false)}
-                className="my-6 cursor-pointer hover:text-pink-600 transition duration-300 list-none"
-              >
-                Admin
-              </li>
-            </Link>
-            <Link href="/settings">
-              <li
-                onClick={() => setMenuOpen(false)}
-                className="my-6 cursor-pointer hover:text-pink-600 transition duration-300 list-none"
-              >
-                Settings
-              </li>
-            </Link>
-            <div onClick={clientRedirectToLogout} className="cursor-pointer">
-              <li
-                onClick={() => setMenuOpen(false)}
-                className="mt-6 mb-2 cursor-pointer hover:text-pink-600 transition duration-300 list-none"
-              >
-                Log Out
-              </li>
-            </div>
-            <div>
-              <WristbandBadge
-                title="Logout API"
-                buttonText="Wristband Auth"
-                url="https://docs.wristband.dev/reference/logoutv1"
-              />
-            </div>
-          </ul>
-        </div>
-      </div>
-    </nav>
+        <MobileNavMenu isMobileNavMenuOpen={isMobileNavMenuOpen} setIsMobileNavMenuOpen={setIsMobileNavMenuOpen} />
+      </nav>
+    </>
   );
 };
 

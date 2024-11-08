@@ -3,6 +3,7 @@ import wristbandAuth from '@/wristband-auth';
 
 import { getSession } from '@/session/iron-session';
 import { bearerAuthFetchHeaders } from '@/utils/helpers';
+import { TenantOptionsList } from '@/types';
 
 export default async function sessionRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = await getSession(req, res);
@@ -44,6 +45,7 @@ export default async function sessionRoute(req: NextApiRequest, res: NextApiResp
     return res.status(500).end();
   }
   const user = await userResponse.json();
+  const { applicationId, email } = user;
 
   // Grab latest tenant and their metadata as that is where enabled perk categories are stored
   const tenantResponse = await fetch(`https://${process.env.APPLICATION_DOMAIN}/api/v1/tenants/${tenantId}`, {
@@ -56,5 +58,24 @@ export default async function sessionRoute(req: NextApiRequest, res: NextApiResp
   }
   const tenant = await tenantResponse.json();
 
-  return res.status(200).json({ isAuthenticated, role, user, tenant });
+  // Grab latest tenant options for the tenant switcher
+  const fetchTenantsResponse = await fetch(
+    `https://${process.env.APPLICATION_DOMAIN}/api/v1/tenant-discovery/fetch-tenants`,
+    {
+      method: 'POST',
+      headers: bearerAuthFetchHeaders(accessToken),
+      keepalive: true,
+      body: JSON.stringify({ applicationId, email, clientId: process.env.CLIENT_ID }),
+    }
+  );
+  if (fetchTenantsResponse.status !== 200) {
+    return res.status(500).end();
+  }
+  const fetchTenantsData = await fetchTenantsResponse.json();
+  const tenantOptions: TenantOptionsList = fetchTenantsData.items || [];
+  const sortedTenantOptions = tenantOptions.sort((a, b) =>
+    a.tenantDisplayName.toLowerCase().localeCompare(b.tenantDisplayName.toLowerCase())
+  );
+
+  return res.status(200).json({ isAuthenticated, role, user, tenant, tenantOptions: sortedTenantOptions });
 }

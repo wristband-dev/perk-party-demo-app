@@ -31,3 +31,7 @@ export function isPasswordBreached(error: WristbandRestError) {
     error.violations.newPassword.map((item) => item.code).includes('password_breached')
   );
 }
+
+export function isInvalidTenantLogoUrl(error: WristbandRestError) {
+  return error.violations && error.violations.logoUrl;
+}
