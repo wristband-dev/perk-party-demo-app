@@ -1,6 +1,6 @@
 import { IncomingMessage } from 'http';
 
-import { Role, User, Userinfo } from '@/types';
+import { Role, Tenant, TenantOptionsList, User, Userinfo } from '@/types';
 import { JSON_MEDIA_TYPE, PERK_PARTY_PROTOCOL, VIP_HOST_ROLE_NAME } from '@/utils/constants';
 import { FetchError } from '@/error';
 
@@ -81,4 +81,22 @@ export function parseUserinfo(userinfo: Userinfo): User {
 export const isVipHostRole = (role: Role) => {
   const roleParts = role && role.name ? role.name.split(':') : [];
   return roleParts.length === 3 ? roleParts[2] === VIP_HOST_ROLE_NAME : false;
+};
+
+export const truncateDisplayString = (displayString: string = '', limit = 15) => {
+  return displayString.length > limit ? displayString.slice(0, limit) + '...' : displayString;
+};
+
+export const updateTenantOption = (tenantOptions: TenantOptionsList, updatedTenant: Tenant) => {
+  return tenantOptions.map((tenantOption) => {
+    if (tenantOption.tenantId === updatedTenant.id) {
+      return {
+        ...tenantOption,
+        tenantDisplayName: updatedTenant.displayName || '',
+        tenantLogoUrl: updatedTenant.logoUrl || '',
+      };
+    }
+
+    return tenantOption;
+  });
 };

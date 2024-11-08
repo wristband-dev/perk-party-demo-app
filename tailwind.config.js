@@ -21,11 +21,14 @@ module.exports = {
     extend: {
       colors: {
         'wristband-green': '#00ffc1',
+        'wristband-green-mid': '#00AA81',
         'red-600': '#e3342f',
         'blue-600': '#3490dc',
       },
       screens: {
+        '2xs': '360px',
         xs: '480px',
+        'navbar-md': '768px',
       },
     },
   },

@@ -1,17 +1,16 @@
-import { Inter } from 'next/font/google';
 import Head from 'next/head';
 import { ReactNode } from 'react';
 
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-
-const inter = Inter({ subsets: ['latin'] });
+import ApiTouchpointsButton from '@/components/api-touchpoints-button';
+import { interFont } from '@/utils/fonts';
 
 type Props = {
   children: ReactNode;
 };
 
-export default function Layout({ children }: Props) {
+export default function DefaultLayout({ children }: Props) {
   return (
     <>
       <Head>
@@ -21,7 +20,8 @@ export default function Layout({ children }: Props) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Navbar />
-      <main className={`pt-16 ${inter.className}`}>{children}</main>
+      <main className={`pt-16 ${interFont.className}`}>{children}</main>
+      <ApiTouchpointsButton />
       <Footer />
     </>
   );

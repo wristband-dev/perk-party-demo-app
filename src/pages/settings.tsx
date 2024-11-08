@@ -1,6 +1,5 @@
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { GetServerSideProps, GetServerSidePropsContext } from 'next/types';
-import { Raleway } from 'next/font/google';
 import { FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 
 import { useWristband } from '@/context/auth-context';
@@ -17,17 +16,20 @@ import { ChangeEmailRequestResults } from '@/types';
 import { FetchError } from '@/error';
 import { JSON_MEDIA_TYPE } from '@/utils/constants';
 import WristbandBadge from '@/components/wristband-badge';
-
-const raleway = Raleway({ subsets: ['latin'] });
+import { ralewayFont } from '@/utils/fonts';
+import { useApiTouchpoints } from '@/context/api-touchpoint-context';
 
 type ProfileSettingsPageProps = {
   changeEmailRequestResults: ChangeEmailRequestResults;
 };
 
 export default function ProfileSettingsPage({ changeEmailRequestResults }: ProfileSettingsPageProps) {
+  // Props
   const { items: changeEmailRequests, totalResults } = changeEmailRequestResults;
 
+  // Contexts
   const { role, user, setUser } = useWristband();
+  const { showApiTouchpoints } = useApiTouchpoints();
 
   // Full Name Form State
   const [fullName, setFullName] = useState<string>('');
@@ -72,7 +74,8 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
       validateFetchResponseStatus(res);
 
       const data = await res.json();
-      setUser(data); // updates the user (react side)
+      // updates the user (react side)
+      setUser(data);
       toastSuccess('With a name like that, you must be a VIP everywhere you go!', '👑');
     } catch (error: unknown) {
       console.log(error);
@@ -255,23 +258,40 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
   };
 
   return (
-    <div className={`bg-gray-100 p-8 ${raleway.className}`}>
+    <div className={`bg-gray-100 p-8 ${ralewayFont.className}`}>
       <div className="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md">
         <h1 className="text-3xl font-bold mb-6">Profile Settings</h1>
 
+        {/* ********************** Other API Endpoints ********************** */}
+
+        {showApiTouchpoints && (
+          <div className="p-4 mb-8 border-2 border-solid border-wristband-green rounded-md">
+            <h2 className="text-xl font-semibold mb-4">Other APIs Used to Load This Page</h2>
+            <p className="mb-2">&#8226; Query Change Email Requests Filtered By User</p>
+            <div className="mb-4 ml-2">
+              <WristbandBadge
+                title="Query Change Email Requests Filtered By User API"
+                url="https://docs.wristband.dev/reference/querychangeemailrequestsfilteredbyuserv1"
+              />
+            </div>
+          </div>
+        )}
+
         {/* Role Display */}
-        <div className="flex flex-wrap my-4">
-          <h3 className="text-xl font-semibold mb-2 mr-4">Role:</h3>
+        <div className="flex flex-col my-8">
+          <h2 className="text-xl font-semibold mb-2 mr-4">Your Role</h2>
           <div className="flex flex-row items-center">
-            <h2 className="text-xl font-medium mb-2 mr-4">{role.displayName || ''}</h2>
-            <p className="text-xl mb-2">{isVipHostRole(role) ? '👑' : '🍺'}</p>
+            <p className="text-xl mb-2 mx-2">{isVipHostRole(role) ? '👑' : '🍺'}</p>
+            <h3 className="text-xl font-medium mb-2">{role.displayName || ''}</h3>
           </div>
         </div>
 
         {/* Update Name Form */}
-        <form onSubmit={handleFullNameSubmit} className="mb-8">
-          <h2 className="text-2xl font-semibold mb-2">Your Profile</h2>
-          <WristbandBadge title="Update User API" url="https://docs.wristband.dev/reference/patchuserv1" />
+        <form onSubmit={handleFullNameSubmit} className="mb-12">
+          <h2 className="text-xl font-semibold mb-2">Your Profile</h2>
+          {showApiTouchpoints && (
+            <WristbandBadge title="Update User API" url="https://docs.wristband.dev/reference/patchuserv1" />
+          )}
           <div className="my-4">
             <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
               Full Name
@@ -296,9 +316,11 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
         </form>
 
         {/* Change Password Form */}
-        <form onSubmit={handleChangePasswordSubmit} className="mb-8">
-          <h2 className="text-2xl font-semibold mb-2">Change Password</h2>
-          <WristbandBadge title="Change Password API" url="https://docs.wristband.dev/reference/changepasswordv1" />
+        <form onSubmit={handleChangePasswordSubmit} className="mb-12">
+          <h2 className="text-xl font-semibold mb-2">Change Password</h2>
+          {showApiTouchpoints && (
+            <WristbandBadge title="Change Password API" url="https://docs.wristband.dev/reference/changepasswordv1" />
+          )}
           <div className="my-4 relative">
             <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700">
               Current Password
@@ -369,12 +391,14 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
         </form>
 
         {/* Update Email Form */}
-        <form onSubmit={handleChangeEmailSubmit} className="mb-8">
-          <h2 className="text-2xl font-semibold mb-2">Change Email</h2>
-          <WristbandBadge
-            title="Request Email Change API"
-            url="https://docs.wristband.dev/reference/requestemailchangev1"
-          />
+        <form onSubmit={handleChangeEmailSubmit} className="mb-12">
+          <h2 className="text-xl font-semibold mb-2">Change Email</h2>
+          {showApiTouchpoints && (
+            <WristbandBadge
+              title="Request Email Change API"
+              url="https://docs.wristband.dev/reference/requestemailchangev1"
+            />
+          )}
           <div className="text-lg text-pink-600 my-4">Current Email: {user.email}</div>
           {requestedNewEmail ? (
             <>

@@ -1,4 +1,5 @@
-const VANITY_DOMAIN_TO_USE = process.env.PUBLIC_DEMO === 'ENABLED' ? 'app.perkparty.club' : 'app.perkparty.club:6001';
+const VANITY_DOMAIN_TO_USE =
+  process.env.PUBLIC_DEMO === 'ENABLED' ? 'app.perkparty.club' : 'app.dev-perkparty.club:6001';
 
 export const IS_LOCALHOST = process.env.DOMAIN_FORMAT === 'LOCALHOST';
 export const PERKPARTY_HOST = IS_LOCALHOST ? 'localhost:6001' : VANITY_DOMAIN_TO_USE;
