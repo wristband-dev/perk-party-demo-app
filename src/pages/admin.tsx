@@ -7,19 +7,20 @@ import copy from 'copy-to-clipboard';
 import { useWristband } from '@/context/auth-context';
 import {
   clientRedirectToLogin,
+  isUnauthorizedError,
+  isVipHostRole,
   serverRedirectToLogin,
   updateTenantOption,
-  validateFetchResponseStatus,
 } from '@/utils/helpers';
-import { JSON_MEDIA_TYPE } from '@/utils/constants';
 import { toastSuccess, toastError } from '@/utils/toast';
 import WristbandBadge from '@/components/wristband-badge';
 import { getSession } from '@/session/iron-session';
 import wristbandService from '@/services/wristband-service';
-import { FetchError } from '@/error';
 import { IdentityProviderDto, NewUserInvite, Tenant, User } from '@/types';
 import { ralewayFont } from '@/utils/fonts';
 import { useApiTouchpoints } from '@/context/api-touchpoint-context';
+import frontendApiService from '@/services/frontend-api-service';
+import { AxiosError } from 'axios';
 
 type Props = {
   invites: NewUserInvite[];
@@ -96,34 +97,24 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
     setIsUpdateTenantInProgress(true);
 
     try {
-      const res = await fetch('/api/v1/update-tenant', {
-        method: 'PATCH',
-        keepalive: true,
-        body: JSON.stringify({ displayName: tenantDisplayName, logoUrl: tenantLogoUrl || null }),
-        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
+      const data: Tenant = await frontendApiService.updateTenant({
+        displayName: tenantDisplayName,
+        logoUrl: tenantLogoUrl || null,
       });
-
-      validateFetchResponseStatus(res);
-
-      const data: Tenant = await res.json();
-      // updates the tenant and options (react side)
       setTenant(data);
       setTenantOptions(updateTenantOption(tenantOptions, data));
-      toastSuccess('All you need now is a shell corporation in the Cayman Islands for that new company name.', '🌴');
+      toastSuccess('Nice work! Your updated company info is ready to confuse future interns.', '🤓');
     } catch (error: unknown) {
       console.log(error);
 
-      if (error instanceof FetchError) {
-        if (error.statusCode === 400) {
-          const errorData = await error.res.json();
-          if (errorData.error === 'invalid_logo_url') {
-            toastError('BADDDDD');
-            return;
-          }
-        }
+      if (isUnauthorizedError(error)) {
+        clientRedirectToLogin(window.location.href);
+        return;
+      }
 
-        if (error.statusCode === 401) {
-          clientRedirectToLogin(window.location.href);
+      if (error instanceof AxiosError && error.response?.status === 400) {
+        if (error.response?.data.error === 'invalid_logo_url') {
+          toastError(`Bouncer's not impressed... that logo's not quite "club-ready".`, '🚪');
           return;
         }
       }
@@ -140,16 +131,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
     setIsInviteEmailInProgress(true);
 
     try {
-      const res = await fetch('/api/v1/invite-new-user', {
-        method: 'POST',
-        keepalive: true,
-        body: JSON.stringify({ inviteEmail, roleName: selectedRole }),
-        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
-      });
-
-      validateFetchResponseStatus(res);
-      const data = await res.json();
-
+      const data = await frontendApiService.inviteNewUser(inviteEmail, selectedRole);
       setCurrentInvites(data.invites);
       setInviteEmail('');
       setSelectedRole('Party Animal');
@@ -157,7 +139,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
     } catch (error: unknown) {
       console.log(error);
 
-      if (error instanceof FetchError && error.statusCode === 401) {
+      if (isUnauthorizedError(error)) {
         clientRedirectToLogin(window.location.href);
         return;
       }
@@ -174,23 +156,13 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
     setDeactivateUserInProgress(true);
 
     try {
-      const res = await fetch('/api/v1/deactivate-user', {
-        method: 'PATCH',
-        keepalive: true,
-        body: JSON.stringify({ userId }),
-        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
-      });
-
-      validateFetchResponseStatus(res);
-      const data = await res.json();
-
+      const data = await frontendApiService.deactivateUser(userId);
       setCurrentUsers(data.users);
-
       toastSuccess("User deactivated. Looks like someone's getting a breather in the drunk tank! ", '😴');
     } catch (error: unknown) {
       console.log(error);
 
-      if (error instanceof FetchError && error.statusCode === 401) {
+      if (isUnauthorizedError(error)) {
         clientRedirectToLogin(window.location.href);
         return;
       }
@@ -207,23 +179,13 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
     setActivateUserInProgress(true);
 
     try {
-      const res = await fetch('/api/v1/activate-user', {
-        method: 'PATCH',
-        keepalive: true,
-        body: JSON.stringify({ userId }),
-        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
-      });
-
-      validateFetchResponseStatus(res);
-
-      const data = await res.json();
+      const data = await frontendApiService.activateUser(userId);
       setCurrentUsers(data.users);
-
       toastSuccess('The life of the party is back in action. Raise the roof!', '🎊');
     } catch (error: unknown) {
       console.log(error);
 
-      if (error instanceof FetchError && error.statusCode === 401) {
+      if (isUnauthorizedError(error)) {
         clientRedirectToLogin(window.location.href);
         return;
       }
@@ -240,23 +202,13 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
     setIsCancelInviteInProgress(true);
 
     try {
-      const res = await fetch('/api/v1/cancel-new-user-invite', {
-        method: 'POST',
-        keepalive: true,
-        body: JSON.stringify({ newUserInvitationRequestId }),
-        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
-      });
-
-      validateFetchResponseStatus(res);
-
-      const data = await res.json();
+      const data = await frontendApiService.cancelNewUserInvite(newUserInvitationRequestId);
       setCurrentInvites(data.invites);
-
       toastSuccess('Invite canceled. Guess the bouncer saw that person as a party foul waiting to happen!', '👀');
     } catch (error: unknown) {
       console.log(error);
 
-      if (error instanceof FetchError && error.statusCode === 401) {
+      if (isUnauthorizedError(error)) {
         clientRedirectToLogin(window.location.href);
         return;
       }
@@ -344,28 +296,18 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
     setOktaIdpInProgress(true);
 
     try {
-      const res = await fetch('/api/v1/upsert-idp', {
-        method: 'POST',
-        keepalive: true,
-        body: JSON.stringify({
-          idp: {
-            type: 'OKTA',
-            ownerType: 'TENANT',
-            ownerId: tenant.id,
-            name: 'okta',
-            displayName: 'Okta',
-            domainName,
-            status: isOktaEnabled ? 'ENABLED' : 'DISABLED',
-            protocol: { type: 'OAUTH2', clientId, clientSecret },
-            jitProvisioningEnabled: true,
-          },
-        }),
-        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
+      const upsertedIdp = await frontendApiService.upsertIdp({
+        type: 'OKTA',
+        ownerType: 'TENANT',
+        ownerId: tenant.id,
+        name: 'okta',
+        displayName: 'Okta',
+        domainName,
+        status: isOktaEnabled ? 'ENABLED' : 'DISABLED',
+        protocol: { type: 'OAUTH2', clientId, clientSecret },
+        jitProvisioningEnabled: true,
       });
 
-      validateFetchResponseStatus(res);
-
-      const upsertedIdp = await res.json();
       setCurrentOktaIdp(upsertedIdp);
 
       if (isOktaEnabled) {
@@ -376,19 +318,18 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
     } catch (error: unknown) {
       console.log(error);
 
-      if (error instanceof FetchError) {
-        if (error.statusCode === 400 && error.res) {
-          const errorData = await error.res.json();
+      if (isUnauthorizedError(error)) {
+        clientRedirectToLogin(window.location.href);
+        return;
+      }
 
-          if (errorData.error === 'invalid_domain_name') {
-            toastError('Invalid domain name? That’s like inviting a mime to karaoke night!', '🤐');
-            return;
-          }
-        }
-        if (error.statusCode === 401) {
-          clientRedirectToLogin(window.location.href);
-          return;
-        }
+      if (
+        error instanceof AxiosError &&
+        error.response?.status === 400 &&
+        error.response?.data.error === 'invalid_domain_name'
+      ) {
+        toastError('Invalid domain name? That’s like inviting a mime to karaoke night!', '🤐');
+        return;
       }
 
       toastError('An unexpected error occurred.');
@@ -910,9 +851,10 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
 export const getServerSideProps: GetServerSideProps = async function (context: GetServerSidePropsContext) {
   const { req, res } = context;
   const session = await getSession(req, res);
-  const { accessToken, isAuthenticated, tenantId } = session;
+  const { accessToken, isAuthenticated, role, tenantId } = session;
 
-  if (!isAuthenticated) {
+  // Only VIP Host roles can access the admin page
+  if (!isAuthenticated || !isVipHostRole(role)) {
     return serverRedirectToLogin(req);
   }
 
@@ -945,7 +887,7 @@ export const getServerSideProps: GetServerSideProps = async function (context: G
   } catch (err: unknown) {
     console.log(err);
 
-    if (err instanceof FetchError && err.statusCode === 401) {
+    if (isUnauthorizedError(err)) {
       return serverRedirectToLogin(req);
     }
 

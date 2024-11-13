@@ -1,8 +1,9 @@
 import { IncomingMessage } from 'http';
 
-import { Role, Tenant, TenantOptionsList, User, Userinfo } from '@/types';
+import { Role, Tenant, TenantOption, User, Userinfo } from '@/types';
 import { JSON_MEDIA_TYPE, PERK_PARTY_PROTOCOL, VIP_HOST_ROLE_NAME } from '@/utils/constants';
 import { FetchError } from '@/error';
+import { AxiosError } from 'axios';
 
 export function bearerAuthFetchHeaders(accessToken: string) {
   return { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE, Authorization: `Bearer ${accessToken}` };
@@ -24,6 +25,22 @@ export function validateFetchResponseStatus(response: Response) {
         `URL: [${response.url}], Status: [${response.status}], Message: [${response.statusText}]`
       );
   }
+}
+
+export function isUnauthorizedError(error: unknown) {
+  if (!error) {
+    return false;
+  }
+
+  if (error instanceof AxiosError) {
+    return error.response?.status === 401;
+  }
+
+  if (error instanceof FetchError) {
+    return error.statusCode === 401;
+  }
+
+  return false;
 }
 
 export function clientRedirectToLogin(returnUrl?: string) {
@@ -87,7 +104,7 @@ export const truncateDisplayString = (displayString: string = '', limit = 15) =>
   return displayString.length > limit ? displayString.slice(0, limit) + '...' : displayString;
 };
 
-export const updateTenantOption = (tenantOptions: TenantOptionsList, updatedTenant: Tenant) => {
+export const updateTenantOption = (tenantOptions: TenantOption[], updatedTenant: Tenant) => {
   return tenantOptions.map((tenantOption) => {
     if (tenantOption.tenantId === updatedTenant.id) {
       return {

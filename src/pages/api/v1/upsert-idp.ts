@@ -4,6 +4,7 @@ import { getSession } from '@/session/iron-session';
 import { FetchError } from '@/error';
 import wristbandService from '@/services/wristband-service';
 import { isInvalidDomainName } from '@/utils/validation';
+import { isUnauthorizedError } from '@/utils/helpers';
 
 export default async function handleUpsertIdp(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -26,7 +27,6 @@ export default async function handleUpsertIdp(req: NextApiRequest, res: NextApiR
   try {
     await wristbandService.upsertIdpOverrideToggle(accessToken, tenantId);
     const upsertedIdp = await wristbandService.upsertIdp(accessToken, idp);
-    await session.save();
     return res.status(200).json(upsertedIdp);
   } catch (err: unknown) {
     console.log(err);
@@ -41,7 +41,7 @@ export default async function handleUpsertIdp(req: NextApiRequest, res: NextApiR
 
         return res.status(500).end();
       }
-      if (err.statusCode === 401) {
+      if (isUnauthorizedError(err)) {
         return res.status(401).end();
       }
     }

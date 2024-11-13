@@ -1,10 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+
 import { CallbackResultType } from '@wristband/nextjs-auth';
 import wristbandAuth from '@/wristband-auth';
 import { getSession } from '@/session/iron-session';
-import { parseUserinfo } from '@/utils/helpers';
+import { createCsrfSecret, setCsrfTokenCookie } from '@/utils/csrf';
 import { PERKPARTY_HOST, IS_LOCALHOST, PERK_PARTY_PROTOCOL } from '@/utils/constants';
-
+import { parseUserinfo } from '@/utils/helpers';
 import { Userinfo } from '@/types';
 
 export default async function handleCallback(req: NextApiRequest, res: NextApiResponse) {
@@ -31,10 +32,15 @@ export default async function handleCallback(req: NextApiRequest, res: NextApiRe
     session.tenantDomainName = callbackData!.tenantDomainName;
     session.role = user?.roles ? user.roles[0] : { id: '', name: 'app:app:party-animal', displayName: 'Party Animal' };
 
+    // Establish CSRF secret and cookie.
+    const csrfSecret = createCsrfSecret();
+    session.csrfSecret = csrfSecret;
+    await setCsrfTokenCookie(csrfSecret, res);
+
     // Save all fields into the session
     await session.save();
 
-    // Send the user back to the Invotastic application.
+    // Send the user back to the application.
     const tenantDomain = IS_LOCALHOST ? '' : `${callbackData!.tenantDomainName}.`;
     res.redirect(callbackData!.returnUrl || `${PERK_PARTY_PROTOCOL}://${tenantDomain}${PERKPARTY_HOST}`);
   } catch (error: unknown) {

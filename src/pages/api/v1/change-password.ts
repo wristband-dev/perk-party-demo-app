@@ -4,6 +4,7 @@ import { getSession } from '@/session/iron-session';
 import { FetchError } from '@/error';
 import wristbandService from '@/services/wristband-service';
 import { isPasswordBreached } from '@/utils/validation';
+import { isUnauthorizedError } from '@/utils/helpers';
 
 export default async function handleChangePassword(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -36,7 +37,7 @@ export default async function handleChangePassword(req: NextApiRequest, res: Nex
           ? res.status(400).json({ error: 'password_breached' })
           : res.status(500).end();
       }
-      if (err.statusCode === 401) {
+      if (isUnauthorizedError(err)) {
         return res.status(401).end();
       }
     }

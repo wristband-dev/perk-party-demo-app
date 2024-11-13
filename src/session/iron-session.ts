@@ -2,18 +2,7 @@ import { getIronSession, IronSession, SessionOptions } from 'iron-session';
 import * as http from 'http';
 
 import { SESSION_COOKIE_NAME, SESSION_COOKIE_SECRET } from '@/utils/constants';
-import { Role } from '@/types';
-
-type SessionData = {
-  accessToken: string;
-  expiresAt: number;
-  isAuthenticated: boolean;
-  refreshToken?: string;
-  tenantDomainName: string;
-  tenantId: string;
-  userId: string;
-  role: Role;
-};
+import { IronSessionData } from '@/types';
 
 const sessionOptions: SessionOptions = {
   cookieName: SESSION_COOKIE_NAME,
@@ -30,6 +19,6 @@ const sessionOptions: SessionOptions = {
 export function getSession(
   req: http.IncomingMessage | Request,
   res: http.ServerResponse | Response
-): Promise<IronSession<SessionData>> {
+): Promise<IronSession<IronSessionData>> {
   return getIronSession(req, res, sessionOptions);
 }

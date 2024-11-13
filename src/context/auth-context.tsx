@@ -1,7 +1,8 @@
 import React, { createContext, useEffect, useState } from 'react';
 
-import { clientRedirectToLogin, clientRedirectToLogout } from '@/utils/helpers';
-import { Role, Tenant, TenantOptionsList, User } from '@/types';
+import { clientRedirectToLogin, clientRedirectToLogout, isUnauthorizedError } from '@/utils/helpers';
+import { Role, Tenant, TenantOption, User } from '@/types';
+import frontendApiService from '@/services/frontend-api-service';
 
 const DEFAULT_ROLE_STATE: Role = {
   id: '',
@@ -48,7 +49,7 @@ const DEFAULT_TENANT: Tenant = {
   restrictedMetadata: {},
 };
 
-const DEFAULT_TENANT_OPTIONS: TenantOptionsList = [];
+const DEFAULT_TENANT_OPTIONS: TenantOption[] = [];
 
 const AuthContext = createContext({
   isAuthenticated: false,
@@ -60,7 +61,7 @@ const AuthContext = createContext({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setTenant: (tenant: Tenant) => {},
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setTenantOptions: (tenantOptions: TenantOptionsList) => {},
+  setTenantOptions: (tenantOptions: TenantOption[]) => {},
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setUser: (user: User) => {},
 });
@@ -72,28 +73,15 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   const [role, setRole] = useState<Role>(DEFAULT_ROLE_STATE);
   const [user, setUser] = useState<User>(DEFAULT_USER_STATE);
   const [tenant, setTenant] = useState<Tenant>(DEFAULT_TENANT);
-  const [tenantOptions, setTenantOptions] = useState<TenantOptionsList>(DEFAULT_TENANT_OPTIONS);
+  const [tenantOptions, setTenantOptions] = useState<TenantOption[]>(DEFAULT_TENANT_OPTIONS);
 
   // Bootstrap the application with the authenticated user's session data.
   useEffect(() => {
     const fetchSession = async () => {
       try {
         /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
-        const res = await fetch(`/api/auth/session`, { cache: 'no-store', method: 'GET' });
-
-        if (res.status !== 200) {
-          clientRedirectToLogout();
-          return;
-        }
-
-        const data = await res.json();
-        const { isAuthenticated, role, user, tenant, tenantOptions } = data;
-
-        if (!isAuthenticated) {
-          // We want to preserve the page route that the user lands on when they com back after re-authentication.
-          clientRedirectToLogin(window.location.href);
-          return;
-        }
+        const sessionData = await frontendApiService.getSession();
+        const { role, user, tenant, tenantOptions } = sessionData;
 
         setIsLoading(false);
         setIsAuthenticated(true);
@@ -101,9 +89,16 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(user);
         setTenant(tenant);
         setTenantOptions(tenantOptions);
-      } catch (error) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (error: any) {
         console.log(error);
-        clientRedirectToLogout();
+
+        if (isUnauthorizedError(error)) {
+          // We want to preserve the page route that the user lands on when they come back after re-authentication.
+          clientRedirectToLogin(window.location.href);
+        } else {
+          clientRedirectToLogout();
+        }
       }
     };
 

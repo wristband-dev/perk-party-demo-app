@@ -7,14 +7,14 @@ import {
   ResolveIdpRedirectUrlOverridesResult,
   Role,
   Tenant,
+  TenantOption,
   User,
 } from '@/types';
+import { WRISTBAND_API_URL } from '@/utils/constants';
 import { bearerAuthFetchHeaders, validateFetchResponseStatus } from '@/utils/helpers';
 
-const API_URL = `https://${process.env.APPLICATION_DOMAIN}/api/v1`;
-
 async function cancelEmailChange(accessToken: string, changeEmailRequestId: string): Promise<void> {
-  const cancelResponse = await fetch(`${API_URL}/change-email/cancel-email-change`, {
+  const cancelResponse = await fetch(`${WRISTBAND_API_URL}/change-email/cancel-email-change`, {
     method: 'POST',
     headers: bearerAuthFetchHeaders(accessToken),
     keepalive: true,
@@ -25,7 +25,7 @@ async function cancelEmailChange(accessToken: string, changeEmailRequestId: stri
 }
 
 async function cancelNewUserInvite(accessToken: string, newUserInvitationRequestId: string): Promise<void> {
-  const cancelResponse = await fetch(`${API_URL}/new-user-invitation/cancel-invite`, {
+  const cancelResponse = await fetch(`${WRISTBAND_API_URL}/new-user-invitation/cancel-invite`, {
     method: 'POST',
     headers: bearerAuthFetchHeaders(accessToken),
     keepalive: true,
@@ -39,7 +39,7 @@ async function changePassword(
   accessToken: string,
   requestData: { userId: string; currentPassword: string; newPassword: string }
 ): Promise<void> {
-  const changePwResponse = await fetch(`${API_URL}/change-password`, {
+  const changePwResponse = await fetch(`${WRISTBAND_API_URL}/change-password`, {
     method: 'POST',
     headers: bearerAuthFetchHeaders(accessToken),
     keepalive: true,
@@ -49,10 +49,28 @@ async function changePassword(
   validateFetchResponseStatus(changePwResponse);
 }
 
+async function fetchTenants(
+  accessToken: string,
+  applicationId: string,
+  email: string
+): Promise<PaginatedEntityResults<TenantOption>> {
+  const tenantResponse = await fetch(`${WRISTBAND_API_URL}/tenant-discovery/fetch-tenants`, {
+    method: 'POST',
+    headers: bearerAuthFetchHeaders(accessToken),
+    keepalive: true,
+    body: JSON.stringify({ applicationId, email, clientId: process.env.CLIENT_ID }),
+  });
+
+  validateFetchResponseStatus(tenantResponse);
+
+  const data = await tenantResponse.json();
+  return data as PaginatedEntityResults<TenantOption>;
+}
+
 async function getChangeEmailRequests(accessToken: string, userId: string): Promise<ChangeEmailRequestResults> {
   const statusQuery = encodeURIComponent(`status ne "CANCELED" and status ne "COMPLETED"`);
   const changeEmailRequestsResponse = await fetch(
-    `${API_URL}/users/${userId}/change-email-requests?query=${statusQuery}`,
+    `${WRISTBAND_API_URL}/users/${userId}/change-email-requests?query=${statusQuery}`,
     {
       method: 'GET',
       headers: bearerAuthFetchHeaders(accessToken),
@@ -66,26 +84,13 @@ async function getChangeEmailRequests(accessToken: string, userId: string): Prom
   return data as ChangeEmailRequestResults;
 }
 
-async function getTenant(accessToken: string, tenantId: string): Promise<Tenant> {
-  const tenantResponse = await fetch(`${API_URL}/tenants/${tenantId}`, {
-    method: 'GET',
-    headers: bearerAuthFetchHeaders(accessToken),
-    keepalive: true,
-  });
-
-  validateFetchResponseStatus(tenantResponse);
-
-  const data = await tenantResponse.json();
-  return data as Tenant;
-}
-
 const invitesQuery = `${encodeURIComponent(`status eq "PENDING_INVITE_ACCEPTANCE"`)}`;
 async function getNewUserInvitesInTenant(
   accessToken: string,
   tenantId: string
 ): Promise<PaginatedEntityResults<NewUserInvite>> {
   const tenantOverridesResponse = await fetch(
-    `${API_URL}/tenants/${tenantId}/new-user-invitation-requests?query=${invitesQuery}`,
+    `${WRISTBAND_API_URL}/tenants/${tenantId}/new-user-invitation-requests?query=${invitesQuery}`,
     {
       method: 'GET',
       headers: bearerAuthFetchHeaders(accessToken),
@@ -99,8 +104,34 @@ async function getNewUserInvitesInTenant(
   return data as PaginatedEntityResults<NewUserInvite>;
 }
 
+async function getTenant(accessToken: string, tenantId: string): Promise<Tenant> {
+  const tenantResponse = await fetch(`${WRISTBAND_API_URL}/tenants/${tenantId}`, {
+    method: 'GET',
+    headers: bearerAuthFetchHeaders(accessToken),
+    keepalive: true,
+  });
+
+  validateFetchResponseStatus(tenantResponse);
+
+  const data = await tenantResponse.json();
+  return data as Tenant;
+}
+
+async function getUser(accessToken: string, userId: string): Promise<User> {
+  const userResponse = await fetch(`${WRISTBAND_API_URL}/users/${userId}`, {
+    method: 'GET',
+    headers: bearerAuthFetchHeaders(accessToken),
+    keepalive: true,
+  });
+
+  validateFetchResponseStatus(userResponse);
+
+  const data = await userResponse.json();
+  return data as User;
+}
+
 async function getUsersInTenantWithRoles(accessToken: string, tenantId: string): Promise<PaginatedEntityResults<User>> {
-  const tenantOverridesResponse = await fetch(`${API_URL}/tenants/${tenantId}/users`, {
+  const tenantOverridesResponse = await fetch(`${WRISTBAND_API_URL}/tenants/${tenantId}/users`, {
     method: 'GET',
     headers: bearerAuthFetchHeaders(accessToken),
     keepalive: true,
@@ -116,7 +147,7 @@ async function getUsersInTenantWithRoles(accessToken: string, tenantId: string):
 
 async function getTenantRoles(accessToken: string, tenantId: string): Promise<PaginatedEntityResults<Role>> {
   const tenantOverridesResponse = await fetch(
-    `${API_URL}/tenants/${tenantId}/roles?include_application_roles=true&fields=id,name,displayName`,
+    `${WRISTBAND_API_URL}/tenants/${tenantId}/roles?include_application_roles=true&fields=id,name,displayName`,
     {
       method: 'GET',
       headers: bearerAuthFetchHeaders(accessToken),
@@ -136,7 +167,7 @@ async function inviteNewUser(
   email: string,
   roleToAssign: string
 ): Promise<void> {
-  const changeResponse = await fetch(`${API_URL}/new-user-invitation/invite-user`, {
+  const changeResponse = await fetch(`${WRISTBAND_API_URL}/new-user-invitation/invite-user`, {
     method: 'POST',
     headers: bearerAuthFetchHeaders(accessToken),
     keepalive: true,
@@ -152,7 +183,7 @@ async function resolveTenantIdpOverrides(
 ): Promise<ResolveEntityOverrideResults<IdentityProviderDto>> {
   // We'll just hard-code to Okta type for now for demo purposes. Wristband type will always be enabled.
   const tenantOverridesResponse = await fetch(
-    `${API_URL}/tenants/${tenantId}/identity-providers/resolve-overrides?types=OKTA`,
+    `${WRISTBAND_API_URL}/tenants/${tenantId}/identity-providers/resolve-overrides?types=OKTA`,
     {
       method: 'POST',
       headers: bearerAuthFetchHeaders(accessToken),
@@ -172,7 +203,7 @@ async function resolveTenantIdpRedirectUrlOverrides(
 ): Promise<ResolveIdpRedirectUrlOverridesResult> {
   // We'll just hard-code to Okta type for now for demo purposes. Wristband type will always be enabled.
   const tenantOverridesResponse = await fetch(
-    `${API_URL}/tenants/${tenantId}/identity-providers/resolve-redirect-urls`,
+    `${WRISTBAND_API_URL}/tenants/${tenantId}/identity-providers/resolve-redirect-urls`,
     {
       method: 'POST',
       headers: bearerAuthFetchHeaders(accessToken),
@@ -188,7 +219,7 @@ async function resolveTenantIdpRedirectUrlOverrides(
 }
 
 async function requestEmailChange(accessToken: string, userId: string, newEmail: string): Promise<void> {
-  const changeResponse = await fetch(`${API_URL}/change-email/request-email-change`, {
+  const changeResponse = await fetch(`${WRISTBAND_API_URL}/change-email/request-email-change`, {
     method: 'POST',
     headers: bearerAuthFetchHeaders(accessToken),
     keepalive: true,
@@ -199,7 +230,7 @@ async function requestEmailChange(accessToken: string, userId: string, newEmail:
 }
 
 async function updateUser(accessToken: string, userId: string, userData: User): Promise<User> {
-  const userResponse = await fetch(`https://${process.env.APPLICATION_DOMAIN}/api/v1/users/${userId}`, {
+  const userResponse = await fetch(`${WRISTBAND_API_URL}/users/${userId}`, {
     method: 'PATCH',
     headers: bearerAuthFetchHeaders(accessToken),
     keepalive: true,
@@ -213,7 +244,7 @@ async function updateUser(accessToken: string, userId: string, userData: User): 
 }
 
 async function updateTenant(accessToken: string, tenantId: string, tenantData: Tenant): Promise<Tenant> {
-  const userResponse = await fetch(`https://${process.env.APPLICATION_DOMAIN}/api/v1/tenants/${tenantId}`, {
+  const userResponse = await fetch(`${WRISTBAND_API_URL}/tenants/${tenantId}`, {
     method: 'PATCH',
     headers: bearerAuthFetchHeaders(accessToken),
     keepalive: true,
@@ -227,7 +258,7 @@ async function updateTenant(accessToken: string, tenantId: string, tenantData: T
 }
 
 async function upsertIdp(accessToken: string, idpData: IdentityProviderDto): Promise<IdentityProviderDto> {
-  const userResponse = await fetch(`https://${process.env.APPLICATION_DOMAIN}/api/v1/identity-providers?upsert=true`, {
+  const userResponse = await fetch(`${WRISTBAND_API_URL}/identity-providers?upsert=true`, {
     method: 'POST',
     headers: bearerAuthFetchHeaders(accessToken),
     keepalive: true,
@@ -241,15 +272,12 @@ async function upsertIdp(accessToken: string, idpData: IdentityProviderDto): Pro
 }
 
 async function upsertIdpOverrideToggle(accessToken: string, tenantId: string): Promise<void> {
-  const response = await fetch(
-    `https://${process.env.APPLICATION_DOMAIN}/api/v1/identity-provider-override-toggles?upsert=true`,
-    {
-      method: 'POST',
-      headers: bearerAuthFetchHeaders(accessToken),
-      keepalive: true,
-      body: JSON.stringify({ ownerType: 'TENANT', ownerId: tenantId, status: 'ENABLED' }),
-    }
-  );
+  const response = await fetch(`${WRISTBAND_API_URL}/identity-provider-override-toggles?upsert=true`, {
+    method: 'POST',
+    headers: bearerAuthFetchHeaders(accessToken),
+    keepalive: true,
+    body: JSON.stringify({ ownerType: 'TENANT', ownerId: tenantId, status: 'ENABLED' }),
+  });
 
   validateFetchResponseStatus(response);
 }
@@ -258,10 +286,12 @@ const wristbandService = {
   cancelEmailChange,
   cancelNewUserInvite,
   changePassword,
+  fetchTenants,
   getChangeEmailRequests,
   getNewUserInvitesInTenant,
   getTenant,
   getTenantRoles,
+  getUser,
   getUsersInTenantWithRoles,
   inviteNewUser,
   requestEmailChange,

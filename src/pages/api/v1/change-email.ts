@@ -4,6 +4,7 @@ import { getSession } from '@/session/iron-session';
 import wristbandService from '@/services/wristband-service';
 import { FetchError } from '@/error';
 import { isDuplicateNewEmail, isInvalidNewEmail } from '@/utils/validation';
+import { isUnauthorizedError } from '@/utils/helpers';
 
 export default async function handleChangeEmail(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -43,7 +44,7 @@ export default async function handleChangeEmail(req: NextApiRequest, res: NextAp
 
         return res.status(500).end();
       }
-      if (err.statusCode === 401) {
+      if (isUnauthorizedError(err)) {
         return res.status(401).end();
       }
     }
