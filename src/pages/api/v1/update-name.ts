@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { getSession } from '@/session/iron-session';
 import wristbandService from '@/services/wristband-service';
-import { FetchError } from '@/error';
+import { isUnauthorizedError } from '@/utils/helpers';
 
 export default async function handleUpdateName(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -28,7 +28,7 @@ export default async function handleUpdateName(req: NextApiRequest, res: NextApi
   } catch (err: unknown) {
     console.log(err);
 
-    if (err instanceof FetchError && err.statusCode === 401) {
+    if (isUnauthorizedError(err)) {
       return res.status(401).end();
     }
 

@@ -2,11 +2,10 @@ import { useState } from 'react';
 import { FaCheck, FaSpinner } from 'react-icons/fa';
 
 import { useWristband } from '@/context/auth-context';
-import { JSON_MEDIA_TYPE } from '@/utils/constants';
-import { clientRedirectToLogin, validateFetchResponseStatus } from '@/utils/helpers';
+import { clientRedirectToLogin, isUnauthorizedError } from '@/utils/helpers';
 import { toastSuccess, toastError } from '@/utils/toast';
-import { FetchError } from '@/error';
 import Image from 'next/image';
+import frontendApiService from '@/services/frontend-api-service';
 
 interface PerkCardProps {
   id: string;
@@ -30,23 +29,14 @@ export function PerkCard({ id, image, perkName, perkDesc, banner }: PerkCardProp
     try {
       setIsClaimInProgress(true);
 
-      const res = await fetch('/api/v1/claim-perk', {
-        method: 'PATCH',
-        keepalive: true,
-        body: JSON.stringify({ claimedPerks: [...claimedPerks, id] }),
-        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
-      });
-
-      validateFetchResponseStatus(res);
-
-      const data = await res.json();
-      setIsModalOpen(false); // closes pop up
-      setUser(data); // updates the user (react side)
+      const updatedUser = await frontendApiService.claimPerk(id, claimedPerks);
+      setIsModalOpen(false);
+      setUser(updatedUser);
       toastSuccess(`Woohoo! Enjoy your "${perkName}".`);
     } catch (error: unknown) {
       console.log(error);
 
-      if (error instanceof FetchError && error.statusCode === 401) {
+      if (isUnauthorizedError(error)) {
         clientRedirectToLogin(window.location.href);
         return;
       }

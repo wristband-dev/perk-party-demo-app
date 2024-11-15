@@ -1,3 +1,15 @@
+export type IronSessionData = {
+  accessToken: string;
+  csrfSecret: string;
+  expiresAt: number;
+  isAuthenticated: boolean;
+  refreshToken?: string;
+  tenantDomainName: string;
+  tenantId: string;
+  userId: string;
+  role: Role;
+};
+
 export type EntityMetadata = {
   version: number;
   lastModifiedTime: string;
@@ -18,7 +30,7 @@ export type Tenant = {
   domainName?: string;
   displayName?: string;
   description?: string;
-  logoUrl?: string;
+  logoUrl?: string | null;
   signupEnabled?: boolean;
   status?: string;
   publicMetadata?: TenantMetadata;
@@ -203,5 +215,3 @@ export type TenantOption = {
   tenantLoginUrl: string;
   tenantLogoUrl?: string;
 };
-
-export type TenantOptionsList = TenantOption[];

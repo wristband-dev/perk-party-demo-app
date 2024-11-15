@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSession } from '@/session/iron-session';
-import { FetchError } from '@/error';
 import wristbandService from '@/services/wristband-service';
+import { isUnauthorizedError } from '@/utils/helpers';
 
 export default async function handleClaimPerk(req: NextApiRequest, res: NextApiResponse) {
   const session = await getSession(req, res);
@@ -23,7 +23,7 @@ export default async function handleClaimPerk(req: NextApiRequest, res: NextApiR
   } catch (err) {
     console.log(err);
 
-    if (err instanceof FetchError && err.statusCode === 401) {
+    if (isUnauthorizedError(err)) {
       return res.status(401).end();
     }
 

@@ -1,20 +1,15 @@
 import { SyntheticEvent, useEffect, useState } from 'react';
 import { GetServerSideProps, GetServerSidePropsContext } from 'next/types';
 import { FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
+import { AxiosError } from 'axios';
 
 import { useWristband } from '@/context/auth-context';
 import { toastError, toastSuccess } from '@/utils/toast';
-import {
-  clientRedirectToLogin,
-  isVipHostRole,
-  serverRedirectToLogin,
-  validateFetchResponseStatus,
-} from '@/utils/helpers';
+import { clientRedirectToLogin, isUnauthorizedError, isVipHostRole, serverRedirectToLogin } from '@/utils/helpers';
 import { getSession } from '@/session/iron-session';
+import frontendApiService from '@/services/frontend-api-service';
 import wristbandService from '@/services/wristband-service';
 import { ChangeEmailRequestResults } from '@/types';
-import { FetchError } from '@/error';
-import { JSON_MEDIA_TYPE } from '@/utils/constants';
 import WristbandBadge from '@/components/wristband-badge';
 import { ralewayFont } from '@/utils/fonts';
 import { useApiTouchpoints } from '@/context/api-touchpoint-context';
@@ -64,23 +59,14 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
     setIsUpdateNameInProgress(true);
 
     try {
-      const res = await fetch('/api/v1/update-name', {
-        method: 'POST',
-        keepalive: true,
-        body: JSON.stringify({ fullName }),
-        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
-      });
-
-      validateFetchResponseStatus(res);
-
-      const data = await res.json();
+      const user = await frontendApiService.updateFullName(fullName);
       // updates the user (react side)
-      setUser(data);
+      setUser(user);
       toastSuccess('With a name like that, you must be a VIP everywhere you go!', '👑');
     } catch (error: unknown) {
       console.log(error);
 
-      if (error instanceof FetchError && error.statusCode === 401) {
+      if (isUnauthorizedError(error)) {
         clientRedirectToLogin(window.location.href);
         return;
       }
@@ -102,14 +88,7 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
     setIsChangePasswordInProgress(true);
 
     try {
-      const res = await fetch('/api/v1/change-password', {
-        method: 'POST',
-        keepalive: true,
-        body: JSON.stringify({ currentPassword, newPassword }),
-        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
-      });
-
-      validateFetchResponseStatus(res);
+      await frontendApiService.changePassword(currentPassword, newPassword);
 
       // Reset the password form inputs
       setCurrentPassword('');
@@ -118,16 +97,13 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
     } catch (error: unknown) {
       console.log(error);
 
-      if (error instanceof FetchError) {
-        if (error.statusCode === 400) {
-          const errorData = await error.res.json();
-
-          if (errorData.error === 'password_breached') {
-            toastError('Detected in a breach! Not even the power of Flex Seal can fix that password.', '🚧');
-            return;
-          }
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 400 && error.response?.data.error === 'password_breached') {
+          toastError('Detected in a breach! Not even the power of Flex Seal can fix that password.', '🚧');
+          return;
         }
-        if (error.statusCode === 401) {
+
+        if (isUnauthorizedError(error)) {
           clientRedirectToLogin(window.location.href);
           return;
         }
@@ -150,16 +126,7 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
     setIsChangeEmailInProgress(true);
 
     try {
-      const res = await fetch('/api/v1/change-email', {
-        method: 'POST',
-        keepalive: true,
-        body: JSON.stringify({ newEmail }),
-        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
-      });
-
-      validateFetchResponseStatus(res);
-
-      const updateChangeEmailRequestResults = await res.json();
+      const updateChangeEmailRequestResults = await frontendApiService.changeEmail(newEmail);
       const { items } = updateChangeEmailRequestResults;
       setRequestedNewEmail(items.length ? items[0].newEmail : '');
       setChangeEmailRequestId(items.length ? items[0].id : '');
@@ -168,20 +135,19 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
     } catch (error: unknown) {
       console.log(error);
 
-      if (error instanceof FetchError) {
-        if (error.statusCode === 400 && error.res) {
-          const errorData = await error.res.json();
-
-          if (errorData.error === 'invalid_email') {
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 400) {
+          if (error.response?.data.error === 'invalid_email') {
             toastError('That email is more invalid than putting pineapple on pizza!', '🍕');
             return;
           }
-          if (errorData.error === 'not_unique') {
+          if (error.response?.data.error === 'not_unique') {
             toastError('Sorry champ, somebody beat you to that email. Maybe get a time machine?', '🕒');
             return;
           }
         }
-        if (error.statusCode === 401) {
+
+        if (isUnauthorizedError(error)) {
           clientRedirectToLogin(window.location.href);
           return;
         }
@@ -197,15 +163,7 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
     setIsCancelChangeEmailInProgress(true);
 
     try {
-      const res = await fetch('/api/v1/cancel-change-email', {
-        method: 'POST',
-        keepalive: true,
-        body: JSON.stringify({ changeEmailRequestId }),
-        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
-      });
-
-      validateFetchResponseStatus(res);
-
+      await frontendApiService.cancelChangeEmail(changeEmailRequestId);
       setRequestedNewEmail('');
       setChangeEmailRequestId('');
       setNewEmail('');
@@ -213,7 +171,7 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
     } catch (error: unknown) {
       console.log(error);
 
-      if (error instanceof FetchError && error.statusCode === 401) {
+      if (isUnauthorizedError(error)) {
         clientRedirectToLogin(window.location.href);
         return;
       }
@@ -228,16 +186,7 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
     setIsResendChangeEmailInProgress(true);
 
     try {
-      const res = await fetch('/api/v1/change-email', {
-        method: 'POST',
-        keepalive: true,
-        body: JSON.stringify({ newEmail: requestedNewEmail }),
-        headers: { 'Content-Type': JSON_MEDIA_TYPE, Accept: JSON_MEDIA_TYPE },
-      });
-
-      validateFetchResponseStatus(res);
-
-      const updateChangeEmailRequestResults = await res.json();
+      const updateChangeEmailRequestResults = await frontendApiService.changeEmail(requestedNewEmail);
       const { items } = updateChangeEmailRequestResults;
       setRequestedNewEmail(items.length ? items[0].newEmail : '');
       setChangeEmailRequestId(items.length ? items[0].id : '');
@@ -246,7 +195,7 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
     } catch (error: unknown) {
       console.log(error);
 
-      if (error instanceof FetchError && error.statusCode === 401) {
+      if (isUnauthorizedError(error)) {
         clientRedirectToLogin(window.location.href);
         return;
       }
@@ -471,7 +420,7 @@ export const getServerSideProps: GetServerSideProps = async function (context: G
   } catch (err: unknown) {
     console.log(err);
 
-    if (err instanceof FetchError && err.statusCode === 401) {
+    if (isUnauthorizedError(err)) {
       return serverRedirectToLogin(req);
     }
 

@@ -4,6 +4,7 @@ import { getSession } from '@/session/iron-session';
 import wristbandService from '@/services/wristband-service';
 import { FetchError } from '@/error';
 import { isInvalidTenantLogoUrl } from '@/utils/validation';
+import { isUnauthorizedError } from '@/utils/helpers';
 
 export default async function handleUpdateTenant(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'PATCH') {
@@ -24,27 +25,19 @@ export default async function handleUpdateTenant(req: NextApiRequest, res: NextA
 
   try {
     const updatedTenant = await wristbandService.updateTenant(accessToken, tenantId, { ...req.body });
-    // "Touch" the session timestamp
-    await session.save();
     return res.status(200).json(updatedTenant);
   } catch (err: unknown) {
     console.log(err);
 
-    if (err instanceof FetchError && err.statusCode === 401) {
+    if (isUnauthorizedError(err)) {
       return res.status(401).end();
     }
 
-    if (err instanceof FetchError) {
-      if (err.statusCode === 400 && !!err.res) {
-        const errorData = await err.res.json();
-        return isInvalidTenantLogoUrl(errorData)
-          ? res.status(400).json({ error: 'invalid_logo_url' })
-          : res.status(500).end();
-      }
-
-      if (err.statusCode === 401) {
-        return res.status(401).end();
-      }
+    if (err instanceof FetchError && err.statusCode === 400 && !!err.res) {
+      const errorData = await err.res.json();
+      return isInvalidTenantLogoUrl(errorData)
+        ? res.status(400).json({ error: 'invalid_logo_url' })
+        : res.status(500).end();
     }
 
     // For all other error, return a 500 error.
