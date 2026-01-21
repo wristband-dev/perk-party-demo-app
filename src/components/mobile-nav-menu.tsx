@@ -2,11 +2,12 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { AiOutlineClose } from 'react-icons/ai';
 import { FaArrowLeft, FaArrowRight, FaCheck } from 'react-icons/fa6';
+import { redirectToLogout, useWristbandSession } from '@wristband/react-client-auth';
 
-import { clientRedirectToLogout, truncateDisplayString } from '@/utils/helpers';
+import { truncateDisplayString } from '@/utils/helpers';
 import WristbandBadge from '@/components/wristband-badge';
-import { useWristband } from '@/context/auth-context';
 import { useApiTouchpoints } from '@/context/api-touchpoint-context';
+import { MySessionMetadata } from '@/types';
 
 type Props = {
   isMobileNavMenuOpen: boolean;
@@ -16,8 +17,8 @@ type Props = {
 const MobileNavMenu = ({ isMobileNavMenuOpen, setIsMobileNavMenuOpen }: Props) => {
   // Context
   const { showApiTouchpoints } = useApiTouchpoints();
-  const { tenant, tenantOptions } = useWristband();
-  const currentTenantId = tenant.id!;
+  const { metadata, tenantId } = useWristbandSession<MySessionMetadata>();
+  const { tenantOptions } = metadata;
 
   // State
   const [isSwitchCompanyScreen, setIsSwitchCompanyScreen] = useState<boolean>(false);
@@ -114,7 +115,7 @@ const MobileNavMenu = ({ isMobileNavMenuOpen, setIsMobileNavMenuOpen }: Props) =
             <li className="my-6 list-none">
               <div className="flex items-center justify-start">
                 <div
-                  onClick={clientRedirectToLogout}
+                  onClick={() => redirectToLogout('/api/auth/logout')}
                   className="mr-4 cursor-pointer hover:text-pink-600 transition duration-300"
                 >
                   <span>🚪</span>
@@ -132,27 +133,28 @@ const MobileNavMenu = ({ isMobileNavMenuOpen, setIsMobileNavMenuOpen }: Props) =
             <li className="mb-6 list-none">
               <h2 className="font-semibold">Your Companies:</h2>
             </li>
-            {tenantOptions.map((tenantOption) => (
-              <li key={tenantOption.tenantId} className="mb-6 list-none">
-                <div
-                  onClick={() => {
-                    if (tenantOption.tenantId !== currentTenantId) {
-                      window.location.href = tenantOption.tenantLoginUrl;
-                    }
-                  }}
-                  title={tenantOption.tenantDisplayName}
-                  className={`inline-flex items-center ${tenantOption.tenantId === currentTenantId ? 'cursor-not-allowed' : 'cursor-pointer'} hover:text-pink-600 transition duration-300`}
-                >
-                  {truncateDisplayString(tenantOption.tenantDisplayName)}
-                  <span className="ml-4">
-                    {tenantOption.tenantId === currentTenantId && (
-                      <FaCheck className="cursor-not-allowed text-wristband-green-mid" />
-                    )}
-                    {tenantOption.tenantId !== currentTenantId && <FaArrowRight />}
-                  </span>
-                </div>
-              </li>
-            ))}
+            {tenantOptions &&
+              tenantOptions.map((tenantOption) => (
+                <li key={tenantOption.tenantId} className="mb-6 list-none">
+                  <div
+                    onClick={() => {
+                      if (tenantOption.tenantId !== tenantId) {
+                        window.location.href = tenantOption.tenantLoginUrl;
+                      }
+                    }}
+                    title={tenantOption.tenantDisplayName}
+                    className={`inline-flex items-center ${tenantOption.tenantId === tenantId ? 'cursor-not-allowed' : 'cursor-pointer'} hover:text-pink-600 transition duration-300`}
+                  >
+                    {truncateDisplayString(tenantOption.tenantDisplayName)}
+                    <span className="ml-4">
+                      {tenantOption.tenantId === tenantId && (
+                        <FaCheck className="cursor-not-allowed text-wristband-green-mid" />
+                      )}
+                      {tenantOption.tenantId !== tenantId && <FaArrowRight />}
+                    </span>
+                  </div>
+                </li>
+              ))}
           </ul>
         </div>
       </div>

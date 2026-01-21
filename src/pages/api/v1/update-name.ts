@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { getSession } from '@/session/iron-session';
+import { getSession } from '@/wristband';
 import wristbandService from '@/services/wristband-service';
 import { isUnauthorizedError } from '@/utils/helpers';
 
@@ -23,7 +23,7 @@ export default async function handleUpdateName(req: NextApiRequest, res: NextApi
   }
 
   try {
-    const user = await wristbandService.updateUser(accessToken, userId, { fullName });
+    const user = await wristbandService.updateUser(accessToken!, userId!, { fullName });
     return res.status(200).json(user);
   } catch (err: unknown) {
     console.log(err);

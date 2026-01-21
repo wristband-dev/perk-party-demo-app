@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { getSession } from '@/session/iron-session';
+import { getSession } from '@/wristband';
 import wristbandService from '@/services/wristband-service';
 import { FetchError } from '@/error';
 import { isDuplicateNewEmail, isInvalidNewEmail } from '@/utils/validation';
@@ -25,8 +25,8 @@ export default async function handleChangeEmail(req: NextApiRequest, res: NextAp
   }
 
   try {
-    await wristbandService.requestEmailChange(accessToken, userId, newEmail);
-    const changeEmailRequestResults = await wristbandService.getChangeEmailRequests(accessToken, userId);
+    await wristbandService.requestEmailChange(accessToken!, userId!, newEmail);
+    const changeEmailRequestResults = await wristbandService.getChangeEmailRequests(accessToken!, userId!);
     return res.status(200).json(changeEmailRequestResults);
   } catch (err: unknown) {
     console.log(err);

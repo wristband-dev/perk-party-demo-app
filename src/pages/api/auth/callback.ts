@@ -1,47 +1,35 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { CallbackResultType } from '@wristband/nextjs-auth';
-import wristbandAuth from '@/wristband-auth';
-import { getSession } from '@/session/iron-session';
-import { createCsrfSecret, setCsrfTokenCookie } from '@/utils/csrf';
+import { getSession, wristbandAuth } from '@/wristband';
 import { PERKPARTY_HOST, IS_LOCALHOST, PERK_PARTY_PROTOCOL } from '@/utils/constants';
-import { parseUserinfo } from '@/utils/helpers';
-import { Userinfo } from '@/types';
+
+const PARTY_ANIMAL_ROLE = { id: '', name: 'app:app:party-animal', displayName: 'Party Animal' };
 
 export default async function handleCallback(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'GET') {
+    res.status(405).end();
+    return;
+  }
+
   try {
     /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
     // After the user authenticates, exchange the incoming authorization code for JWTs and also retrieve userinfo.
-    const callbackResult = await wristbandAuth.pageRouter.callback(req, res);
-    const { callbackData, result } = callbackResult;
+    const callbackResult = await wristbandAuth.pagesRouter.callback(req, res);
+    const { callbackData, redirectUrl, type } = callbackResult;
 
-    if (result === CallbackResultType.REDIRECT_REQUIRED) {
+    if (type === 'redirect_required') {
+      res.redirect(redirectUrl);
       return;
     }
 
-    // Save any necessary fields for the user's app session into a session cookie.
-    const session = await getSession(req, res);
-    session.isAuthenticated = true;
-    session.accessToken = callbackData!.accessToken;
-    // Convert the "expiresIn" seconds into an expiration date with the format of milliseconds from the epoch.
-    session.expiresAt = Date.now() + callbackData!.expiresIn * 1000;
-    session.refreshToken = callbackData!.refreshToken;
-    const user = parseUserinfo(callbackData!.userinfo as Userinfo);
-    session.userId = user.id!;
-    session.tenantId = user.tenantId!;
-    session.tenantDomainName = callbackData!.tenantDomainName;
-    session.role = user?.roles ? user.roles[0] : { id: '', name: 'app:app:party-animal', displayName: 'Party Animal' };
-
-    // Establish CSRF secret and cookie.
-    const csrfSecret = createCsrfSecret();
-    session.csrfSecret = csrfSecret;
-    await setCsrfTokenCookie(csrfSecret, res);
-
     // Save all fields into the session
+    const session = await getSession(req, res);
+    const { roles } = callbackData.userinfo;
+    session.fromCallback(callbackData, { role: roles && roles.length > 0 ? roles[0] : PARTY_ANIMAL_ROLE });
     await session.save();
 
     // Send the user back to the application.
-    const tenantDomain = IS_LOCALHOST ? '' : `${callbackData!.tenantDomainName}.`;
+    const tenantDomain = IS_LOCALHOST ? '' : `${callbackData.tenantName}.`;
     res.redirect(callbackData!.returnUrl || `${PERK_PARTY_PROTOCOL}://${tenantDomain}${PERKPARTY_HOST}`);
   } catch (error: unknown) {
     console.error(error);

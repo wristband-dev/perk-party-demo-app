@@ -1,13 +1,23 @@
-export type IronSessionData = {
-  accessToken: string;
-  csrfSecret: string;
-  expiresAt: number;
-  isAuthenticated: boolean;
-  refreshToken?: string;
-  tenantDomainName: string;
-  tenantId: string;
-  userId: string;
+import type { SessionData } from '@wristband/nextjs-auth';
+
+/**
+ * Custom session data type for this application.
+ * Extends the base SessionData from the Wristband Next.js Auth SDK with app-specific fields.
+ */
+export interface WristbandSessionData extends SessionData {
+  // Custom Fields
+  role?: Role;
+}
+
+/**
+ * Custom session metadata for Wristband React Client Auth SDK.
+ * The metadata is accessible via the `useWristbandSession()` hook in React components.
+ */
+export type MySessionMetadata = {
   role: Role;
+  user: User;
+  tenant: Tenant;
+  tenantOptions: TenantOption[];
 };
 
 export type EntityMetadata = {
@@ -71,28 +81,6 @@ export type User = {
   restrictedMetadata?: object;
   status?: string;
   roles?: Role[];
-};
-
-export type Userinfo = {
-  sub: string;
-  tnt_id: string;
-  app_id: string;
-  idp_name: string;
-  email: string;
-  email_verified: boolean;
-  preferred_username: string | null;
-  name: string | null;
-  given_name: string | null;
-  middle_name: string | null;
-  family_name: string | null;
-  nickname: string | null;
-  picture: string | null;
-  gender: string | null;
-  birthdate: string | null;
-  zoneinfo: string | null;
-  locale: string | null;
-  updated_at: string | null;
-  roles: Role[];
 };
 
 export type ChangeEmailRequest = {

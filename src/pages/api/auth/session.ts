@@ -1,9 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { getSession } from '@/session/iron-session';
 import { isUnauthorizedError } from '@/utils/helpers';
 import { TenantOption } from '@/types';
 import wristbandService from '@/services/wristband-service';
+import { getSession } from '@/wristband';
 
 export default async function sessionRoute(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -11,29 +11,27 @@ export default async function sessionRoute(req: NextApiRequest, res: NextApiResp
   }
 
   const session = await getSession(req, res);
-  const { accessToken, isAuthenticated, role, tenantId, userId } = session;
-
-  /* WRISTBAND_TOUCHPOINT - AUTHENTICATION */
-  if (!isAuthenticated) {
-    return res.status(401).end();
-  }
+  const { accessToken, role, tenantId, userId } = session;
 
   try {
     // Grab latest user and their metadata as that is where we store the perks they've redeemed
-    const user = await wristbandService.getUser(accessToken, userId);
+    const user = await wristbandService.getUser(accessToken!, userId!);
     const { applicationId, email } = user;
 
     // Grab latest tenant and their metadata as that is where enabled perk categories are stored
-    const tenant = await wristbandService.getTenant(accessToken, tenantId);
+    const tenant = await wristbandService.getTenant(accessToken!, tenantId!);
 
     // Grab latest tenant options for the tenant switcher
-    const fetchTenantsData = await wristbandService.fetchTenants(accessToken, applicationId!, email!);
+    const fetchTenantsData = await wristbandService.fetchTenants(accessToken!, applicationId!, email!);
     const tenantOptions: TenantOption[] = fetchTenantsData.items || [];
     const sortedTenantOptions = tenantOptions.sort((a, b) =>
       a.tenantDisplayName.toLowerCase().localeCompare(b.tenantDisplayName.toLowerCase())
     );
 
-    return res.status(200).json({ role, user, tenant, tenantOptions: sortedTenantOptions });
+    const sessionResponse = session.getSessionResponse({ role, user, tenant, tenantOptions: sortedTenantOptions });
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Pragma', 'no-cache');
+    return res.status(200).json(sessionResponse);
   } catch (error) {
     console.log(error);
 

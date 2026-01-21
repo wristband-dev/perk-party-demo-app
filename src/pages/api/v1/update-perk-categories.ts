@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { getSession } from '@/session/iron-session';
+import { getSession } from '@/wristband';
 import wristbandService from '@/services/wristband-service';
 import { isUnauthorizedError } from '@/utils/helpers';
 
@@ -23,7 +23,7 @@ export default async function handleUpdatePerkCategories(req: NextApiRequest, re
   }
 
   try {
-    const updatedTenant = await wristbandService.updateTenant(accessToken, tenantId, {
+    const updatedTenant = await wristbandService.updateTenant(accessToken!, tenantId!, {
       publicMetadata: { perkCategories },
     });
     return res.status(200).json(updatedTenant);

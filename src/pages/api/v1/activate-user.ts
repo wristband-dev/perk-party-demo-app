@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { getSession } from '@/session/iron-session';
 import wristbandService from '@/services/wristband-service';
 import { isUnauthorizedError } from '@/utils/helpers';
+import { getSession } from '@/wristband';
 
 export default async function handleActivateUser(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'PATCH') {
@@ -23,8 +23,8 @@ export default async function handleActivateUser(req: NextApiRequest, res: NextA
   }
 
   try {
-    await wristbandService.updateUser(accessToken, userId, { status: 'ACTIVE' });
-    const results = await wristbandService.getUsersInTenantWithRoles(accessToken, tenantId);
+    await wristbandService.updateUser(accessToken!, userId, { status: 'ACTIVE' });
+    const results = await wristbandService.getUsersInTenantWithRoles(accessToken!, tenantId!);
     return res.status(200).json({ users: results.items });
   } catch (err: unknown) {
     console.log(err);

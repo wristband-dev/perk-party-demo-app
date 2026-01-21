@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { getSession } from '@/session/iron-session';
+import { getSession } from '@/wristband';
 import wristbandService from '@/services/wristband-service';
 import { isUnauthorizedError } from '@/utils/helpers';
 
@@ -23,8 +23,8 @@ export default async function handleCancelNewUserInvite(req: NextApiRequest, res
   }
 
   try {
-    await wristbandService.cancelNewUserInvite(accessToken, newUserInvitationRequestId);
-    const results = await wristbandService.getNewUserInvitesInTenant(accessToken, tenantId);
+    await wristbandService.cancelNewUserInvite(accessToken!, newUserInvitationRequestId);
+    const results = await wristbandService.getNewUserInvitesInTenant(accessToken!, tenantId!);
     return res.status(200).json({ invites: results.items });
   } catch (err: unknown) {
     console.log(err);

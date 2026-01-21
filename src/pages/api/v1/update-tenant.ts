@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { getSession } from '@/session/iron-session';
+import { getSession } from '@/wristband';
 import wristbandService from '@/services/wristband-service';
 import { FetchError } from '@/error';
 import { isInvalidTenantLogoUrl } from '@/utils/validation';
@@ -24,7 +24,7 @@ export default async function handleUpdateTenant(req: NextApiRequest, res: NextA
   }
 
   try {
-    const updatedTenant = await wristbandService.updateTenant(accessToken, tenantId, { ...req.body });
+    const updatedTenant = await wristbandService.updateTenant(accessToken!, tenantId!, { ...req.body });
     return res.status(200).json(updatedTenant);
   } catch (err: unknown) {
     console.log(err);

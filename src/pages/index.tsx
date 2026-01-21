@@ -1,34 +1,29 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Image from 'next/image';
 
 import { PerkCard } from '@/components/PerkCard';
-import { useWristband } from '@/context/auth-context';
 import { perks } from '@/data/perk-data';
 import { ralewayFont } from '@/utils/fonts';
+import { useWristbandAuth, useWristbandSession } from '@wristband/react-client-auth';
+import { MySessionMetadata } from '@/types';
 
 export default function HomePage() {
   // get meta data from tenant to show perk cats
-  const { isAuthenticated, tenant, user } = useWristband();
-
-  const [perksLoaded, setPerksLoaded] = useState<boolean>(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const { isAuthenticated } = useWristbandAuth();
+  const { metadata } = useWristbandSession<MySessionMetadata>();
+  const { tenant, user } = metadata;
 
   // const perkCategories = useMemo(() => tenant?.publicMetadata?.perkCategories ?? [], [tenant]);
   const perkCategories = useMemo(() => ['thrill', 'travel', 'relax', 'food'], []);
   const claimedPerks = useMemo(() => user?.publicMetadata?.claimedPerks ?? [], [user]);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      setPerksLoaded(true);
-    }
-  }, [isAuthenticated]);
+  // Derive perksLoaded directly from isAuthenticated instead of using state + effect
+  const perksLoaded = isAuthenticated;
 
-  // Set selectedCategory to the single category if only one exists
-  useEffect(() => {
-    if (perkCategories.length === 1) {
-      setSelectedCategory(perkCategories[0].toLowerCase());
-    }
-  }, [perkCategories]);
+  // Calculate initial selected category directly - no effect needed since perkCategories is constant
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    perkCategories.length === 1 ? perkCategories[0].toLowerCase() : 'all'
+  );
 
   const filteredPerks = perks.filter((perk) =>
     selectedCategory === 'all'
@@ -54,7 +49,7 @@ export default function HomePage() {
             className="text-white mx-8 text-3xl font-semibold text-center"
           >
             Welcome to the Perk Party for{' '}
-            <span className="inline-block border-b-4 border-pink-600 ml-1">{tenant.displayName}</span>
+            <span className="inline-block border-b-4 border-pink-600 ml-1">{tenant ? tenant.displayName : ''}</span>
           </p>
         </div>
       </section>
