@@ -9,7 +9,7 @@ export const toastSuccess = (message: string, icon: string = '🎉') => {
       padding: '0.5rem',
       border: '1px solid #f61681',
     },
-    progressStyle: { backgroundColor: '#f61681' },
+    progressClassName: 'toast-progress-success',
     icon: <span style={{ fontSize: '1.25rem', marginRight: '0.5rem' }}>{icon}</span>,
   });
 };
@@ -22,7 +22,7 @@ export const toastError = (message: string, icon: string = '😭') => {
       position: 'relative',
       padding: '0.5rem',
     },
-    progressStyle: { backgroundColor: '#32a852' },
+    progressClassName: 'toast-progress-error',
     icon: <span style={{ fontSize: '1.25rem', marginRight: '0.5rem' }}>{icon}</span>,
   });
 };
