@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getSession } from '@/session/iron-session';
+
+import { getSession } from '@/wristband';
 import { FetchError } from '@/error';
 import wristbandService from '@/services/wristband-service';
 import { isInvalidDomainName } from '@/utils/validation';
@@ -25,8 +25,8 @@ export default async function handleUpsertIdp(req: NextApiRequest, res: NextApiR
   }
 
   try {
-    await wristbandService.upsertIdpOverrideToggle(accessToken, tenantId);
-    const upsertedIdp = await wristbandService.upsertIdp(accessToken, idp);
+    await wristbandService.upsertIdpOverrideToggle(accessToken!, tenantId!);
+    const upsertedIdp = await wristbandService.upsertIdp(accessToken!, idp);
     return res.status(200).json(upsertedIdp);
   } catch (err: unknown) {
     console.log(err);

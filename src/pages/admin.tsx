@@ -3,24 +3,18 @@ import { SyntheticEvent, useEffect, useState } from 'react';
 import { FaCopy, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 import { FaImage } from 'react-icons/fa';
 import copy from 'copy-to-clipboard';
+import { AxiosError } from 'axios';
+import { redirectToLogin, useWristbandSession } from '@wristband/react-client-auth';
 
-import { useWristband } from '@/context/auth-context';
-import {
-  clientRedirectToLogin,
-  isUnauthorizedError,
-  isVipHostRole,
-  serverRedirectToLogin,
-  updateTenantOption,
-} from '@/utils/helpers';
+import { isUnauthorizedError, isVipHostRole, serverRedirectToLogin, updateTenantOption } from '@/utils/helpers';
 import { toastSuccess, toastError } from '@/utils/toast';
 import WristbandBadge from '@/components/wristband-badge';
-import { getSession } from '@/session/iron-session';
 import wristbandService from '@/services/wristband-service';
-import { IdentityProviderDto, NewUserInvite, Tenant, User } from '@/types';
+import { IdentityProviderDto, MySessionMetadata, NewUserInvite, Tenant, User } from '@/types';
 import { ralewayFont } from '@/utils/fonts';
 import { useApiTouchpoints } from '@/context/api-touchpoint-context';
 import frontendApiService from '@/services/frontend-api-service';
-import { AxiosError } from 'axios';
+import { getSession } from '@/wristband';
 
 type Props = {
   invites: NewUserInvite[];
@@ -31,7 +25,8 @@ type Props = {
 
 export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: Props) {
   // Contexts
-  const { setTenant, setTenantOptions, tenant, tenantOptions, user: loggedInUser } = useWristband();
+  const { metadata, updateMetadata } = useWristbandSession<MySessionMetadata>();
+  const { tenant, tenantOptions, user: loggedInUser } = metadata;
   const { showApiTouchpoints } = useApiTouchpoints();
 
   // Perk Category State
@@ -88,8 +83,8 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
 
   // We need this here to ensure the existing tenant values in the form inputs when the page loads.
   useEffect(() => {
-    setTenantDisplayName(tenant.displayName || '');
-    setTenantLogoUrl(tenant.logoUrl || '');
+    setTenantDisplayName(tenant?.displayName || '');
+    setTenantLogoUrl(tenant?.logoUrl || '');
   }, [tenant]);
 
   const handleTenantDisplayNameSubmit = async (e: SyntheticEvent) => {
@@ -101,14 +96,16 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
         displayName: tenantDisplayName,
         logoUrl: tenantLogoUrl || null,
       });
-      setTenant(data);
-      setTenantOptions(updateTenantOption(tenantOptions, data));
+      updateMetadata({
+        tenant: data,
+        tenantOptions: updateTenantOption(tenantOptions, data),
+      });
       toastSuccess('Nice work! Your updated company info is ready to confuse future interns.', '🤓');
     } catch (error: unknown) {
       console.log(error);
 
       if (isUnauthorizedError(error)) {
-        clientRedirectToLogin(window.location.href);
+        redirectToLogin('/api/auth/login', { returnUrl: window.location.href });
         return;
       }
 
@@ -140,7 +137,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
       console.log(error);
 
       if (isUnauthorizedError(error)) {
-        clientRedirectToLogin(window.location.href);
+        redirectToLogin('/api/auth/login', { returnUrl: window.location.href });
         return;
       }
 
@@ -163,7 +160,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
       console.log(error);
 
       if (isUnauthorizedError(error)) {
-        clientRedirectToLogin(window.location.href);
+        redirectToLogin('/api/auth/login', { returnUrl: window.location.href });
         return;
       }
 
@@ -186,7 +183,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
       console.log(error);
 
       if (isUnauthorizedError(error)) {
-        clientRedirectToLogin(window.location.href);
+        redirectToLogin('/api/auth/login', { returnUrl: window.location.href });
         return;
       }
 
@@ -209,7 +206,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
       console.log(error);
 
       if (isUnauthorizedError(error)) {
-        clientRedirectToLogin(window.location.href);
+        redirectToLogin('/api/auth/login', { returnUrl: window.location.href });
         return;
       }
 
@@ -299,7 +296,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
       const upsertedIdp = await frontendApiService.upsertIdp({
         type: 'OKTA',
         ownerType: 'TENANT',
-        ownerId: tenant.id,
+        ownerId: tenant?.id || '',
         name: 'okta',
         displayName: 'Okta',
         domainName,
@@ -319,7 +316,7 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
       console.log(error);
 
       if (isUnauthorizedError(error)) {
-        clientRedirectToLogin(window.location.href);
+        redirectToLogin('/api/auth/login', { returnUrl: window.location.href });
         return;
       }
 
@@ -597,10 +594,10 @@ export default function AdminPage({ oktaIdp, oktaRedirectUrl, users, invites }: 
                         {user.fullName}&nbsp;&nbsp;/&nbsp;&nbsp;{user.email}
                       </span>
                     </div>
-                    {loggedInUser.email === user.email && (
+                    {loggedInUser?.email === user.email && (
                       <p className="min-w-28 text-center font-semibold">{"That's You!"}</p>
                     )}
-                    {loggedInUser.email !== user.email && (
+                    {loggedInUser?.email !== user.email && (
                       <button
                         type="submit"
                         disabled={isDeactivateUserInProgress || isActivateUserInProgress}
@@ -854,17 +851,17 @@ export const getServerSideProps: GetServerSideProps = async function (context: G
   const { accessToken, isAuthenticated, role, tenantId } = session;
 
   // Only VIP Host roles can access the admin page
-  if (!isAuthenticated || !isVipHostRole(role)) {
+  if (!isAuthenticated || !isVipHostRole(role!)) {
     return serverRedirectToLogin(req);
   }
 
   try {
     const [tenantIdpOverrideResults, tenantIdpRedirectUrlOverrideResults, userResults, inviteResults] =
       await Promise.all([
-        wristbandService.resolveTenantIdpOverrides(accessToken, tenantId),
-        wristbandService.resolveTenantIdpRedirectUrlOverrides(accessToken, tenantId),
-        wristbandService.getUsersInTenantWithRoles(accessToken, tenantId),
-        wristbandService.getNewUserInvitesInTenant(accessToken, tenantId),
+        wristbandService.resolveTenantIdpOverrides(accessToken!, tenantId!),
+        wristbandService.resolveTenantIdpRedirectUrlOverrides(accessToken!, tenantId!),
+        wristbandService.getUsersInTenantWithRoles(accessToken!, tenantId!),
+        wristbandService.getNewUserInvitesInTenant(accessToken!, tenantId!),
       ]);
 
     const { items: idpOverrides } = tenantIdpOverrideResults;

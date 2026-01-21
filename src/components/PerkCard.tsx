@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { FaCheck, FaSpinner } from 'react-icons/fa';
+import { redirectToLogin, useWristbandSession } from '@wristband/react-client-auth';
 
-import { useWristband } from '@/context/auth-context';
-import { clientRedirectToLogin, isUnauthorizedError } from '@/utils/helpers';
+import { isUnauthorizedError } from '@/utils/helpers';
 import { toastSuccess, toastError } from '@/utils/toast';
 import Image from 'next/image';
 import frontendApiService from '@/services/frontend-api-service';
+import { MySessionMetadata } from '@/types';
 
 interface PerkCardProps {
   id: string;
@@ -19,7 +20,9 @@ export function PerkCard({ id, image, perkName, perkDesc, banner }: PerkCardProp
   const [isClaimInProgress, setIsClaimInProgress] = useState<boolean>(false);
   const [isHovered, setIsHovered] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const { user, setUser } = useWristband();
+
+  const { metadata, updateMetadata } = useWristbandSession<MySessionMetadata>();
+  const { user } = metadata;
 
   const publicMetadata = user.publicMetadata || {};
   const claimedPerks = publicMetadata.claimedPerks || [];
@@ -31,13 +34,13 @@ export function PerkCard({ id, image, perkName, perkDesc, banner }: PerkCardProp
 
       const updatedUser = await frontendApiService.claimPerk(id, claimedPerks);
       setIsModalOpen(false);
-      setUser(updatedUser);
+      updateMetadata({ user: updatedUser });
       toastSuccess(`Woohoo! Enjoy your "${perkName}".`);
     } catch (error: unknown) {
       console.log(error);
 
       if (isUnauthorizedError(error)) {
-        clientRedirectToLogin(window.location.href);
+        redirectToLogin('/api/auth/login', { returnUrl: window.location.href });
         return;
       }
 

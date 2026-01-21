@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { getSession } from '@/session/iron-session';
+import { getSession } from '@/wristband';
 import wristbandService from '@/services/wristband-service';
 import { isUnauthorizedError } from '@/utils/helpers';
 
@@ -23,7 +23,7 @@ export default async function handleCancelChangeEmail(req: NextApiRequest, res: 
   }
 
   try {
-    await wristbandService.cancelEmailChange(accessToken, changeEmailRequestId);
+    await wristbandService.cancelEmailChange(accessToken!, changeEmailRequestId);
     return res.status(204).end();
   } catch (err: unknown) {
     console.log(err);

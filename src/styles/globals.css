@@ -17,3 +17,11 @@ body,
 body  {
   text-rendering: optimizeLegibility;
 }
+
+.toast-progress-success {
+  background-color: #f61681 !important;
+}
+
+.toast-progress-error {
+  background-color: #32a852 !important;
+}

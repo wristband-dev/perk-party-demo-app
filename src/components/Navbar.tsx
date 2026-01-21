@@ -2,17 +2,19 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { AiOutlineMenu } from 'react-icons/ai';
+import { redirectToLogout, useWristbandSession } from '@wristband/react-client-auth';
 
 import { useApiTouchpoints } from '@/context/api-touchpoint-context';
-import { useWristband } from '@/context/auth-context';
 import WristbandBadge from '@/components/wristband-badge';
 import TenantSwitcher from '@/components/tenant-switcher';
 import MobileNavMenu from '@/components/mobile-nav-menu';
-import { clientRedirectToLogout, isVipHostRole } from '@/utils/helpers';
+import { isVipHostRole } from '@/utils/helpers';
+import { MySessionMetadata } from '@/types';
 
 const Navbar = () => {
   // Contexts
-  const { role, tenant } = useWristband();
+  const { metadata } = useWristbandSession<MySessionMetadata>();
+  const { role, tenant } = metadata;
   const { showApiTouchpoints } = useApiTouchpoints();
 
   // Mobile Nav State
@@ -41,7 +43,7 @@ const Navbar = () => {
             >
               <Image src="/perk-party-icon.png" alt="perk-party-icon" width={48} height={48} quality={70} />
             </Link>
-            {tenant.logoUrl && (
+            {tenant && tenant.logoUrl && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={tenant.logoUrl}
@@ -95,7 +97,7 @@ const Navbar = () => {
                 )}
               </div>
               <div
-                onClick={clientRedirectToLogout}
+                onClick={() => redirectToLogout('/api/auth/logout')}
                 className="capitalize border-b-2 border-transparent hover:border-b-2 hover:border-pink-600 hover:text-pink-600 text-l font-bold cursor-pointer transition duration-300"
               >
                 LOG OUT

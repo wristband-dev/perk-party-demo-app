@@ -1,16 +1,17 @@
 import type { AppProps } from 'next/app';
 import { ToastContainer } from 'react-toastify';
+import { WristbandAuthProvider } from '@wristband/react-client-auth';
 
 import '@/styles/globals.css';
 import 'react-toastify/dist/ReactToastify.css';
 
 import DefaultLayout from '@/layouts/default-layout';
-import { AuthProvider } from '@/context/auth-context';
 import { ApiTouchpointsProvider } from '@/context/api-touchpoint-context';
+import { MySessionMetadata } from '@/types';
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <AuthProvider>
+    <WristbandAuthProvider<MySessionMetadata> loginUrl="/api/auth/login" sessionUrl="/api/auth/session">
       <ApiTouchpointsProvider>
         <DefaultLayout>
           <Component {...pageProps} />
@@ -29,6 +30,6 @@ export default function App({ Component, pageProps }: AppProps) {
           />
         </DefaultLayout>
       </ApiTouchpointsProvider>
-    </AuthProvider>
+    </WristbandAuthProvider>
   );
 }

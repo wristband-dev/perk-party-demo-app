@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { getSession } from '@/session/iron-session';
+import { getSession } from '@/wristband';
 import { FetchError } from '@/error';
 import wristbandService from '@/services/wristband-service';
 import { isPasswordBreached } from '@/utils/validation';
@@ -25,7 +25,7 @@ export default async function handleChangePassword(req: NextApiRequest, res: Nex
   }
 
   try {
-    await wristbandService.changePassword(accessToken, { userId, currentPassword, newPassword });
+    await wristbandService.changePassword(accessToken!, { userId: userId!, currentPassword, newPassword });
     return res.status(204).end();
   } catch (err: unknown) {
     console.log(err);

@@ -1,16 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
-import { useWristband } from '@/context/auth-context';
 import { AiOutlineDown } from 'react-icons/ai';
 
 import { truncateDisplayString } from '@/utils/helpers';
 import { FaArrowRight, FaCheck } from 'react-icons/fa';
+import { useWristbandSession } from '@wristband/react-client-auth';
+import { MySessionMetadata } from '@/types';
 
 const TenantSwitcher = () => {
-  const { tenant, tenantOptions } = useWristband();
+  const { metadata, tenantId } = useWristbandSession<MySessionMetadata>();
+  const { tenantOptions } = metadata;
 
   // Tenant Switcher State
   const [tenantDropdownOpen, setTenantDropdownOpen] = useState<boolean>(false);
-  const currentTenantId = tenant.id!;
   const toggleTenantDropdown = () => setTenantDropdownOpen(!tenantDropdownOpen);
 
   // Close the dropdown if a click occurs outside of it
@@ -50,7 +51,7 @@ const TenantSwitcher = () => {
                 title={tenantOption.tenantDisplayName}
                 className="px-4 py-2 hover:bg-pink-600 hover:text-white cursor-pointer first:rounded-t-md last:rounded-b-md flex justify-between items-center"
                 onClick={() => {
-                  if (tenantOption.tenantId === currentTenantId) {
+                  if (tenantOption.tenantId === tenantId) {
                     setTenantDropdownOpen(false);
                   } else {
                     window.location.href = tenantOption.tenantLoginUrl;
@@ -58,8 +59,8 @@ const TenantSwitcher = () => {
                 }}
               >
                 <span>{truncateDisplayString(tenantOption.tenantDisplayName)}</span>
-                {tenantOption.tenantId === currentTenantId && <FaCheck className="text-wristband-green-mid" />}
-                {tenantOption.tenantId !== currentTenantId && <FaArrowRight />}
+                {tenantOption.tenantId === tenantId && <FaCheck className="text-wristband-green-mid" />}
+                {tenantOption.tenantId !== tenantId && <FaArrowRight />}
               </li>
             ))}
           </ul>

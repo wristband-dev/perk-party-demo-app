@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getSession } from '@/session/iron-session';
+
+import { getSession } from '@/wristband';
 import wristbandService from '@/services/wristband-service';
 import { isUnauthorizedError } from '@/utils/helpers';
 
@@ -18,7 +19,7 @@ export default async function handleClaimPerk(req: NextApiRequest, res: NextApiR
   }
 
   try {
-    const user = await wristbandService.updateUser(accessToken, userId, { publicMetadata: { claimedPerks } });
+    const user = await wristbandService.updateUser(accessToken!, userId!, { publicMetadata: { claimedPerks } });
     return res.status(200).json(user);
   } catch (err) {
     console.log(err);

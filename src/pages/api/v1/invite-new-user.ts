@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { getSession } from '@/session/iron-session';
+import { getSession } from '@/wristband';
 import wristbandService from '@/services/wristband-service';
 import { isUnauthorizedError } from '@/utils/helpers';
 
@@ -23,11 +23,11 @@ export default async function handleInviteNewUser(req: NextApiRequest, res: Next
   }
 
   try {
-    const roleResults = await wristbandService.getTenantRoles(accessToken, tenantId);
+    const roleResults = await wristbandService.getTenantRoles(accessToken!, tenantId!);
     const { items: roles } = roleResults;
     const role = roles.find((role) => role.displayName === roleName);
-    await wristbandService.inviteNewUser(accessToken, tenantId, inviteEmail, role?.id || 'Party Animal');
-    const results = await wristbandService.getNewUserInvitesInTenant(accessToken, tenantId);
+    await wristbandService.inviteNewUser(accessToken!, tenantId!, inviteEmail, role?.id || 'Party Animal');
+    const results = await wristbandService.getNewUserInvitesInTenant(accessToken!, tenantId!);
     return res.status(200).json({ invites: results.items });
   } catch (err: unknown) {
     console.log(err);

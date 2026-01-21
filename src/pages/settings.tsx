@@ -2,17 +2,17 @@ import { SyntheticEvent, useEffect, useState } from 'react';
 import { GetServerSideProps, GetServerSidePropsContext } from 'next/types';
 import { FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 import { AxiosError } from 'axios';
+import { redirectToLogin, useWristbandSession } from '@wristband/react-client-auth';
 
-import { useWristband } from '@/context/auth-context';
 import { toastError, toastSuccess } from '@/utils/toast';
-import { clientRedirectToLogin, isUnauthorizedError, isVipHostRole, serverRedirectToLogin } from '@/utils/helpers';
-import { getSession } from '@/session/iron-session';
+import { isUnauthorizedError, isVipHostRole, serverRedirectToLogin } from '@/utils/helpers';
 import frontendApiService from '@/services/frontend-api-service';
 import wristbandService from '@/services/wristband-service';
-import { ChangeEmailRequestResults } from '@/types';
+import { ChangeEmailRequestResults, MySessionMetadata } from '@/types';
 import WristbandBadge from '@/components/wristband-badge';
 import { ralewayFont } from '@/utils/fonts';
 import { useApiTouchpoints } from '@/context/api-touchpoint-context';
+import { getSession } from '@/wristband';
 
 type ProfileSettingsPageProps = {
   changeEmailRequestResults: ChangeEmailRequestResults;
@@ -23,7 +23,8 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
   const { items: changeEmailRequests, totalResults } = changeEmailRequestResults;
 
   // Contexts
-  const { role, user, setUser } = useWristband();
+  const { metadata, updateMetadata } = useWristbandSession<MySessionMetadata>();
+  const { role, user } = metadata;
   const { showApiTouchpoints } = useApiTouchpoints();
 
   // Full Name Form State
@@ -51,7 +52,7 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
 
   // We need this here to ensure the existing fullName value is in the form input when the page loads.
   useEffect(() => {
-    setFullName(user.fullName || '');
+    setFullName(user?.fullName || '');
   }, [user]);
 
   const handleFullNameSubmit = async (e: SyntheticEvent) => {
@@ -59,15 +60,14 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
     setIsUpdateNameInProgress(true);
 
     try {
-      const user = await frontendApiService.updateFullName(fullName);
-      // updates the user (react side)
-      setUser(user);
+      const updatedUser = await frontendApiService.updateFullName(fullName);
+      updateMetadata({ user: updatedUser });
       toastSuccess('With a name like that, you must be a VIP everywhere you go!', '👑');
     } catch (error: unknown) {
       console.log(error);
 
       if (isUnauthorizedError(error)) {
-        clientRedirectToLogin(window.location.href);
+        redirectToLogin('/api/auth/login', { returnUrl: window.location.href });
         return;
       }
 
@@ -104,7 +104,7 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
         }
 
         if (isUnauthorizedError(error)) {
-          clientRedirectToLogin(window.location.href);
+          redirectToLogin('/api/auth/login', { returnUrl: window.location.href });
           return;
         }
       }
@@ -118,7 +118,7 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
   const handleChangeEmailSubmit = async (e: SyntheticEvent) => {
     e.preventDefault();
 
-    if (newEmail === user.email) {
+    if (newEmail === user?.email) {
       toastError('Change can be scary, but picking an actual new email could be refreshing.', '💌');
       return;
     }
@@ -148,7 +148,7 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
         }
 
         if (isUnauthorizedError(error)) {
-          clientRedirectToLogin(window.location.href);
+          redirectToLogin('/api/auth/login', { returnUrl: window.location.href });
           return;
         }
       }
@@ -172,7 +172,7 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
       console.log(error);
 
       if (isUnauthorizedError(error)) {
-        clientRedirectToLogin(window.location.href);
+        redirectToLogin('/api/auth/login', { returnUrl: window.location.href });
         return;
       }
 
@@ -196,7 +196,7 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
       console.log(error);
 
       if (isUnauthorizedError(error)) {
-        clientRedirectToLogin(window.location.href);
+        redirectToLogin('/api/auth/login', { returnUrl: window.location.href });
         return;
       }
 
@@ -231,7 +231,7 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
           <h2 className="text-xl font-semibold mb-2 mr-4">Your Role</h2>
           <div className="flex flex-row items-center">
             <p className="text-xl mb-2 mx-2">{isVipHostRole(role) ? '👑' : '🍺'}</p>
-            <h3 className="text-xl font-medium mb-2">{role.displayName || ''}</h3>
+            <h3 className="text-xl font-medium mb-2">{role?.displayName || ''}</h3>
           </div>
         </div>
 
@@ -348,7 +348,7 @@ export default function ProfileSettingsPage({ changeEmailRequestResults }: Profi
               url="https://docs.wristband.dev/reference/requestemailchangev1"
             />
           )}
-          <div className="text-lg text-pink-600 my-4">Current Email: {user.email}</div>
+          <div className="text-lg text-pink-600 my-4">Current Email: {user?.email || ''}</div>
           {requestedNewEmail ? (
             <>
               <div className="mb-4 text-sm text-blue-600">A confirmation email was sent to: {requestedNewEmail}</div>
@@ -415,7 +415,7 @@ export const getServerSideProps: GetServerSideProps = async function (context: G
   }
 
   try {
-    const changeEmailRequestResults = await wristbandService.getChangeEmailRequests(accessToken, userId);
+    const changeEmailRequestResults = await wristbandService.getChangeEmailRequests(accessToken!, userId!);
     return { props: { changeEmailRequestResults } };
   } catch (err: unknown) {
     console.log(err);

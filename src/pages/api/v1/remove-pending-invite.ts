@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { getSession } from '@/session/iron-session';
+import { getSession } from '@/wristband';
 import wristbandService from '@/services/wristband-service';
 import { isUnauthorizedError } from '@/utils/helpers';
 
@@ -23,8 +23,8 @@ export default async function handleRemovePendingInvite(req: NextApiRequest, res
   }
 
   try {
-    await wristbandService.updateUser(accessToken, userId, { status: 'INACTIVE' });
-    const results = await wristbandService.getUsersInTenantWithRoles(accessToken, tenantId);
+    await wristbandService.updateUser(accessToken!, userId, { status: 'INACTIVE' });
+    const results = await wristbandService.getUsersInTenantWithRoles(accessToken!, tenantId!);
     return res.status(200).json({ users: results.items });
   } catch (err: unknown) {
     console.log(err);
