@@ -30,7 +30,7 @@ export default async function handleCallback(req: NextApiRequest, res: NextApiRe
 
     // Send the user back to the application.
     const tenantDomain = IS_LOCALHOST ? '' : `${callbackData.tenantName}.`;
-    res.redirect(callbackData!.returnUrl || `${PERK_PARTY_PROTOCOL}://${tenantDomain}${PERKPARTY_HOST}`);
+    res.redirect(callbackData.returnUrl || `${PERK_PARTY_PROTOCOL}://${tenantDomain}${PERKPARTY_HOST}`);
   } catch (error: unknown) {
     console.error(error);
   }
