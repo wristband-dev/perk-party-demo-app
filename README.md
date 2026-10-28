@@ -10,7 +10,8 @@
   <p align="center">
     <b>
       <a href="https://wristband.dev">Website</a> •
-      <a href="https://wristband.stoplight.io/docs/documentation">Documentation</a>
+      <a href="https://docs.wristband.dev">Documentation</a> •
+      <a href="https://docs.wristband.dev/llms.txt">LLMs.txt</a>
     </b>
   </p>
 </div>
@@ -115,13 +116,13 @@ Wristband hosts all onboarding workflow pages (signup, login, etc), and Next.js 
 The home page of this app can be accessed at the following locations:
 
 - Localhost domain format: [http://localhost:6001/](http://localhost:6001/)
-- Vanity domain format: [http://{tenant_domain}.app.perkparty.club:6001/](http://{tenant_domain}.app.perkparty.club:6001/), where `{tenant_domain}` should be replaced with the value of the desired tenant's name.
+- Vanity domain format: [https://{tenant_domain}.app.perkparty.club:6001/](https://{tenant_domain}.app.perkparty.club:6001/), where `{tenant_domain}` should be replaced with the value of the desired tenant's name.
 
 ### Signup
 
 Once Perk Party is up and running, you can sign up your first user on the Perk Party Signup Page at the following location:
 
-- `http://{application_vanity_domain}/signup`, where `{application_vanity_domain}` should be replaced with the value of the "Application Vanity Domain" value of the Perk Party application (can be found in the Wristband Dashboard by clicking the Application Details side menu of this app).
+- `https://{application_vanity_domain}/signup`, where `{application_vanity_domain}` should be replaced with the value of the "Application Vanity Domain" value of the Perk Party application (can be found in the Wristband Dashboard by clicking the Application Details side menu of this app).
 
 Completing the signup form will provision both a new tenant with the specified tenant name and a new user that is assigned to that tenant.
 
@@ -129,7 +130,7 @@ Completing the signup form will provision both a new tenant with the specified t
 
 Users of Perk Party can access the Perk Party Application-level Login Page to perform tenant discovery at the following location:
 
-- `http://{application_vanity_domain}/login`, where `{application_vanity_domain}` should be replaced with the value of the "Application Vanity Domain" value of the Perk Party application (can be found in the Wristband Dashboard by clicking the Application Details side menu of this app).
+- `https://{application_vanity_domain}/login`, where `{application_vanity_domain}` should be replaced with the value of the "Application Vanity Domain" value of the Perk Party application (can be found in the Wristband Dashboard by clicking the Application Details side menu of this app).
 
 Here, the user will be prompted to enter their tenant's name for which they want to log in to.  Successfully entering the tenant name will redirect the user to the tenant-level login page for their specific tenant. Users also have the option here to execute the Forgot Tenant workflow and entering their email address in order to receive a list of all tenants that they belong to.
 
@@ -138,7 +139,7 @@ Here, the user will be prompted to enter their tenant's name for which they want
 If users wish to directly access the Perk Party Tenant-level Login Page without having to go through the application-level login, they can do so at the following locations:
 
 - Localhost domain format: [http://localhost:6001/api/auth/login?tenant_domain={tenant_domain}](http://localhost:6001/home), where `{tenant_domain}` should be replaced with the value of the desired tenant's name.
-- Vanity domain format: [http://{tenant_domain}.app.perkparty.club:6001/api/auth/login](http://{tenant_domain}.app.perkparty.club:6001/api/auth/login), where `{tenant_domain}` should be replaced with the value of the desired tenant's name.
+- Vanity domain format: [https://{tenant_domain}.app.perkparty.club:6001/api/auth/login](https://{tenant_domain}.app.perkparty.club:6001/api/auth/login), where `{tenant_domain}` should be replaced with the value of the desired tenant's name.
 
 Here, the user will be prompted to enter their credentials in order to login to the application.
 
@@ -162,8 +163,8 @@ The goal is the following mapping:
 
 Here are some options which you can use, depending on your operating system:
 
-- Mac / Linux: [dnsmasq](http://mayakron.altervista.org/support/acrylic/Home.htm)
-- Windows: [Acrylic](http://mayakron.altervista.org/support/acrylic/Home.htm)
+- Mac / Linux: [dnsmasq](https://mayakron.altervista.org/support/acrylic/Home.htm)
+- Windows: [Acrylic](https://mayakron.altervista.org/support/acrylic/Home.htm)
 
 We also have a blog article on how to [test tenant subdomains with dnsmasq on MacOS](https://www.wristband.dev/blog/how-to-test-tenant-subdomains-on-macos-with-dnsmasq).
 
