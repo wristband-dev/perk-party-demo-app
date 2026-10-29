@@ -1,6 +1,6 @@
 {
   "name": "perk-party-demo-app",
-  "description": "Perk Party is a multi-tenant demo app powered by Wristband. It is using NextJS with page routing.",
+  "description": "Perk Party is a multi-tenant demo app powered by Wristband. It is using Next.js with the Pages Router.",
   "author": "Wristband",
   "version": "0.1.0",
   "private": true,
@@ -20,11 +20,11 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx}\""
   },
   "dependencies": {
-    "@wristband/nextjs-auth": "^4.2.0",
+    "@wristband/nextjs-auth": "^5.0.0",
     "@wristband/react-client-auth": "^3.3.0",
-    "axios": "^1.19.0",
+    "axios": "^1.21.0",
     "copy-to-clipboard": "^3.3.3",
-    "next": "^16.3.0",
+    "next": "^16.4.3",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-icons": "^5.7.0",
