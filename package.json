@@ -5,12 +5,12 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": ">=22.0.0",
-    "npm": ">=10.0.0"
+    "node": ">=22.3.0",
+    "npm": ">=10.5.1"
   },
   "scripts": {
-    "dev": "NODE_TLS_REJECT_UNAUTHORIZED=0 next dev -p 6001",
-    "dev-vanity-domain": "NODE_TLS_REJECT_UNAUTHORIZED=0 next dev -p 6001 -H app.dev-perkparty.club",
+    "dev": "next dev -p 6001",
+    "dev-vanity-domain": "next dev -p 6001 -H app.dev-perkparty.club",
     "build": "next build",
     "start": "next start -p 6001",
     "start-vanity-domain": "next start -p 6001 -H app.perkparty.club",
@@ -20,7 +20,7 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx}\""
   },
   "dependencies": {
-    "@wristband/nextjs-auth": "^5.0.0",
+    "@wristband/nextjs-auth": "^5.0.1",
     "@wristband/react-client-auth": "^3.3.0",
     "axios": "^1.21.0",
     "copy-to-clipboard": "^3.3.3",
